@@ -18,11 +18,16 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import './Sidebar.css';
 
-export function Sidebar() {
+export interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const hqNavItems = [
+  const hqNavItems: { name: string; href: string; icon: any; badge?: string }[] = [
     { name: 'Dashboard', href: '/hq', icon: LayoutDashboard },
     { name: 'Branches', href: '/hq/manage-church', icon: Building2 },
     { name: 'Workers', href: '/hq/workers', icon: UserSquare2 },
@@ -33,13 +38,13 @@ export function Sidebar() {
     { name: 'Settings', href: '/hq/settings', icon: Settings },
   ];
 
-  const branchNavItems = [
+  const branchNavItems: { name: string; href: string; icon: any; badge?: string }[] = [
     { name: 'Dashboard', href: '/branch', icon: LayoutDashboard },
     { name: 'Workers', href: '/branch/workers', icon: Users },
     { name: 'Settings', href: '/branch/settings', icon: Settings },
   ];
 
-  const workerNavItems = [
+  const workerNavItems: { name: string; href: string; icon: any; badge?: string }[] = [
     { name: 'Dashboard', href: '/worker', icon: LayoutDashboard },
     { name: 'Share Invite', href: '/worker/share', icon: MessageSquare },
     { name: 'Invites', href: '/worker/invites', icon: Users },
