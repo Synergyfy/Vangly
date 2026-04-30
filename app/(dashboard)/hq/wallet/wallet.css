@@ -1,0 +1,242 @@
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.balance-card {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.balance-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.balance-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.sms-theme .balance-icon {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.email-theme .balance-icon {
+  background: var(--purple-light);
+  color: var(--purple);
+}
+
+.balance-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.balance-value {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.balance-subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.btn-buy {
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ── Transaction History ── */
+.transaction-history {
+  margin-top: 48px;
+}
+
+.transaction-history h2 {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.history-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  align-items: center;
+}
+
+.history-row.header {
+  background: var(--surface-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+}
+
+.type-col {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+/* ── Buy Credits Modal ── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.buy-credits-modal {
+  width: 100%;
+  max-width: 600px;
+  padding: 32px;
+  position: relative;
+  animation: modalSlideUp 0.3s var(--ease);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.buy-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.buy-option {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.buy-option.featured {
+  border-color: var(--blue);
+  background: var(--blue-subtle);
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 122, 255, 0.1);
+}
+
+.option-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.option-amount {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.option-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.payment-footer {
+  text-align: center;
+  border-top: 1px solid var(--border-light);
+  padding-top: 24px;
+}
+
+.secure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.payment-success-view {
+  text-align: center;
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .buy-options-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .buy-option.featured {
+    transform: none;
+  }
+}

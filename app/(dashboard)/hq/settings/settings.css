@@ -1,0 +1,312 @@
+/* ── Settings Hub ── */
+.settings-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.settings-option-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-light);
+}
+
+.settings-option-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue);
+  box-shadow: var(--shadow-lg);
+}
+
+.option-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-content h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.option-content p {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.option-arrow {
+  color: var(--text-placeholder);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.settings-option-card:hover .option-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.settings-footer-info {
+  margin-top: 48px;
+}
+
+.info-banner-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: var(--blue-subtle);
+  border: 1px solid var(--blue-light);
+}
+
+.banner-text {
+  flex: 1;
+}
+
+.banner-text h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.banner-text p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Custom Domain Flow ── */
+.domain-flow-container {
+  max-width: 600px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.domain-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.domain-progress-steps::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border-light);
+  z-index: 0;
+}
+
+.d-step {
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-placeholder);
+}
+
+.d-step.active {
+  color: var(--blue);
+}
+
+.d-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.d-step.active .d-step-num {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+}
+
+.d-step span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.domain-card-content {
+  padding: 40px;
+  text-align: center;
+}
+
+.d-view-header {
+  margin-bottom: 32px;
+}
+
+.d-icon-bg {
+  width: 64px;
+  height: 64px;
+  background: var(--blue-light);
+  color: var(--blue);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.d-view-header h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.d-view-header p {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.d-form-group {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.d-info-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+.dns-records-list {
+  background: #111;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.dns-record-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  gap: 16px;
+}
+
+.dns-col label {
+  display: block;
+  font-size: 10px;
+  color: #777;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.dns-col code {
+  font-family: var(--monospace);
+  color: #fff;
+  font-size: 13px;
+}
+
+.copy-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.d-warning-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 32px;
+}
+
+.d-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.d-actions button {
+  flex: 1;
+}
+
+.success-domain-card {
+  border-top: 4px solid var(--blue);
+}
+
+.d-success-visual {
+  margin-bottom: 24px;
+}
+
+.d-results-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 32px 0;
+  text-align: left;
+  padding-left: 100px; /* Centering the items visually */
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.spin-slow {
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .settings-options-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .domain-card-content {
+    padding: 24px;
+  }
+  
+  .dns-record-item {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .d-results-summary {
+    padding-left: 20px;
+  }
+}

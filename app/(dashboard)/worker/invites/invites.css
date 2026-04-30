@@ -1,0 +1,7 @@
+@import '../../hq/hq.css';
+
+.invites-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}

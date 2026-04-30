@@ -1,0 +1,132 @@
+.domain-settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.onboarding-container {
+  max-width: 600px;
+}
+
+.dns-table {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-lg);
+  overflow: hidden;
+}
+
+.dns-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  padding: var(--spacing-md);
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.dns-row.header {
+  background-color: var(--primary-light);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.dns-row:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  background: var(--primary);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.monospace {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.loader-container {
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  justify-content: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--primary-light);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.success-card .success-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.domain-link-box {
+  background: var(--primary-light);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.domain-url {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 1.125rem;
+}
+
+.status-panel {
+  padding: var(--spacing-lg);
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pill.active {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-pill.inactive {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.status-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.text-danger {
+  color: #ef4444;
+}

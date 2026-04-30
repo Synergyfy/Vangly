@@ -1,0 +1,359 @@
+/* ── Shared Dashboard Styles ── */
+
+.hq-dashboard,
+.branch-dashboard,
+.worker-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.dashboard-header p {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+/* ── Stats Grid ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  padding: 24px;
+  text-align: left;
+}
+
+.stat-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.text-primary { color: var(--blue); }
+.text-success { color: var(--green); }
+.text-accent { color: var(--purple); }
+.text-danger { color: var(--red); }
+
+/* ── Tables ── */
+.table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-responsive {
+  width: 100%;
+}
+
+.data-table,
+.invites-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th,
+.invites-table th {
+  padding: 12px 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  background: var(--surface-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table td,
+.invites-table td {
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.data-table tr:last-child td,
+.invites-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td,
+.invites-table tr:hover td {
+  background: var(--surface-secondary);
+}
+
+/* ── Mobile Card-Style Tables ── */
+@media (max-width: 768px) {
+  .table-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .data-table, 
+  .invites-table {
+    display: block;
+    min-width: unset;
+  }
+
+  .data-table thead,
+  .invites-table thead {
+    display: none; /* Hide headers on mobile */
+  }
+
+  .data-table tbody,
+  .invites-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .data-table tr,
+  .invites-table tr {
+    display: block;
+    background: var(--white);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .data-table td,
+  .invites-table td {
+    display: flex;
+    padding: 8px 0;
+    border: none;
+    white-space: normal;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .data-table td::before,
+  .invites-table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+  }
+
+  /* Specific styling for name/primary info */
+  .data-table td:first-child,
+  .invites-table td:first-child {
+    padding-top: 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 12px;
+  }
+
+  .data-table td:first-child::before,
+  .invites-table td:first-child::before {
+    display: none;
+  }
+
+  .data-table td:first-child .person-name,
+  .data-table td:first-child .worker-name {
+    font-size: 16px;
+  }
+
+  /* Actions column */
+  .data-table td:last-child,
+  .invites-table td:last-child {
+    margin-top: 8px;
+    border-top: 1px solid var(--border-light);
+    padding-top: 12px;
+    justify-content: center;
+  }
+
+  .data-table td:last-child::before,
+  .invites-table td:last-child::before {
+    display: none;
+  }
+}
+
+/* ── Table Helpers ── */
+.branch-name,
+.worker-name,
+.user-name,
+.person-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.font-medium { font-weight: 500; }
+
+.person-note {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.rank-cell {
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+/* ── Progress Bars ── */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: var(--border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: var(--radius-full);
+  transition: width 0.4s var(--ease);
+}
+
+.progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 36px;
+}
+
+/* ── Status Badges ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-invited {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.status-attended {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.role-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-worker {
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.role-branch_admin {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+/* ── Page Headers ── */
+.page-header {
+  margin-bottom: 4px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ── Section Headings ── */
+.branch-performance h2,
+.worker-performance h2,
+.recent-activity h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+/* ── Filter Card Responsiveness ── */
+.filter-card > div {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+}
+
+/* ── Responsive Queries ── */
+@media (max-width: 768px) {
+  .hq-dashboard,
+  .branch-dashboard,
+  .worker-dashboard {
+    gap: 20px;
+  }
+
+  .flex-between {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .flex-between .btn {
+    width: 100%;
+  }
+
+  .stat-value {
+    font-size: 28px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+}

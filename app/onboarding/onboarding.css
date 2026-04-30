@@ -1,0 +1,259 @@
+.onboarding-page {
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.onboarding-container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.onboarding-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.progress-dot {
+  width: 32px;
+  height: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+  background: var(--blue);
+}
+
+.onboarding-step-view {
+  animation: slideIn 0.4s var(--ease);
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.step-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.step-header p {
+  color: var(--text-tertiary);
+  font-size: 15px;
+}
+
+.onboarding-card {
+  padding: 32px;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Phone Input Group ── */
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 48px;
+  transition: border-color 0.2s ease;
+}
+
+.phone-input-group:focus-within {
+  border-color: var(--blue);
+}
+
+.country-selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--border);
+  background: var(--surface-secondary);
+  padding: 0 12px;
+  height: 100%;
+}
+
+.country-select {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0 20px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+  z-index: 2;
+}
+
+.selector-arrow {
+  position: absolute;
+  right: 8px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.phone-number-field {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.subdomain-preview {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.subdomain-input-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subdomain-input-box input {
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--blue);
+  font-family: var(--monospace);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  outline: none;
+  width: 100%;
+  text-align: right;
+}
+
+.subdomain-input-box span {
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.onboarding-logo-upload {
+  height: 120px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.onboarding-logo-upload:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-subtle);
+}
+
+.onboarding-logo-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.onboarding-color-select {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.color-option.active {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--blue);
+}
+
+.custom-color-trigger {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.success-onboarding {
+  text-align: center;
+}
+
+.success-lottie {
+  font-size: 48px;
+  margin-bottom: 24px;
+}
+
+.onboarding-summary {
+  background: var(--surface-secondary);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  margin: 24px 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.summary-item svg {
+  color: var(--green);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .onboarding-page {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  
+  .onboarding-card {
+    padding: 24px 20px;
+  }
+}
