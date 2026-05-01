@@ -1,39 +1,34 @@
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { 
   ArrowLeft, 
-  ShieldCheck, 
+  TrendingUp, 
   Users, 
-  Plus, 
-  UserCircle, 
-  Hash,
-  Mail,
-  Phone,
-  MoreVertical,
-  MapPin
+  UserCheck, 
+  Target,
+  BarChart3,
+  Calendar,
+  ChevronRight,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import '../management.css';
 
-function BranchDetailsContent() {
+function BranchPerformanceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const branchName = searchParams.get('name') || 'Branch';
-  
-  const [activeForm, setActiveForm] = useState<'none' | 'admin' | 'worker'>('none');
-  const [pin, setPin] = useState('');
 
-  // Mock data
-  const branchAdmins = [
-    { id: 'a1', name: 'Robert Miller', email: 'robert@vangly.com', phone: '+234 801 234 5678' }
-  ];
-  const branchWorkers = [
-    { id: 'w1', name: 'Linda Garcia', phone: '+234 802 345 6789', invites: 42 },
-    { id: 'w2', name: 'Sarah Johnson', phone: '+234 804 567 8901', invites: 25 },
+  // Mock Performance Data
+  const stats = [
+    { label: 'Total Invites', value: '1,284', change: '+12.5%', isUp: true, icon: Users, color: 'blue' },
+    { label: 'Total Attended', value: '842', change: '+8.2%', isUp: true, icon: UserCheck, color: 'green' },
+    { label: 'Conversion Rate', value: '65.5%', change: '-2.1%', isUp: false, icon: Target, color: 'purple' },
+    { label: 'Avg. Weekly Growth', value: '18%', change: '+4.3%', isUp: true, icon: TrendingUp, color: 'orange' },
   ];
 
   return (
@@ -43,114 +38,76 @@ function BranchDetailsContent() {
           <ArrowLeft size={18} /> Back to Network
         </Button>
         <div style={{ marginTop: '16px' }}>
-          <h1>{branchName}</h1>
-          <p>Manage staff and monitor soul-winning performance for this location.</p>
+          <div className="branch-badge">Active Branch</div>
+          <h1>{branchName} Performance</h1>
+          <p>Real-time growth metrics and evangelism conversion data.</p>
         </div>
       </div>
 
-      <div className="branch-manage-layout">
-        <section className="manage-section">
-          <div className="section-header-flex">
-            <h2 className="section-title"><ShieldCheck size={20} /> Branch Admins</h2>
-            <Button size="sm" variant="outline" onClick={() => setActiveForm('admin')} style={{ gap: '6px' }}>
-              <Plus size={16} /> Add Admin
-            </Button>
-          </div>
-
-          {activeForm === 'admin' && (
-            <Card className="inline-form-card">
-              <div className="inline-form-header">
-                <h3>New Branch Admin</h3>
-                <Button variant="ghost" size="sm" onClick={() => setActiveForm('none')}><Plus size={18} style={{ transform: 'rotate(45deg)' }} /></Button>
+      <div className="stats-grid">
+        {stats.map((stat, i) => (
+          <Card key={i} className="stat-card">
+            <div className={`stat-icon-box ${stat.color}`}>
+              <stat.icon size={24} />
+            </div>
+            <div className="stat-info">
+              <p className="stat-label">{stat.label}</p>
+              <h2 className="stat-value">{stat.value}</h2>
+              <div className={`stat-change ${stat.isUp ? 'positive' : 'negative'}`}>
+                {stat.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                <span>{stat.change} this month</span>
               </div>
-              <form className="inline-form">
-                <div className="form-grid">
-                  <Input label="Full Name" placeholder="e.g. Robert Miller" required />
-                  <Input label="Email" type="email" placeholder="admin@branch.com" required />
-                </div>
-                <div className="form-grid">
-                  <Input label="PIN (6 digits)" type="password" placeholder="••••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} maxLength={6} required />
-                  <Input label="Confirm PIN" type="password" placeholder="••••••" maxLength={6} required />
-                </div>
-                <Button fullWidth size="sm">Create Admin Account</Button>
-              </form>
-            </Card>
-          )}
+            </div>
+          </Card>
+        ))}
+      </div>
 
-          <div className="staff-list">
-            {branchAdmins.map(admin => (
-              <Card key={admin.id} className="staff-item-card">
-                <div className="staff-main-info">
-                  <div className="staff-avatar"><UserCircle size={32} /></div>
-                  <div className="staff-details">
-                    <h4>{admin.name}</h4>
-                    <div className="staff-meta">
-                      <span><Mail size={12} /> {admin.email}</span>
-                      <span><Phone size={12} /> {admin.phone}</span>
-                    </div>
-                  </div>
+      <div className="performance-layout-grid">
+        <Card className="chart-placeholder-card main-chart">
+          <div className="card-header">
+            <h3>Attendance Overview</h3>
+            <div className="chart-filters">
+              <span className="active">Week</span>
+              <span>Month</span>
+              <span>Year</span>
+            </div>
+          </div>
+          <div className="visual-indicator">
+            <BarChart3 size={48} className="placeholder-icon" />
+            <p>Attendance trends visualization showing growth over the selected period.</p>
+          </div>
+        </Card>
+
+        <Card className="performance-breakdown-card">
+          <div className="card-header">
+            <h3>Recent Milestones</h3>
+          </div>
+          <div className="milestone-list">
+            {[
+              { label: 'Highest Attendance', value: '245 people', date: 'Last Sunday', icon: Calendar },
+              { label: 'Most Invites Sent', value: '182 invites', date: '2 days ago', icon: Users },
+              { label: 'New Record Conversion', value: '78%', date: 'March 2026', icon: Target },
+            ].map((m, i) => (
+              <div key={i} className="milestone-item">
+                <div className="m-icon"><m.icon size={18} /></div>
+                <div className="m-info">
+                  <p className="m-label">{m.label}</p>
+                  <p className="m-value">{m.value}</p>
                 </div>
-                <Button variant="ghost" size="sm"><MoreVertical size={18} /></Button>
-              </Card>
+                <span className="m-date">{m.date}</span>
+              </div>
             ))}
           </div>
-        </section>
-
-        <section className="manage-section">
-          <div className="section-header-flex">
-            <h2 className="section-title"><Users size={20} /> Church Workers</h2>
-            <Button size="sm" variant="outline" onClick={() => setActiveForm('worker')} style={{ gap: '6px' }}>
-              <Plus size={16} /> Add Worker
-            </Button>
-          </div>
-
-          {activeForm === 'worker' && (
-            <Card className="inline-form-card">
-              <div className="inline-form-header">
-                <h3>New Church Worker</h3>
-                <Button variant="ghost" size="sm" onClick={() => setActiveForm('none')}><Plus size={18} style={{ transform: 'rotate(45deg)' }} /></Button>
-              </div>
-              <form className="inline-form">
-                <div className="form-grid">
-                  <Input label="Full Name" placeholder="e.g. Linda Garcia" required />
-                  <Input label="Phone (WhatsApp)" placeholder="+234..." required />
-                </div>
-                <div className="form-grid">
-                  <Input label="PIN (6 digits)" type="password" placeholder="••••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} maxLength={6} required />
-                  <Input label="Confirm PIN" type="password" placeholder="••••••" maxLength={6} required />
-                </div>
-                <Button fullWidth size="sm">Create Worker Account</Button>
-              </form>
-            </Card>
-          )}
-
-          <div className="staff-list">
-            {branchWorkers.map(worker => (
-              <Card key={worker.id} className="staff-item-card">
-                <div className="staff-main-info">
-                  <div className="staff-avatar"><UserCircle size={32} /></div>
-                  <div className="staff-details">
-                    <h4>{worker.name}</h4>
-                    <div className="staff-meta">
-                      <span><Phone size={12} /> {worker.phone}</span>
-                      <span className="text-primary">{worker.invites} total invites</span>
-                    </div>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm"><MoreVertical size={18} /></Button>
-              </Card>
-            ))}
-          </div>
-        </section>
+        </Card>
       </div>
     </div>
   );
 }
 
-export default function BranchManagementPage() {
+export default function BranchPerformancePage() {
   return (
-    <Suspense fallback={<div>Loading branch details...</div>}>
-      <BranchDetailsContent />
+    <Suspense fallback={<div>Loading branch performance...</div>}>
+      <BranchPerformanceContent />
     </Suspense>
   );
 }

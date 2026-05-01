@@ -48,17 +48,14 @@ export default function OnboardingPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
 
-  // Step 2: OTP
-  const [otp, setOtp] = useState('');
-
-  // Step 3: Subdomain
+  // Step 2: Subdomain
   const [subdomain, setSubdomain] = useState('');
 
-  // Step 4: Brand
+  // Step 3: Brand
   const [primaryColor, setPrimaryColor] = useState('#007AFF');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  // Step 5: HQ Branch
+  // Step 4: HQ Branch
   const [branchName, setBranchName] = useState('Headquarters');
   const [location, setLocation] = useState('');
 
@@ -92,7 +89,7 @@ export default function OnboardingPage() {
 
   const renderProgress = () => (
     <div className="onboarding-progress">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
+      {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className={`progress-dot ${step >= i ? 'active' : ''}`} />
       ))}
     </div>
@@ -152,31 +149,6 @@ export default function OnboardingPage() {
         {step === 2 && (
           <div className="onboarding-step-view">
             <div className="step-header">
-              <h1>Verify your number</h1>
-              <p>We've sent a 4-digit code to {countryCode}{phoneNumber}</p>
-            </div>
-            <Card className="onboarding-card">
-              <div className="form-stack">
-                <Input 
-                  label="Enter OTP" 
-                  placeholder="0 0 0 0" 
-                  value={otp} 
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} 
-                  maxLength={4} 
-                  style={{ textAlign: 'center', fontSize: '24px', letterSpacing: '8px' }}
-                />
-                <Button fullWidth size="lg" onClick={handleNext} disabled={otp.length < 4}>
-                  Verify & Continue
-                </Button>
-                <Button variant="ghost" fullWidth onClick={() => {}}>Resend Code</Button>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="onboarding-step-view">
-            <div className="step-header">
               <h1>Your church domain</h1>
               <p>This is where your staff and guests will access the system.</p>
             </div>
@@ -197,7 +169,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <div className="onboarding-step-view">
             <div className="step-header">
               <h1>Brand Identity</h1>
@@ -234,7 +206,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 4 && (
           <div className="onboarding-step-view">
             <div className="step-header">
               <h1>Create first branch</h1>
@@ -252,7 +224,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === 6 && (
+        {step === 5 && (
           <div className="onboarding-step-view">
             <Card className="onboarding-card success-onboarding">
               <div className="success-lottie">✨</div>

@@ -1,89 +1,287 @@
 "use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/Card';
-import './hq.css';
+import React from "react";
+import { Card } from "@/components/ui/Card";
+import {
+  Building2,
+  Users,
+  Send,
+  CheckCircle2,
+  TrendingUp,
+  ArrowUpRight,
+  MoreHorizontal,
+  Search,
+  Clock,
+} from "lucide-react";
+import "./hq.css";
 
 export default function HQDashboard() {
   // Mock HQ stats
-  const stats = {
-    totalBranches: 4,
-    totalWorkers: 125,
-    totalInvites: 1450,
-    totalAttended: 320,
-  };
+  const stats = [
+    {
+      label: "Total Branches",
+      value: "4",
+      icon: Building2,
+      color: "blue",
+      trend: "+1 this month",
+    },
+    {
+      label: "Total Workers",
+      value: "125",
+      icon: Users,
+      color: "purple",
+      trend: "+12% vs last month",
+    },
+    {
+      label: "Total Invited",
+      value: "1,450",
+      icon: Send,
+      color: "orange",
+      trend: "+240 this week",
+    },
+    {
+      label: "Total Attended",
+      value: "320",
+      icon: CheckCircle2,
+      color: "green",
+      trend: "22% conversion",
+    },
+  ];
 
   const branchStats = [
-    { id: '1', name: 'HQ Branch (Downtown)', workers: 45, invites: 650, attended: 180 },
-    { id: '2', name: 'Northside Branch', workers: 30, invites: 400, attended: 85 },
-    { id: '3', name: 'Westend Campus', workers: 25, invites: 250, attended: 40 },
-    { id: '4', name: 'Southpark Satellite', workers: 25, invites: 150, attended: 15 },
+    {
+      id: "1",
+      name: "HQ Branch (Downtown)",
+      workers: 45,
+      invites: 650,
+      attended: 180,
+      status: "Active",
+    },
+    {
+      id: "2",
+      name: "Northside Branch",
+      workers: 30,
+      invites: 400,
+      attended: 85,
+      status: "Active",
+    },
+    {
+      id: "3",
+      name: "Westend Campus",
+      workers: 25,
+      invites: 250,
+      attended: 40,
+      status: "Warning",
+    },
+    {
+      id: "4",
+      name: "Southpark Satellite",
+      workers: 25,
+      invites: 150,
+      attended: 15,
+      status: "Inactive",
+    },
+  ];
+
+  const activities = [
+    {
+      id: 1,
+      user: "Sarah Jenkins",
+      action: "sent 24 invites",
+      branch: "HQ Branch",
+      time: "2m ago",
+    },
+    {
+      id: 2,
+      user: "Robert Fox",
+      action: "registered 5 new members",
+      branch: "Northside",
+      time: "15m ago",
+    },
+    {
+      id: 3,
+      user: "Eleanor Pena",
+      action: "joined as a worker",
+      branch: "Westend",
+      time: "1h ago",
+    },
   ];
 
   return (
     <div className="hq-dashboard">
-      <div className="dashboard-header">
-        <h1>Global Dashboard</h1>
-        <p>Church-wide evangelism overview</p>
-      </div>
-
-      <div className="stats-grid">
-        <Card className="stat-card">
-          <h3 className="stat-title">Total Branches</h3>
-          <p className="stat-value text-primary">{stats.totalBranches}</p>
-        </Card>
-        <Card className="stat-card">
-          <h3 className="stat-title">Total Workers</h3>
-          <p className="stat-value text-primary">{stats.totalWorkers}</p>
-        </Card>
-        <Card className="stat-card">
-          <h3 className="stat-title">Total Invited</h3>
-          <p className="stat-value text-accent">{stats.totalInvites}</p>
-        </Card>
-        <Card className="stat-card">
-          <h3 className="stat-title">Total Attended</h3>
-          <p className="stat-value text-success">{stats.totalAttended}</p>
-        </Card>
-      </div>
-
-      <div className="branch-performance">
-        <h2>Branch Performance</h2>
-        <Card className="table-card">
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Branch Name</th>
-                  <th>Active Workers</th>
-                  <th>Total Invites</th>
-                  <th>Total Attended</th>
-                  <th>Conversion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {branchStats.map((branch) => {
-                  const conversion = Math.round((branch.attended / branch.invites) * 100) || 0;
-                  return (
-                    <tr key={branch.id}>
-                      <td data-label="Branch Name" className="branch-name">{branch.name}</td>
-                      <td data-label="Active Workers">{branch.workers}</td>
-                      <td data-label="Total Invites">{branch.invites}</td>
-                      <td data-label="Total Attended" className="text-success font-medium">{branch.attended}</td>
-                      <td data-label="Conversion">
-                        <div className="progress-container">
-                          <div className="progress-bar-bg">
-                            <div className="progress-bar-fill" style={{ width: `${conversion}%` }}></div>
-                          </div>
-                          <span className="progress-text">{conversion}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <h1>Global Dashboard</h1>
+          <p>Real-time evangelism overview across all branches</p>
+        </div>
+        <div className="header-actions">
+          <div className="search-pill">
+            <Search size={16} className="text-tertiary" />
+            <input type="text" placeholder="Search branches..." />
           </div>
-        </Card>
+          <button className="btn-primary-premium">Generate Report</button>
+        </div>
+      </header>
+
+      <div className="stats-grid-premium">
+        {stats.map((stat, i) => (
+          <Card key={i} className="stat-card-premium">
+            <div className={`icon-box ${stat.color}`}>
+              <stat.icon size={20} />
+            </div>
+            <div className="stat-content">
+              <span className="stat-label">{stat.label}</span>
+              <div className="stat-value-row">
+                <span className="stat-value">{stat.value}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    marginTop: "2px",
+                  }}
+                >
+                  <TrendingUp size={12} className="text-success" />
+                  <span className="stat-trend">{stat.trend}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="dashboard-main-content">
+        <div className="content-section">
+          <div className="section-header">
+            <h2>Branch Performance</h2>
+            <button className="text-link">
+              View all branches <ArrowUpRight size={14} />
+            </button>
+          </div>
+
+          <Card className="table-card-premium">
+            <div className="table-responsive">
+              <table className="data-table-premium">
+                <thead>
+                  <tr>
+                    <th>Branch Name</th>
+                    <th>Active Workers</th>
+                    <th>Total Invites</th>
+                    <th>Attendance</th>
+                    <th>Conversion</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {branchStats.map((branch) => {
+                    const conversion =
+                      Math.round((branch.attended / branch.invites) * 100) || 0;
+                    return (
+                      <tr key={branch.id}>
+                        <td>
+                          <div className="branch-info-cell">
+                            <span className="branch-name-text">
+                              {branch.name}
+                            </span>
+                            <span
+                              className={`status-dot ${branch.status.toLowerCase()}`}
+                            >
+                              {branch.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td>{branch.workers}</td>
+                        <td>{branch.invites}</td>
+                        <td className="text-success font-medium">
+                          {branch.attended}
+                        </td>
+                        <td>
+                          <div className="conversion-cell">
+                            <div className="mini-progress-bg">
+                              <div
+                                className="mini-progress-fill"
+                                style={{ width: `${conversion}%` }}
+                              ></div>
+                            </div>
+                            <span className="conversion-text">
+                              {conversion}%
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <button className="btn-icon-only">
+                            <MoreHorizontal size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        <div className="content-section">
+          <div className="section-header">
+            <h2>Recent Activity</h2>
+            <button className="text-link">View all activity</button>
+          </div>
+          <Card className="table-card-premium">
+            {activities.map((item) => (
+              <div
+                key={item.id}
+                className="user-row"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "14px 24px",
+                  gap: "16px",
+                  borderBottom: "1px solid var(--border-light)",
+                }}
+              >
+                <div
+                  className="icon-box blue"
+                  style={{ width: "32px", height: "32px", borderRadius: "8px" }}
+                >
+                  <Clock size={14} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      className="branch-name-text"
+                      style={{ fontSize: "14px" }}
+                    >
+                      {item.user}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-tertiary)",
+                      }}
+                    >
+                      {item.time}
+                    </span>
+                  </div>
+                  <p
+                    style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+                  >
+                    {item.action} at{" "}
+                    <span style={{ color: "var(--blue)", fontWeight: 500 }}>
+                      {item.branch}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </Card>
+        </div>
       </div>
     </div>
   );

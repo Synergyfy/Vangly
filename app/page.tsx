@@ -10,6 +10,10 @@ export default function LandingPage() {
 
   return (
     <div className="minimal-landing">
+      <div className="background-slider">
+        <div className="slide" style={{ backgroundImage: "url('/hero.png')" }} />
+        <div className="slide" style={{ backgroundImage: "url('/Evang pic 3.png')" }} />
+      </div>
       <div className="landing-overlay" />
       
       <div className="landing-content">
@@ -20,12 +24,12 @@ export default function LandingPage() {
         </div>
 
         <h1 className="landing-headline">
-          Let's Build <br />
-          Lives Together
+          Church Growth, <br />
+          Simplified.
         </h1>
         
         <p className="landing-description">
-          Track every invite and follow up properly
+          A streamlined platform for churches to manage outreach, track guest engagement, and nurture community connections with ease.
         </p>
 
         <div className="landing-actions-stack">

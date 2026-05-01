@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, use } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import '../first-timer.css';
 
-export default function FirstTimerPage({ params }: { params: { unique_code: string } }) {
-  const { unique_code } = params;
+export default function FirstTimerPage({ params }: { params: Promise<{ unique_code: string }> }) {
+  const { unique_code } = use(params);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
