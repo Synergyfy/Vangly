@@ -160,7 +160,8 @@ export default function HQDashboard() {
           </div>
 
           <Card className="table-card-premium">
-            <div className="table-responsive">
+            {/* Desktop Table View */}
+            <div className="table-responsive desktop-only">
               <table className="data-table-premium">
                 <thead>
                   <tr>
@@ -218,6 +219,61 @@ export default function HQDashboard() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="mobile-list-view">
+              {branchStats.map((branch) => {
+                const conversion =
+                  Math.round((branch.attended / branch.invites) * 100) || 0;
+                return (
+                  <div key={branch.id} className="branch-performance-card">
+                    <div className="branch-card-top">
+                      <div className="branch-card-identity">
+                        <span className="branch-card-name">{branch.name}</span>
+                        <span
+                          className={`status-pill ${branch.status.toLowerCase()}`}
+                        >
+                          {branch.status}
+                        </span>
+                      </div>
+                      <button className="btn-icon-only">
+                        <MoreHorizontal size={18} />
+                      </button>
+                    </div>
+
+                    <div className="branch-card-stats-grid">
+                      <div className="branch-card-stat">
+                        <span className="label">Workers</span>
+                        <span className="value">{branch.workers}</span>
+                      </div>
+                      <div className="branch-card-stat">
+                        <span className="label">Invites</span>
+                        <span className="value">{branch.invites}</span>
+                      </div>
+                      <div className="branch-card-stat">
+                        <span className="label">Attendance</span>
+                        <span className="value text-success">
+                          {branch.attended}
+                        </span>
+                      </div>
+                      <div className="branch-card-stat">
+                        <span className="label">Conversion</span>
+                        <span className="value">{conversion}%</span>
+                      </div>
+                    </div>
+
+                    <div className="branch-card-progress">
+                      <div className="progress-track">
+                        <div
+                          className="progress-bar"
+                          style={{ width: `${conversion}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         </div>

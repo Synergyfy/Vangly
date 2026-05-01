@@ -1,20 +1,48 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { 
-  Building2, 
-  Plus, 
-  MapPin, 
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  Building2,
+  Plus,
+  MapPin,
   ArrowLeft,
   CheckCircle2,
   Image as ImageIcon,
-  Upload
-} from 'lucide-react';
-import '../management.css';
+  Upload,
+  HelpCircle,
+  X,
+} from "lucide-react";
+import "../management.css";
+
+const Tooltip = ({ content }: { content: string }) => {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="tooltip-container">
+      <button
+        type="button"
+        className="tooltip-trigger"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(!show)}
+      >
+        <HelpCircle size={14} />
+      </button>
+      {show && (
+        <div className="tooltip-popup">
+          <div className="tooltip-content">{content}</div>
+          <button className="tooltip-close" onClick={() => setShow(false)}>
+            <X size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function NewBranchPage() {
   const router = useRouter();
@@ -26,45 +54,78 @@ export default function NewBranchPage() {
     setIsSubmitting(true);
     setTimeout(() => {
       setSuccess(true);
-      setTimeout(() => router.push('/hq/manage-church'), 1500);
+      setTimeout(() => router.push("/hq/manage-church"), 1500);
     }, 1200);
   };
 
   return (
     <div className="hq-dashboard">
       <div className="page-header">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-header">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="back-btn-header"
+        >
           <ArrowLeft size={18} /> Back to Network
         </Button>
-        <h1 style={{ marginTop: '12px' }}>Create New Branch</h1>
-        <p>Establish a new physical location for your church community.</p>
+        <h1 className="mobile-title">Create New Branch</h1>
+        <p className="mobile-subtitle">
+          Establish a new physical location for your church community.
+        </p>
       </div>
 
-      <div className="form-container-centered">
+      <div className="form-container-premium">
         {success ? (
           <Card className="success-full-card">
             <div className="success-icon-large">🎉</div>
             <h2>Branch Established!</h2>
             <p>You have successfully added a new location to your network.</p>
-            <p className="redirect-hint">Taking you back to your network overview...</p>
+            <p className="redirect-hint">
+              Taking you back to your network overview...
+            </p>
           </Card>
         ) : (
-          <Card className="management-card-large">
+          <Card className="management-card-premium">
             <form onSubmit={handleSubmit} className="premium-form">
               <div className="form-section">
                 <div className="section-header">
-                  <Building2 size={20} className="text-primary" />
-                  <h3>Basic Information</h3>
+                  <div className="header-title-row">
+                    <Building2 size={20} className="text-primary" />
+                    <h3>Basic Information</h3>
+                  </div>
                 </div>
                 <div className="form-grid">
-                  <Input label="Branch Name" placeholder="e.g. Southpark Satellite" required />
-                  <Input label="Location / City" placeholder="e.g. Lagos, Nigeria" icon={<MapPin size={16} />} required />
+                  <div className="input-group-premium">
+                    <div className="label-row">
+                      <label>Branch Name</label>
+                      <Tooltip content="Choose a name that clearly identifies this location (e.g. Southpark Campus)." />
+                    </div>
+                    <Input placeholder="e.g. Southpark Satellite" required />
+                  </div>
+                  <div className="input-group-premium">
+                    <div className="label-row">
+                      <label>Location / City</label>
+                      <Tooltip content="The city or district where this branch is physically located." />
+                    </div>
+                    <Input
+                      placeholder="e.g. Lagos, Nigeria"
+                      icon={<MapPin size={16} />}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="input-wrapper input-full" style={{ marginTop: '20px' }}>
-                  <label className="input-label">Short Description</label>
-                  <textarea 
-                    className="input-field textarea-field" 
-                    rows={3} 
+                <div
+                  className="input-group-premium input-full"
+                  style={{ marginTop: "20px" }}
+                >
+                  <div className="label-row">
+                    <label>Short Description</label>
+                    <Tooltip content="A 2-3 sentence overview of this branch's vision or neighborhood focus." />
+                  </div>
+                  <textarea
+                    className="input-field textarea-field"
+                    rows={3}
                     placeholder="Briefly describe this location's community or focus..."
                   />
                 </div>
@@ -72,20 +133,46 @@ export default function NewBranchPage() {
 
               <div className="form-section">
                 <div className="section-header">
-                  <ImageIcon size={20} className="text-primary" />
-                  <h3>Branch Assets (Optional)</h3>
+                  <div className="header-title-row">
+                    <ImageIcon size={20} className="text-primary" />
+                    <h3>Branch Assets</h3>
+                    <Tooltip content="Upload a high-quality photo to help members identify the location." />
+                  </div>
                 </div>
-                <div className="upload-placeholder-zone">
-                  <Upload size={24} />
-                  <p>Upload a photo of the church building</p>
-                  <Button type="button" variant="ghost" size="sm">Choose Image</Button>
+                <div className="upload-placeholder-zone-premium">
+                  <div className="upload-icon-box">
+                    <Upload size={24} />
+                  </div>
+                  <div className="upload-text">
+                    <p className="main-text">Upload branch photo</p>
+                    <p className="sub-text">PNG, JPG up to 10MB</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="btn-upload-trigger"
+                  >
+                    Choose File
+                  </Button>
                 </div>
               </div>
 
-              <div className="form-actions-footer">
-                <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting} style={{ minWidth: '180px' }}>
-                  {isSubmitting ? 'Establishing...' : 'Create Branch'}
+              <div className="form-actions-footer-premium">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => router.back()}
+                  className="btn-cancel-mobile"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-submit-mobile"
+                >
+                  {isSubmitting ? "Establishing..." : "Create Branch"}
                 </Button>
               </div>
             </form>
