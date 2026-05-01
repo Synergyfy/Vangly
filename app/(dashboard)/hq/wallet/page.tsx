@@ -97,17 +97,17 @@ export default function WalletPage() {
               <span>Date</span>
               <span>Status</span>
             </div>
-            <div className="history-row">
+            <div className="history-row" data-type="Type">
               <span className="type-col"><Plus size={14} className="text-success" /> SMS Top-up</span>
-              <span>500 Credits</span>
-              <span>Oct 24, 2023</span>
-              <span className="status-badge success">Completed</span>
+              <span className="amount-col">500 Credits</span>
+              <span className="date-col">Oct 24, 2023</span>
+              <span className="status-col status-badge success">Completed</span>
             </div>
-            <div className="history-row">
+            <div className="history-row" data-type="Type">
               <span className="type-col"><Plus size={14} className="text-success" /> Email Top-up</span>
-              <span>2,000 Credits</span>
-              <span>Oct 12, 2023</span>
-              <span className="status-badge success">Completed</span>
+              <span className="amount-col">2,000 Credits</span>
+              <span className="date-col">Oct 12, 2023</span>
+              <span className="status-col status-badge success">Completed</span>
             </div>
           </div>
         </Card>
