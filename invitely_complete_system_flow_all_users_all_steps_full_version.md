@@ -183,7 +183,7 @@ Can:
    - Name
    - Phone
    - Email
-   - Invited by
+   - Invited by --
 
 Default:
 - Branch auto selected
@@ -295,4 +295,3 @@ This system ensures:
 ---
 
 END OF DOCUMENT
-
