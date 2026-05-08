@@ -1,0 +1,251 @@
+.branch-messages-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.messaging-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.composer-card {
+  padding: 2rem;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.channel-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.4rem;
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  width: fit-content;
+}
+
+.channel-tab {
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+
+.channel-tab.active {
+  background: white;
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.composer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.targeting-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.target-card {
+  padding: 1rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.target-card:hover {
+  border-color: var(--blue-subtle);
+}
+
+.target-card.active {
+  border-color: var(--blue);
+  background: var(--blue-subtle);
+}
+
+.message-textarea {
+  width: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 180px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.message-textarea:focus {
+  border-color: var(--blue);
+}
+
+/* Phone Mockup */
+.preview-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.phone-mockup {
+  width: 100%;
+  aspect-ratio: 1 / 2;
+  background: #1D1D1F;
+  border-radius: 48px;
+  border: 12px solid #2C2C2E;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 50px 100px -20px rgba(0,0,0,0.25), 0 30px 60px -30px rgba(0,0,0,0.3);
+}
+
+.phone-mockup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #1D1D1F;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  z-index: 10;
+}
+
+/* Side Buttons */
+.phone-mockup::after {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 100px;
+  width: 3px;
+  height: 60px;
+  background: #2C2C2E;
+  border-radius: 2px 0 0 2px;
+  box-shadow: 0 70px 0 #2C2C2E, 0 110px 0 #2C2C2E;
+}
+
+.phone-power-btn {
+  position: absolute;
+  right: -14px;
+  top: 160px;
+  width: 3px;
+  height: 80px;
+  background: #2C2C2E;
+  border-radius: 0 2px 2px 0;
+}
+
+.phone-screen {
+  flex: 1;
+  background: #F2F2F7;
+  border-radius: 36px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  position: relative;
+}
+
+.phone-status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 1rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: black;
+  margin-bottom: 1rem;
+}
+
+.sms-bubble {
+  max-width: 85%;
+  background: #007AFF;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  font-size: 0.85rem;
+  color: white;
+  margin-top: auto;
+  position: relative;
+  line-height: 1.4;
+  align-self: flex-end;
+  box-shadow: var(--shadow-sm);
+}
+
+.sms-bubble::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  bottom: 0;
+  border-left: 10px solid #007AFF;
+  border-top: 10px solid transparent;
+}
+
+/* Group Chips */
+.group-select-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.group-select-chip:hover {
+  background: var(--border-light);
+}
+
+.group-select-chip.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+
+.email-preview-box {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.email-subject-line {
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.email-body-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

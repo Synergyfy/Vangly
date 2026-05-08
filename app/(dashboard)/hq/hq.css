@@ -820,20 +820,26 @@
 
     .user-row {
         display: block;
-        padding: 16px;
-        border-bottom: 8px solid var(--bg); /* Create card-like separation */
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
     }
 
     .user-row td {
-        display: block;
-        padding: 8px 0;
-        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-subtle);
     }
 
     .user-row td:last-child {
-        border-top: 1px solid var(--border-light);
-        margin-top: 12px;
+        border-bottom: none;
         padding-top: 16px;
+        margin-top: 4px;
     }
 
     /* Hide assigned branch on mobile to save space, or style it as a sub-info */
@@ -1602,7 +1608,8 @@
 
 @media (max-width: 600px) {
     .fields-selection-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
     }
 
     .form-card-body {
@@ -1822,28 +1829,102 @@
 @media (max-width: 1100px) {
     .invitees-content-grid {
         grid-template-columns: 1fr;
+        gap: 24px;
     }
 
     .invitees-side-col {
-        order: -1;
+        order: 2; /* Move tips to bottom on mobile */
+    }
+
+    .link-generator-card-premium {
+        padding: 24px;
     }
 }
 
 @media (max-width: 600px) {
+    .hq-dashboard {
+        padding: 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .link-count-pill {
+        width: 100%;
+        justify-content: center;
+    }
+
     .form-row-premium {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .link-card-body {
-        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
     }
 
-    .link-header-row {
+    .link-type-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .link-type-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .link-header-row h4 {
+        font-size: 14px;
+    }
+
+    .link-url-display {
+        font-size: 12px;
+        padding: 6px 10px;
+        width: 100%;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .link-meta-row {
+        font-size: 11px;
+    }
+
+    .link-card-footer {
+        padding: 12px 16px;
         flex-direction: column;
-        align-items: flex-start;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .link-stats {
+        justify-content: center;
+    }
+
+    .link-actions {
+        display: grid;
+        grid-template-columns: 1fr auto;
         gap: 8px;
     }
+
+    .link-actions button {
+        width: 100%;
+    }
+
+    .outreach-tips-card {
+        padding: 20px;
+    }
+
+    .tips-list li {
+        font-size: 12px;
+    }
 }
+
 
 .full-width {
     width: 100%;
@@ -1919,12 +2000,128 @@
     }
 }
 
+/* ── Data Table Mobile Premium Styles ── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background: var(--bg);
+    padding: 16px 24px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.data-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.data-table tr:hover {
+    background: var(--blue-subtle);
+}
+
+@media (max-width: 768px) {
+    .data-table thead {
+        display: none;
+    }
+
+    .data-table tr {
+        display: block;
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-subtle);
+        text-align: right;
+    }
+
+    .data-table td:last-child {
+        border-bottom: none;
+        padding-top: 16px;
+        margin-top: 4px;
+    }
+
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
 /* ── Branch QR Premium Styles ── */
 .qr-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
     margin-top: 32px;
+}
+
+@media (max-width: 600px) {
+    .qr-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .branch-qr-card {
+        padding: 12px;
+    }
+
+    .qr-visual-section {
+        padding: 12px 0;
+    }
+
+    .qr-box-outer {
+        width: 100px;
+        height: 100px;
+    }
+
+    .qr-box-outer svg {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .qr-hint {
+        font-size: 10px;
+    }
+
+    .url-text {
+        display: none;
+    }
+
+    .qr-action-buttons-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .qr-action-buttons-row button {
+        width: 100%;
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .action-btn-iconic span {
+        display: none;
+    }
 }
 
 .branch-qr-card {
@@ -2681,12 +2878,41 @@
 
     .stats-grid-premium {
         gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-card-premium {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+
+    .icon-box svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+
+    .stat-trend {
+        font-size: 10px;
     }
 }
 
 @media (max-width: 480px) {
     .stats-grid-premium {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .header-actions {
@@ -2848,7 +3074,7 @@
     }
 
     .stat-value {
-        font-size: 28px;
+        font-size: 18px;
     }
 
     .stats-grid {
@@ -2864,4 +3090,96 @@
     .stat-card {
         padding: 20px;
     }
+}
+
+/* ── Dropdown Panel Premium ── */
+.dropdown-panel-premium {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 180px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    margin-top: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    animation: dropdownFadeIn 0.2s var(--ease);
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--bg);
+    color: var(--blue);
+}
+
+.dropdown-item.danger {
+    color: var(--red);
+}
+
+.dropdown-item.danger:hover {
+    background: #fff5f5;
+    color: #f5222d;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 6px 0;
+}
+
+.relative {
+    position: relative;
+}
+
+
+/* ── Invitees Specific Styles ── */
+.card-header-premium {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.icon-box-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-box-small.blue {
+    background: #ebf5ff;
+    color: #007aff;
 }

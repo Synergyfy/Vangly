@@ -102,7 +102,9 @@ export default function InviteesPage() {
         <div className="invitees-main-col">
           <Card className="link-generator-card-premium">
             <div className="card-header-premium">
-              <Plus size={20} />
+              <div className="icon-box-small blue">
+                <Plus size={18} />
+              </div>
               <h3>Generate New Invite Link</h3>
             </div>
             <div className="generator-form">

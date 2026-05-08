@@ -1,0 +1,273 @@
+.share-links-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.link-card-premium {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  transition: all var(--duration) var(--ease);
+  position: relative;
+}
+
+.link-card-premium:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--blue);
+}
+
+.link-card-header {
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--blue), #0055FF);
+  color: white;
+  text-align: center;
+}
+
+.link-card-header.volunteers {
+  background: linear-gradient(135deg, var(--green), #22C55E);
+}
+
+.link-card-header h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.link-card-header p {
+  opacity: 0.9;
+  font-size: 0.875rem;
+}
+
+.qr-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px dashed var(--border);
+}
+
+.qr-container {
+  padding: 1rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.link-url-display {
+  width: 100%;
+  padding: 1rem;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  font-family: var(--monospace);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.link-url-display:hover {
+  background: var(--blue-subtle);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.link-card-actions {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.action-btn-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.copy-btn {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.copy-btn:hover {
+  background: var(--blue);
+  color: white;
+}
+
+.download-btn {
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.download-btn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+/* Custom Link Creator */
+.custom-link-section {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.custom-link-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 768px) {
+  .share-links-page {
+    padding: 16px;
+  }
+
+  .dashboard-header > div {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .btn-premium {
+    width: 100%;
+  }
+
+  .links-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .link-card-header {
+    padding: 16px;
+  }
+
+  .link-card-header h3 {
+    font-size: 14px;
+  }
+
+  .link-card-header p {
+    font-size: 11px;
+    display: none;
+  }
+
+  .link-card-header svg {
+    width: 24px !important;
+    height: 24px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .qr-section {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .qr-container {
+    padding: 8px;
+  }
+
+  .qr-container canvas {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  .link-url-display {
+    font-size: 10px;
+    padding: 8px;
+  }
+
+  .link-card-actions {
+    padding: 12px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .action-btn-pill {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .custom-link-section {
+    margin-top: 32px;
+  }
+
+  /* Table Transformation */
+  .custom-link-section table {
+    display: block;
+  }
+
+  .custom-link-section thead {
+    display: none;
+  }
+
+  .custom-link-section tbody {
+    display: block;
+  }
+
+  .custom-link-section tr {
+    display: block;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .custom-link-section td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: right;
+  }
+
+  .custom-link-section td:last-child {
+    border-bottom: none;
+    padding-top: 12px;
+  }
+
+  /* Assign data-labels manually in the component if needed, or use nth-child for generic labels */
+  .custom-link-section td:nth-child(1)::before { content: "Event"; }
+  .custom-link-section td:nth-child(2)::before { content: "Group"; }
+  .custom-link-section td:nth-child(3)::before { content: "Visits"; }
+  .custom-link-section td:nth-child(4)::before { content: "Action"; }
+
+  .custom-link-section td::before {
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 480px) {
+  .links-grid {
+    grid-template-columns: 1fr;
+  }
+}

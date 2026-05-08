@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Send, History, User, ChevronDown, X, Layout } from 'lucide-react';
-import '../worker.css';
+import { Send, History, User, ChevronDown, X, Layout, Search, CheckCircle2 } from 'lucide-react';
+import './worker-messages.css';
 
 export default function WorkerMessagingPage() {
   const [activeTab, setActiveTab] = useState<'compose' | 'history'>('compose');
@@ -79,9 +79,15 @@ export default function WorkerMessagingPage() {
             <Card className="compose-main-card">
               <div className="compose-form">
                 <div className="form-group-premium" ref={dropdownRef}>
-                  <label>Select Contacts</label>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>Select Contacts</label>
                   <div className={`dropdown-wrapper ${isDropdownOpen ? 'active' : ''}`}>
-                    <div className="dropdown-trigger" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                    <div 
+                      className="dropdown-trigger" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsDropdownOpen(!isDropdownOpen);
+                      }}
+                    >
                       {selectedContacts.length > 0 ? (
                         <div className="selected-tags">
                           {selectedContacts.map(c => (
@@ -92,21 +98,41 @@ export default function WorkerMessagingPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="placeholder">Select contacts...</span>
+                        <span className="placeholder" style={{ color: 'var(--text-tertiary)' }}>Who are you following up with?</span>
                       )}
-                      <ChevronDown size={16} />
+                      <ChevronDown size={16} style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                     </div>
                     {isDropdownOpen && (
                       <div className="dropdown-menu">
-                        {myContacts.map(contact => (
-                          <div 
-                            key={contact.id} 
-                            className={`dropdown-item ${selectedContacts.find(c => c.id === contact.id) ? 'selected' : ''}`}
-                            onClick={() => toggleContact(contact)}
-                          >
-                            <User size={14} /> {contact.name}
-                          </div>
-                        ))}
+                        <div style={{ padding: '0.5rem', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
+                           <div style={{ position: 'relative' }}>
+                             <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                             <input 
+                               placeholder="Search contacts..." 
+                               style={{ width: '100%', padding: '0.5rem 1rem 0.5rem 2rem', fontSize: '0.8rem', border: '1px solid var(--border-light)', borderRadius: '6px', outline: 'none' }}
+                               onClick={(e) => e.stopPropagation()}
+                             />
+                           </div>
+                        </div>
+                        {myContacts.map(contact => {
+                          const isSelected = selectedContacts.find(c => c.id === contact.id);
+                          return (
+                            <div 
+                              key={contact.id} 
+                              className={`dropdown-item ${isSelected ? 'selected' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleContact(contact);
+                              }}
+                            >
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isSelected ? 'var(--blue)' : 'var(--bg)', color: isSelected ? 'white' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700 }}>
+                                {contact.name.charAt(0)}
+                              </div>
+                              <span style={{ flex: 1 }}>{contact.name}</span>
+                              {isSelected && <CheckCircle2 size={14} style={{ color: 'var(--blue)' }} />}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
