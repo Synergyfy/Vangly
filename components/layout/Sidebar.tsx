@@ -45,7 +45,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const branchNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
     { name: "Dashboard", href: "/branch", icon: LayoutDashboard },
-    { name: "Workers", href: "/branch/workers", icon: Users },
+    { name: "Monitor Users", href: "/branch/users", icon: Users },
+    { name: "Manage Groups", href: "/branch/manage-groups", icon: UserSquare2 },
+    { name: "Share Links", href: "/branch/share-links", icon: Share2 },
+    { name: "Display QR", href: "/branch/display-qr", icon: QrCode },
+    { name: "Messaging", href: "/branch/messages", icon: MessageSquare },
+    { name: "Manage Credits", href: "/branch/wallet", icon: Wallet },
     { name: "Settings", href: "/branch/settings", icon: Settings },
   ];
 

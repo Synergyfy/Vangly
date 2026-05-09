@@ -447,11 +447,57 @@
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        padding: 12px;
+        gap: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 0; /* Allow shrinking */
+    }
+
+    .stat-icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+    }
+
+    .stat-icon-box svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .stat-info {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .stat-value {
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stat-change {
+        font-size: 9px;
     }
 }
+
+
 
 /* Success Card */
 .success-full-card {
@@ -721,7 +767,36 @@
     }
 
     .branches-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .branch-main-card {
+        padding: 12px;
+    }
+
+    .branch-icon-box {
+        width: 40px;
+        height: 40px;
+    }
+
+    .branch-icon-box svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .branch-card-body h3 {
+        font-size: 14px;
+    }
+
+    .branch-location {
+        font-size: 11px;
+    }
+
+    .branch-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 
     .management-card-large {

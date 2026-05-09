@@ -1,0 +1,118 @@
+.worker-forms-page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.forms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.form-tool-card {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.form-tool-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.form-tool-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.form-tool-content {
+  flex: 1;
+}
+
+.form-tool-content h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.form-tool-content p {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.form-usage-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.form-tool-footer {
+  display: flex;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.forms-info-section {
+  margin-top: 3rem;
+}
+
+.impact-tip-card {
+  padding: 1.5rem;
+  background: var(--blue-subtle);
+  border-color: rgba(0, 122, 255, 0.1);
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.tip-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--blue);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.impact-tip-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 0.25rem;
+}
+
+.impact-tip-card p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

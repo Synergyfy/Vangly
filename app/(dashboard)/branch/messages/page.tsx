@@ -3,76 +3,90 @@
 import React, { useState } from "react";
 import {
   Send,
-  User,
+  Users,
+  MessageSquare,
+  Mail,
   Search,
   Plus,
+  Shield,
+  Edit3,
+  Trash2,
   Smile,
   Zap,
   Clock,
   Info,
   Smartphone,
   ChevronDown,
+  User,
   AlertCircle,
-  Users,
-  Trash2,
-  ChevronRight,
-  Sparkles,
+  Building2,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import "./worker-messages.css";
+import "./branch-messages.css";
 
-export default function WorkerMessagingPage() {
+export default function BranchMessagingPage() {
   const [recipientTab, setRecipientTab] = useState("all");
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("none");
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
-  const myContacts = [
-    { id: "c1", name: "Adrian Walker", phone: "+1 (555) 012-4456", initials: "AW" },
-    { id: "c2", name: "Elena Rodriguez", phone: "+1 (555) 882-9901", initials: "ER" },
-    { id: "c3", name: "Marcus Chen", phone: "+1 (555) 234-5678", initials: "MC" },
-    { id: "c4", name: "Jordan Smith", phone: "+1 (555) 345-6789", initials: "JS" },
-    { id: "c5", name: "Sarah K.", phone: "+1 (555) 998-0011", initials: "SK" },
+  const branchGroups = [
+    { id: "g1", name: "Evangelism Team", members: 24, initials: "ET" },
+    { id: "g2", name: "Follow-up Team", members: 12, initials: "FT" },
+    { id: "g3", name: "Downtown Outreach", members: 45, initials: "DO" },
+    { id: "g4", name: "Youth Workers", members: 18, initials: "YW" },
+    { id: "g5", name: "Worship Team", members: 30, initials: "WT" },
   ];
+
+  const emojis = ["😊", "😂", "🥰", "🙌", "🙏", "✨", "🔥", "❤️", "👍", "👋", "🎉", "📢", "⛪", "🏠", "📍"];
 
   const templates = [
     {
       id: "t1",
-      name: "Follow-up",
-      content: "Hi [Name], it was great seeing you today! Hope you had a blessed time.",
+      name: "Team Welcome",
+      content: "Welcome to the team! We're excited to have you serving with us today at [Branch Name].",
     },
     {
       id: "t2",
-      name: "Reminder",
-      content: "Hey [Name], just checking in to see if you're still available for our meet-up tomorrow?",
+      name: "Shift Reminder",
+      content: "Hi [Name], just a reminder of your serving shift tomorrow at 9 AM. See you there!",
     },
   ];
-
-  const emojis = ["😊", "😂", "🥰", "🙌", "🙏", "✨", "🔥", "❤️", "👍", "👋", "🎉", "📢", "⛪", "🏠", "📍"];
 
   // Derived stats
   const characterCount = message.length;
   const smsUnits = Math.ceil(characterCount / 160) || 1;
   const costPerSms = 4.0; // Naira cost
-  const totalCost = (selectedContacts.length || 45) * smsUnits * costPerSms; // Mocking 45 if "All" is selected
-
+  const estimatedCost = (smsUnits * 452 * costPerSms).toLocaleString(); // Mock 452 recipients for this branch
+  
   const isHighRisk =
     message.toLowerCase().includes("immediate action") ||
     message.toLowerCase().includes("urgent") ||
     message.toLowerCase().includes("click here");
 
   return (
-    <div className="worker-messaging-page">
-      <div className="dashboard-header">
-        <div className="header-badge" style={{ background: 'var(--blue-subtle)', color: 'var(--blue)', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.7rem', fontWeight: 700, display: 'inline-block', marginBottom: '0.5rem' }}>
-          OUTREACH HUB
+    <div className="branch-messages-page">
+      <div className="dashboard-header flex-between">
+        <div className="header-main">
+          <h1>Communication Center</h1>
+          <p>
+            Engage your entire branch or target specific teams with SMS and Email.
+          </p>
         </div>
-        <h1>Worker Messaging</h1>
-        <p>Personalized outreach to your assigned contacts.</p>
+        <Card style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--blue-subtle)' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--blue)', fontWeight: 700, textTransform: 'uppercase' }}>Available Credits</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--blue)' }}>1,250 SMS / 5,000 Email</div>
+          </div>
+          <div style={{ width: '1px', height: '32px', background: 'rgba(0,122,255,0.2)' }} />
+          <Button variant="ghost" size="sm" style={{ padding: '0.25rem', color: 'var(--blue)' }}>
+            <Plus size={16} />
+          </Button>
+        </Card>
       </div>
 
       <div className="messaging-v2-container">
@@ -86,41 +100,41 @@ export default function WorkerMessagingPage() {
                   className={`recipient-tab ${recipientTab === "all" ? "active" : ""}`}
                   onClick={() => setRecipientTab("all")}
                 >
-                  All My Contacts
+                  All
                 </div>
                 <div
-                  className={`recipient-tab ${recipientTab === "manual" ? "active" : ""}`}
+                  className={`recipient-tab ${recipientTab === "groups" ? "active" : ""}`}
                   onClick={() => {
-                    setRecipientTab("manual");
-                    setIsContactModalOpen(true);
+                    setRecipientTab("groups");
+                    setIsGroupModalOpen(true);
                   }}
                 >
-                  Select Individual
+                  Groups
                 </div>
               </div>
             </div>
-
             {recipientTab === "all" ? (
               <div className="selected-groups-display">
-                <span className="selected-count">All Assigned Contacts Selected</span>
+                <span className="selected-count">Full Audience Selected</span>
                 <div className="selected-tags">
-                  <span className="selected-tag">45 Assigned Members</span>
-                  <span className="selected-tag">Recent Contacts Included</span>
+                  <span className="selected-tag">Entire Branch Hub</span>
+                  <span className="selected-tag">All Members</span>
+                  <span className="selected-tag">All Workers</span>
                 </div>
               </div>
             ) : (
-              selectedContacts.length > 0 && (
+              selectedGroups.length > 0 && (
                 <div className="selected-groups-display">
-                  <span className="selected-count">{selectedContacts.length} Contacts Selected</span>
+                  <span className="selected-count">{selectedGroups.length} Groups Selected</span>
                   <div className="selected-tags">
-                    {selectedContacts.slice(0, 3).map(id => {
-                      const contact = myContacts.find(c => c.id === id);
-                      return <span key={id} className="selected-tag">{contact?.name}</span>;
+                    {selectedGroups.slice(0, 3).map(id => {
+                      const group = branchGroups.find(g => g.id === id);
+                      return <span key={id} className="selected-tag">{group?.name}</span>;
                     })}
-                    {selectedContacts.length > 3 && (
-                      <span className="selected-tag more">+{selectedContacts.length - 3} more</span>
+                    {selectedGroups.length > 3 && (
+                      <span className="selected-tag more">+{selectedGroups.length - 3} more</span>
                     )}
-                    <button className="btn-edit-selection" onClick={() => setIsContactModalOpen(true)}>Edit</button>
+                    <button className="btn-edit-selection" onClick={() => setIsGroupModalOpen(true)}>Edit</button>
                   </div>
                 </div>
               )
@@ -175,7 +189,7 @@ export default function WorkerMessagingPage() {
             <div className="textarea-wrapper-v2">
               <textarea
                 className="composer-textarea-v2"
-                placeholder="Type your outreach message here..."
+                placeholder="Type your message here..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
@@ -226,8 +240,12 @@ export default function WorkerMessagingPage() {
               <div className="high-risk-alert">
                 <AlertCircle className="risk-icon" size={24} />
                 <div className="risk-content">
-                  <strong>High Risk Content</strong>
-                  <p>Your message may be flagged by carriers. Avoid urgent phrases or suspicious links.</p>
+                  <strong>High Risk Words Detected</strong>
+                  <p>
+                    Your message contains suspicious links and urgent
+                    phrases like "Immediate action". This may trigger
+                    carrier spam filters or be flagged as phishing.
+                  </p>
                 </div>
               </div>
             )}
@@ -241,57 +259,77 @@ export default function WorkerMessagingPage() {
                 <div className="phone-avatar-v2">
                   <User size={16} />
                 </div>
-                <span className="phone-number-v2"> Outreach</span>
+                <span className="phone-number-v2">Branch Hub</span>
               </div>
               <div className="phone-chat-v2">
                 <div className="chat-bubble-v2">
-                  {message || "Start typing to see your outreach preview..."}
+                  {message ||
+                    "Start typing to see your message preview here..."}
                 </div>
                 <span className="chat-time-v2">Now · SMS</span>
               </div>
             </div>
           </div>
 
-          <Card style={{ padding: '1.5rem', background: 'white', marginTop: '24px' }}>
-            <span className="section-label">Messaging Tips</span>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginTop: '12px' }}>
-              <Sparkles size={16} style={{ color: 'var(--blue)', marginTop: '2px' }} />
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Personalize your messages using names for better engagement rates.
-              </p>
+          <div className="delivery-estimate-card">
+            <span className="section-label">Estimated Delivery</span>
+            <div className="estimate-row">
+              <div className="estimate-label">
+                <Zap size={18} style={{ color: 'var(--blue)' }} />
+                Avg. Speed
+              </div>
+              <div className="estimate-value">2.4 seconds</div>
             </div>
-          </Card>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar-fill"
+                style={{ width: "85%" }}
+              />
+            </div>
+            <div className="success-rate-row">
+              <span className="estimate-label">Success Rate</span>
+              <span className="estimate-value">98.2%</span>
+            </div>
+            <div className="high-traffic-notice">
+              <Info size={18} style={{ color: 'var(--blue)' }} />
+              High traffic expected in the UK region.
+            </div>
+          </div>
         </div>
 
         {/* Sticky Footer */}
         <div className="messaging-footer-v2">
           <div className="footer-stats">
             <div className="footer-stat">
-              <span className="footer-stat-label">Recipients</span>
-              <span className="footer-stat-value">{recipientTab === "all" ? 45 : selectedContacts.length}</span>
+              <span className="footer-stat-label">Total Recipients</span>
+              <span className="footer-stat-value">1,248</span>
             </div>
             <div className="footer-stat">
-              <span className="footer-stat-label">Total Credits</span>
-              <span className="footer-stat-value">₦{totalCost.toFixed(2)}</span>
+              <span className="footer-stat-label">Total Cost</span>
+              <span className="footer-stat-value">₦{estimatedCost}</span>
             </div>
           </div>
           <div className="footer-actions">
+            <button className="btn-schedule-v2">
+              <Clock size={20} />
+              Schedule
+            </button>
             <button className="btn-send-v2">
               <Send size={20} />
-              Send Outreach
+              Send Broadcast
             </button>
           </div>
         </div>
       </div>
 
-      {/* Contact Selection Modal */}
-      {isContactModalOpen && (
+      {/* Group Selection Modal */}
+      {isGroupModalOpen && (
         <div className="modal-overlay">
           <div className="selection-modal">
             <div className="modal-header-v2">
               <div className="search-bar-v2" style={{ flex: 1 }}>
                 <Search className="search-icon" size={20} />
-                <input type="text" placeholder="Search your contacts..." />
+                <input type="text" placeholder="Search by team name..." />
               </div>
             </div>
 
@@ -300,37 +338,37 @@ export default function WorkerMessagingPage() {
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}><input type="checkbox" /></th>
-                    <th>Contact Name</th>
-                    <th>Phone Number</th>
+                    <th>Group Name</th>
+                    <th>Numbers of Workers</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {myContacts.map(contact => (
+                  {branchGroups.map(group => (
                     <tr 
-                      key={contact.id} 
-                      className={selectedContacts.includes(contact.id) ? 'selected' : ''}
+                      key={group.id} 
+                      className={selectedGroups.includes(group.id) ? 'selected' : ''}
                       onClick={() => {
-                        if (selectedContacts.includes(contact.id)) {
-                          setSelectedContacts(selectedContacts.filter(id => id !== contact.id));
+                        if (selectedGroups.includes(group.id)) {
+                          setSelectedGroups(selectedGroups.filter(id => id !== group.id));
                         } else {
-                          setSelectedContacts([...selectedContacts, contact.id]);
+                          setSelectedGroups([...selectedGroups, group.id]);
                         }
                       }}
                     >
                       <td>
                         <input 
                           type="checkbox" 
-                          checked={selectedContacts.includes(contact.id)}
+                          checked={selectedGroups.includes(group.id)}
                           readOnly
                         />
                       </td>
                       <td>
                         <div className="group-cell">
-                          <div className="group-avatar" style={{ borderRadius: '50%' }}>{contact.initials}</div>
-                          {contact.name}
+                          <div className="group-avatar">{group.initials}</div>
+                          {group.name}
                         </div>
                       </td>
-                      <td>{contact.phone}</td>
+                      <td>{group.members} Workers</td>
                     </tr>
                   ))}
                 </tbody>
@@ -339,14 +377,17 @@ export default function WorkerMessagingPage() {
 
             <div className="modal-footer-v2">
               <div className="footer-left">
-                <div className="count-pill">{selectedContacts.length} selected</div>
-                <button className="btn-clear" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-tertiary)', fontWeight: 600, cursor: 'pointer' }} onClick={() => setSelectedContacts([])}>
+                <div className="count-pill">{selectedGroups.length} selected</div>
+                <button className="btn-clear" onClick={() => setSelectedGroups([])}>
                   <Trash2 size={16} /> Clear Selection
                 </button>
               </div>
-              <button className="btn-confirm" onClick={() => setIsContactModalOpen(false)}>
-                Confirm Selection <ChevronRight size={18} style={{ marginLeft: '8px' }} />
-              </button>
+              <div className="footer-actions">
+                <button className="btn-cancel" onClick={() => setIsGroupModalOpen(false)}>Cancel</button>
+                <button className="btn-confirm" onClick={() => setIsGroupModalOpen(false)}>
+                  Confirm Selection <ChevronRight size={18} style={{ marginLeft: '8px' }} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -354,3 +395,10 @@ export default function WorkerMessagingPage() {
     </div>
   );
 }
+
+// Reuse the chevron right for the modal
+const ChevronRight = ({ size, style }: any) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+);

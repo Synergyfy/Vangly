@@ -1,1 +1,325 @@
-@import '../hq/hq.css';
+.branch-dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.stat-card.blue .stat-icon-wrapper { background: var(--blue-light); color: var(--blue); }
+.stat-card.green .stat-icon-wrapper { background: var(--green-light); color: var(--green); }
+.stat-card.orange .stat-icon-wrapper { background: #FFF7ED; color: var(--orange); }
+.stat-card.purple .stat-icon-wrapper { background: #FAF5FF; color: var(--purple); }
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-trend {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-trend.up { color: var(--green); }
+.stat-trend.down { color: var(--red); }
+
+/* Performance Table */
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.table-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  padding: 1rem 1.5rem;
+  background: var(--surface-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.data-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover {
+  background: var(--surface-secondary);
+}
+
+.worker-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.worker-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--blue-light);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--border-light);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+tr:nth-child(1) .rank-badge { background: #FEF3C7; color: #D97706; }
+tr:nth-child(2) .rank-badge { background: #F3F4F6; color: #4B5563; }
+tr:nth-child(3) .rank-badge { background: #FFEDD5; color: #9A3412; }
+
+.progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: var(--radius-full);
+}
+
+.progress-value {
+  font-weight: 600;
+  min-width: 3ch;
+}
+
+@media (max-width: 768px) {
+  .branch-dashboard { 
+    padding: 16px; 
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-header > div {
+    flex-direction: column !important;
+    gap: 16px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .dashboard-header p {
+    font-size: 14px;
+  }
+
+  /* Force 2x2 grid on mobile for stats */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
+
+  .stat-icon-wrapper svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-trend {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  /* Table Adjustments */
+  .section-title-wrapper {
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  .data-table thead { 
+    display: none; 
+  }
+
+  .data-table tr {
+    display: block;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: right;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .worker-info { 
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .worker-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .progress-bar-wrapper {
+    width: 120px;
+    justify-content: flex-end;
+  }
+
+  .progress-bar-bg {
+    max-width: 80px;
+  }
+}

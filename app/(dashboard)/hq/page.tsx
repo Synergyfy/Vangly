@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
+import { Modal } from "@/components/ui/Modal";
 import {
   Building2,
   Users,
@@ -12,43 +13,19 @@ import {
   MoreHorizontal,
   Search,
   Clock,
+  Eye,
+  Edit2,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import "./hq.css";
 
 export default function HQDashboard() {
-  // Mock HQ stats
-  const stats = [
-    {
-      label: "Total Branches",
-      value: "4",
-      icon: Building2,
-      color: "blue",
-      trend: "+1 this month",
-    },
-    {
-      label: "Total Workers",
-      value: "125",
-      icon: Users,
-      color: "purple",
-      trend: "+12% vs last month",
-    },
-    {
-      label: "Total Invited",
-      value: "1,450",
-      icon: Send,
-      color: "orange",
-      trend: "+240 this week",
-    },
-    {
-      label: "Total Attended",
-      value: "320",
-      icon: CheckCircle2,
-      color: "green",
-      trend: "22% conversion",
-    },
-  ];
-
-  const branchStats = [
+  const [activeBranchId, setActiveBranchId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  
+  const [branchStats, setBranchStats] = useState([
     {
       id: "1",
       name: "HQ Branch (Downtown)",
@@ -80,6 +57,76 @@ export default function HQDashboard() {
       invites: 150,
       attended: 15,
       status: "Inactive",
+    },
+  ]);
+
+  const toggleDropdown = (id: string) => {
+    setActiveBranchId(activeBranchId === id ? null : id);
+  };
+
+  const handleAction = (action: string, branch: any) => {
+    setActiveBranchId(null);
+    setSelectedBranch(branch);
+
+    switch (action) {
+      case "view":
+        alert(`Navigating to details for ${branch.name}...`);
+        break;
+      case "edit":
+        setIsEditModalOpen(true);
+        break;
+      case "open":
+        window.open(`https://vangly.com/f/${branch.id}`, "_blank");
+        break;
+      case "remove":
+        if (confirm(`Are you sure you want to remove ${branch.name}?`)) {
+          setBranchStats(branchStats.filter((b) => b.id !== branch.id));
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleUpdateBranch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBranchStats(
+      branchStats.map((b) =>
+        b.id === selectedBranch.id ? selectedBranch : b
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  // Mock HQ stats
+  const stats = [
+    {
+      label: "Total Branches",
+      value: "4",
+      icon: Building2,
+      color: "blue",
+      trend: "+1 this month",
+    },
+    {
+      label: "Total Workers",
+      value: "125",
+      icon: Users,
+      color: "purple",
+      trend: "+12% vs last month",
+    },
+    {
+      label: "Total Invited",
+      value: "1,450",
+      icon: Send,
+      color: "orange",
+      trend: "+240 this week",
+    },
+    {
+      label: "Total Attended",
+      value: "320",
+      icon: CheckCircle2,
+      color: "green",
+      trend: "22% conversion",
     },
   ];
 
@@ -209,10 +256,43 @@ export default function HQDashboard() {
                             </span>
                           </div>
                         </td>
-                        <td>
-                          <button className="btn-icon-only">
+                        <td className="relative">
+                          <button
+                            className="btn-icon-only"
+                            onClick={() => toggleDropdown(branch.id)}
+                          >
                             <MoreHorizontal size={18} />
                           </button>
+
+                          {activeBranchId === branch.id && (
+                            <div className="dropdown-panel-premium">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleAction("view", branch)}
+                              >
+                                <Eye size={14} /> View Details
+                              </button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleAction("edit", branch)}
+                              >
+                                <Edit2 size={14} /> Edit Branch
+                              </button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleAction("open", branch)}
+                              >
+                                <ExternalLink size={14} /> Open Link
+                              </button>
+                              <div className="dropdown-divider"></div>
+                              <button
+                                className="dropdown-item danger"
+                                onClick={() => handleAction("remove", branch)}
+                              >
+                                <Trash2 size={14} /> Remove
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
@@ -237,9 +317,44 @@ export default function HQDashboard() {
                           {branch.status}
                         </span>
                       </div>
-                      <button className="btn-icon-only">
-                        <MoreHorizontal size={18} />
-                      </button>
+                      <div className="relative">
+                        <button
+                          className="btn-icon-only"
+                          onClick={() => toggleDropdown(branch.id)}
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
+
+                        {activeBranchId === branch.id && (
+                          <div className="dropdown-panel-premium">
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleAction("view", branch)}
+                            >
+                              <Eye size={14} /> View Details
+                            </button>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleAction("edit", branch)}
+                            >
+                              <Edit2 size={14} /> Edit Branch
+                            </button>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleAction("open", branch)}
+                            >
+                              <ExternalLink size={14} /> Open Link
+                            </button>
+                            <div className="dropdown-divider"></div>
+                            <button
+                              className="dropdown-item danger"
+                              onClick={() => handleAction("remove", branch)}
+                            >
+                              <Trash2 size={14} /> Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="branch-card-stats-grid">
@@ -339,6 +454,55 @@ export default function HQDashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Edit Branch Modal */}
+      {selectedBranch && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title="Edit Branch Settings"
+        >
+          <form className="compose-form" onSubmit={handleUpdateBranch}>
+            <div className="form-group-premium">
+              <label>Branch Name</label>
+              <input
+                type="text"
+                className="premium-input"
+                value={selectedBranch.name}
+                onChange={(e) =>
+                  setSelectedBranch({ ...selectedBranch, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-group-premium">
+              <label>Status</label>
+              <select
+                className="premium-select"
+                value={selectedBranch.status}
+                onChange={(e) =>
+                  setSelectedBranch({ ...selectedBranch, status: e.target.value })
+                }
+              >
+                <option value="Active">Active</option>
+                <option value="Warning">Warning</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="wizard-actions" style={{ marginTop: "24px" }}>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary-premium">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }
