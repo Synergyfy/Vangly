@@ -167,9 +167,15 @@ export default function ShareLinksPage() {
                       }}>
                         <QrCode size={16} />
                       </Button>
-                      <Button variant="ghost" size="sm" as="a" href={link.url} target="_blank">
+                      <a 
+                        className="btn btn-ghost btn-sm" 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
                         <ExternalLink size={16} />
-                      </Button>
+                      </a>
                     </div>
                   </td>
                 </tr>

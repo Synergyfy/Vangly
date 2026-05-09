@@ -78,7 +78,7 @@ export default function ManageGroupsPage() {
       id: Math.random().toString(36).substr(2, 9),
       name: newGroup.name,
       type: 'local' as const,
-      members: 0,
+      members: [],
       permissions: { ...newGroup.permissions }
     };
     setGroups([...groups, group]);
