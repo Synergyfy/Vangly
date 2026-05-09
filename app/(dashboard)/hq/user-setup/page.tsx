@@ -337,7 +337,7 @@ export default function UserSetupPage() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id} className="user-row">
-                    <td>
+                    <td data-label="User Details">
                       <div className="user-cell-profile">
                         <div className="user-avatar-initials">
                           {user.name
@@ -358,7 +358,7 @@ export default function UserSetupPage() {
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Role & Status">
                       <div className="role-status-stack">
                         <span className={`role-pill ${user.role}`}>
                           {user.role}
@@ -368,13 +368,13 @@ export default function UserSetupPage() {
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Assigned Branch">
                       <div className="branch-assignment">
                         <Users size={14} />
                         <span>{user.branch}</span>
                       </div>
                     </td>
-                    <td className="text-right">
+                    <td data-label="Actions" className="text-right">
                       <div className="table-action-group">
                         <Button
                           variant="ghost"

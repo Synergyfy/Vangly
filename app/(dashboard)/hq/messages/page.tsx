@@ -20,6 +20,15 @@ import {
   Shield,
   Edit3,
   Trash2,
+  Smile,
+  AtSign,
+  Zap,
+  Clock,
+  Info,
+  Calendar,
+  Smartphone,
+  ChevronDown,
+  User,
 } from "lucide-react";
 import "../hq.css";
 
@@ -33,6 +42,26 @@ export default function HQMessagingPage() {
   const [messagingMode, setMessagingMode] = useState<
     "strict" | "flexible" | "open"
   >("flexible");
+
+  // New UI State
+  const [recipientTab, setRecipientTab] = useState<
+    "all" | "groups" | "selected" | "manual"
+  >("all");
+  const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const emojis = ["😊", "😂", "🥰", "🙌", "🙏", "✨", "🔥", "❤️", "👍", "👋", "🎉", "📢", "⛪", "🏠", "📍"];
+
+  // Derived stats (mock values for now, would be calculated in real app)
+  const characterCount = message.length;
+  const smsUnits = Math.ceil(characterCount / 160) || 1;
+  const costPerSms = 4.0; // Naira cost
+  const estimatedCost = (smsUnits * 1248 * costPerSms).toLocaleString(); // Assuming 1248 recipients
+  const isHighRisk =
+    message.toLowerCase().includes("immediate action") ||
+    message.toLowerCase().includes("urgent") ||
+    message.toLowerCase().includes("click here");
 
   const [templates, setTemplates] = useState([
     {
@@ -242,117 +271,226 @@ export default function HQMessagingPage() {
 
       <div className="messaging-content-layout">
         {activeTab === "compose" && (
-          <div className="compose-grid">
-            <Card className="compose-main-card">
-              <div className="compose-form">
-                <div className="form-group-premium">
-                  <label>Select Audience</label>
+          <div className="messaging-v2-container">
+            <div className="messaging-v2-main">
+              {/* Recipient Selection */}
+              <div className="messaging-section-card">
+                <span className="section-label">Recipient Selection</span>
+                <div className="form-group-premium" style={{ marginTop: '12px' }}>
                   <div className="audience-selector">
                     <select
                       value={target}
                       onChange={(e) => setTarget(e.target.value)}
+                      style={{
+                        width: '100%',
+                        height: '52px',
+                        padding: '0 16px',
+                        background: 'var(--bg)',
+                        border: '1px solid var(--border-light)',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        appearance: 'none',
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 16px center'
+                      }}
                     >
-                      <option value="all">
-                        Everyone (All Branches & Workers)
-                      </option>
+                      <option value="all">Everyone (All Branches & Workers)</option>
                       <option value="admins">Branch Admins Only</option>
                       <option value="workers">All Workers Only</option>
                       <option value="hq">HQ Branch Only</option>
                     </select>
                   </div>
                 </div>
-
-                <div className="form-group-premium">
-                  <label>Channel</label>
-                  <div className="channel-toggle">
-                    <button
-                      className={messageType === "sms" ? "active" : ""}
-                      onClick={() => setMessageType("sms")}
-                    >
-                      <MessageSquare size={16} /> SMS
-                    </button>
-                    <button
-                      className={messageType === "email" ? "active" : ""}
-                      onClick={() => setMessageType("email")}
-                    >
-                      <Mail size={16} /> Email
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group-premium">
-                  <label>Message Template</label>
-                  <select
-                    value={selectedTemplate}
-                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                  >
-                    <option value="none">No Template (Custom Message)</option>
-                    {templates.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group-premium">
-                  <label>Message Content</label>
-                  <textarea
-                    placeholder="Type your message here... Use [Name], [Church Name] as placeholders."
-                    className="message-textarea"
-                    rows={8}
-                    defaultValue={
-                      selectedTemplate !== "none"
-                        ? templates.find((t) => t.id === selectedTemplate)
-                            ?.content
-                        : ""
-                    }
+                <div className="search-bar-v2" style={{ marginTop: '16px' }}>
+                  <Search className="search-icon" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search within selected audience..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <div className="textarea-footer">
-                    <span>160 characters per SMS</span>
-                    <span>0/160</span>
-                  </div>
-                </div>
-
-                <div className="compose-actions">
-                  <Button className="btn-premium" fullWidth>
-                    <Send size={18} /> Send Message Now
-                  </Button>
                 </div>
               </div>
-            </Card>
 
-            <div className="compose-side-panels">
-              <Card className="summary-card-premium">
-                <h3>Message Summary</h3>
-                <div className="summary-list">
-                  <div className="summary-row">
-                    <span>Recipients</span>
-                    <strong>452 people</strong>
-                  </div>
-                  <div className="summary-row">
-                    <span>Est. Cost</span>
-                    <strong className="text-primary">452 Credits</strong>
-                  </div>
-                  <div className="summary-row">
-                    <span>Status</span>
-                    <span className="status-indicator active">Ready</span>
+              {/* SMS Composer */}
+              <div className="messaging-section-card">
+                <div className="composer-header">
+                  <span className="section-label" style={{ marginBottom: 0 }}>
+                    SMS Composer
+                  </span>
+                  <div className="template-dropdown-v2" style={{ position: 'relative' }}>
+                    <select
+                      value={selectedTemplate}
+                      onChange={(e) => {
+                        const tId = e.target.value;
+                        setSelectedTemplate(tId);
+                        if (tId !== "none") {
+                          const t = templates.find(temp => temp.id === tId);
+                          if (t) setMessage(t.content);
+                        } else {
+                          setMessage("");
+                        }
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="none">No Template (Custom)</option>
+                      {templates.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span>
+                      {selectedTemplate === "none" 
+                        ? "Template Selection" 
+                        : templates.find(t => t.id === selectedTemplate)?.name}
+                    </span>
+                    <ChevronDown size={16} />
                   </div>
                 </div>
-              </Card>
 
-              <Card className="placeholder-tips-card">
-                <h3>
-                  <Type size={16} /> Placeholders
-                </h3>
-                <p>Personalize your message by adding these tags:</p>
-                <div className="tag-list">
-                  <code>[Name]</code>
-                  <code>[Church Name]</code>
-                  <code>[Worker Name]</code>
-                  <code>[Branch Name]</code>
+                <div className="textarea-wrapper-v2">
+                  <textarea
+                    className="composer-textarea-v2"
+                    placeholder="Type your message here..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                  <div className="composer-toolbar">
+                    <div style={{ position: 'relative' }}>
+                      <Smile 
+                        className="toolbar-icon" 
+                        size={20} 
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      />
+                      {showEmojiPicker && (
+                        <div className="emoji-picker-simple">
+                          {emojis.map(emoji => (
+                            <span 
+                              key={emoji} 
+                              onClick={() => {
+                                setMessage(prev => prev + emoji);
+                                setShowEmojiPicker(false);
+                              }}
+                            >
+                              {emoji}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </Card>
+
+                <div className="stats-grid-v2">
+                  <div className="stat-box-v2">
+                    <span className="stat-label-v2">Characters</span>
+                    <span className="stat-value-v2">
+                      {characterCount} <span>/ 160</span>
+                    </span>
+                  </div>
+                  <div className="stat-box-v2">
+                    <span className="stat-label-v2">Units</span>
+                    <span className="stat-value-v2">{smsUnits} SMS</span>
+                  </div>
+                  <div className="stat-box-v2">
+                    <span className="stat-label-v2">Credits</span>
+                    <span className="stat-value-v2">₦{(smsUnits * costPerSms).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {isHighRisk && (
+                  <div className="high-risk-alert">
+                    <AlertCircle className="risk-icon" size={24} />
+                    <div className="risk-content">
+                      <strong>High Risk Words Detected</strong>
+                      <p>
+                        Your message contains suspicious links and urgent
+                        phrases like "Immediate action". This may trigger
+                        carrier spam filters or be flagged as phishing.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="messaging-v2-sidebar">
+              <div className="phone-preview-v2">
+                <div className="phone-screen-v2">
+                  <div className="phone-header-v2">
+                    <div className="phone-avatar-v2">
+                      <User size={16} />
+                    </div>
+                    <span className="phone-number-v2">123456</span>
+                  </div>
+                  <div className="phone-chat-v2">
+                    <div className="chat-bubble-v2">
+                      {message ||
+                        "Hey! Your account was just accessed from a new device in Vegas. If this wasn't you, please click here: http://secure-login-384.com/verify. Immediate action required!"}
+                    </div>
+                    <span className="chat-time-v2">Now · SMS</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="delivery-estimate-card">
+                <span className="section-label">Estimated Delivery</span>
+                <div className="estimate-row">
+                  <div className="estimate-label">
+                    <Zap size={18} className="text-primary" />
+                    Avg. Speed
+                  </div>
+                  <div className="estimate-value">2.4 seconds</div>
+                </div>
+                <div className="progress-bar-container">
+                  <div
+                    className="progress-bar-fill"
+                    style={{ width: "85%" }}
+                  />
+                </div>
+                <div className="success-rate-row">
+                  <span className="estimate-label">Success Rate</span>
+                  <span className="estimate-value">98.2%</span>
+                </div>
+                <div className="high-traffic-notice">
+                  <Info size={18} className="text-primary" />
+                  High traffic expected in the UK region.
+                </div>
+              </div>
+            </div>
+
+            {/* Sticky Footer */}
+            <div className="messaging-footer-v2">
+              <div className="footer-stats">
+                <div className="footer-stat">
+                  <span className="footer-stat-label">Total Recipients</span>
+                  <span className="footer-stat-value">1,248</span>
+                </div>
+                <div className="footer-stat">
+                  <span className="footer-stat-label">Total Cost</span>
+                  <span className="footer-stat-value">₦{estimatedCost}</span>
+                </div>
+              </div>
+              <div className="footer-actions">
+                <button className="btn-schedule-v2">
+                  <Clock size={20} />
+                  Schedule
+                </button>
+                <button className="btn-send-v2">
+                  <Send size={20} />
+                  Send Now
+                </button>
+              </div>
             </div>
           </div>
         )}

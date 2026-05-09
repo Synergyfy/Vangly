@@ -64,8 +64,13 @@ export default function AllInvitesPage() {
           <h1>All Invites</h1>
           <p>Consolidated list of all invitees across all locations.</p>
         </div>
-        <Button variant="primary" onClick={handleBulkMessage} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Users size={18} /> Bulk Message All
+        <Button 
+          variant="primary" 
+          onClick={handleBulkMessage} 
+          className="btn-bulk-message"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <Users size={18} /> <span>Bulk Message All</span>
         </Button>
       </div>
 

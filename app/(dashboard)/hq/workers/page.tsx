@@ -105,7 +105,9 @@ export default function HQWorkersPage() {
                       </div>
                     </td>
                     <td data-label="Actions">
-                      <Button variant="outline" size="sm" onClick={() => handleViewInvites(worker)}>View Invites</Button>
+                      <div className="action-btn-container">
+                        <Button variant="outline" size="sm" fullWidth onClick={() => handleViewInvites(worker)}>View Invites</Button>
+                      </div>
                     </td>
                   </tr>
                 );
