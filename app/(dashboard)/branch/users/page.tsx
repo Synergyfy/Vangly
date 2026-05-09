@@ -195,24 +195,24 @@ export default function MonitorUsersPage() {
           <tbody>
             {filteredUsers.map((user) => (
               <tr key={user.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
+                <td data-label="User" style={{ padding: '1.25rem 1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)', background: 'var(--blue-light)', color: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                       {user.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</div>
+                      <div className="user-name-v2">{user.name}</div>
                       <span className={`user-status-pill ${user.type}`}>{user.type}</span>
                     </div>
                   </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
+                <td data-label="Activity Status" style={{ padding: '1.25rem 1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                     <Clock size={14} />
                     {user.lastActive}
                   </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
+                <td data-label="Metrics" style={{ padding: '1.25rem 1.5rem' }}>
                   <div className="metrics-strip">
                     {user.type === 'worker' && (
                       <>
@@ -234,12 +234,12 @@ export default function MonitorUsersPage() {
                     )}
                   </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
+                <td data-label="Performance" style={{ padding: '1.25rem 1.5rem' }}>
                   <div className={`performance-score ${getPerformanceClass(user.performance)}`}>
                     {user.performance}%
                   </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                <td data-label="Action" style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
                   <Button variant="ghost" size="sm" onClick={() => {
                     setSelectedUser(user);
                     setIsModalOpen(true);
