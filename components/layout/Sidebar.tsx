@@ -24,34 +24,30 @@ import "./Sidebar.css";
 export interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isCollapsed?: boolean;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, isCollapsed = true }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const hqNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
-    { name: "Dashboard", href: "/hq", icon: LayoutDashboard },
-    { name: "Branches", href: "/hq/manage-church", icon: Building2 },
-    { name: "Branch QR", href: "/hq/branch-qr", icon: QrCode },
-    { name: "User Setup", href: "/hq/user-setup", icon: UserSquare2 },
-    { name: "Invitees", href: "/hq/invitees", icon: UserCheck },
-    { name: "Custom Forms", href: "/hq/forms", icon: FileText },
-    { name: "Messaging", href: "/hq/messages", icon: MessageSquare },
-    { name: "Brand Identity", href: "/hq/brand", icon: Palette },
-    { name: "Wallet/Credits", href: "/hq/wallet", icon: Wallet, badge: "New" },
-    { name: "Settings", href: "/hq/settings", icon: Settings },
+  const mainNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
+    { name: "Dashboard", href: "/main", icon: LayoutDashboard },
+    { name: "Locations", href: "/main/manage-organization", icon: Building2 },
+    { name: "Messaging", href: "/main/messages", icon: MessageSquare },
+    { name: "Brand Identity", href: "/main/brand", icon: Palette },
+    { name: "Wallet/Credits", href: "/main/wallet", icon: Wallet, badge: "New" },
+    { name: "Settings", href: "/main/settings", icon: Settings },
   ];
 
-  const branchNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
-    { name: "Dashboard", href: "/branch", icon: LayoutDashboard },
-    { name: "Monitor Users", href: "/branch/users", icon: Users },
-    { name: "Manage Groups", href: "/branch/manage-groups", icon: UserSquare2 },
-    { name: "Share Links", href: "/branch/share-links", icon: Share2 },
-    { name: "Display QR", href: "/branch/display-qr", icon: QrCode },
-    { name: "Messaging", href: "/branch/messages", icon: MessageSquare },
-    { name: "Manage Credits", href: "/branch/wallet", icon: Wallet },
-    { name: "Settings", href: "/branch/settings", icon: Settings },
+  const locationNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
+    { name: "Dashboard", href: "/location", icon: LayoutDashboard },
+    { name: "Monitor Users", href: "/location/users", icon: Users },
+    { name: "Manage Groups", href: "/location/manage-groups", icon: UserSquare2 },
+    { name: "Share Links", href: "/location/share-links", icon: Share2 },
+    { name: "Messaging", href: "/location/messages", icon: MessageSquare },
+    { name: "Manage Credits", href: "/location/wallet", icon: Wallet },
+    { name: "Settings", href: "/location/settings", icon: Settings },
   ];
 
   const workerNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
@@ -64,9 +60,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const navItems =
     user?.role === "super_admin"
-      ? hqNavItems
-      : user?.role === "branch_admin"
-        ? branchNavItems
+      ? mainNavItems
+      : (user?.role === "branch_admin" || user?.role === "location_admin")
+        ? locationNavItems
         : workerNavItems;
 
   return (
@@ -74,11 +70,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Mobile Overlay */}
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
 
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+      <aside className={`sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="brand-icon">V</div>
-            <span className="brand-name">Vangly</span>
+            {!isCollapsed && <span className="brand-name">Vangly</span>}
           </div>
           <button className="sidebar-close-btn" onClick={onClose}>
             ×
@@ -87,19 +83,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         <nav className="sidebar-nav">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.href !== "/main" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`nav-item ${isActive ? "active" : ""}`}
+                title={isCollapsed ? item.name : ""}
                 onClick={() => {
                   if (window.innerWidth <= 1024) onClose();
                 }}
               >
-                <item.icon size={20} />
-                <span className="nav-label">{item.name}</span>
-                {item.badge && <span className="nav-badge">{item.badge}</span>}
+                <item.icon size={22} />
+                {!isCollapsed && <span className="nav-label">{item.name}</span>}
+                {item.badge && !isCollapsed && <span className="nav-badge">{item.badge}</span>}
               </Link>
             );
           })}

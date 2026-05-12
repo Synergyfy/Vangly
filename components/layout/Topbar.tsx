@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import {
-  Menu,
   LogOut,
-  Shield,
   ChevronDown,
   Bell,
   Search,
@@ -18,11 +16,7 @@ import {
 } from "lucide-react";
 import "./Topbar.css";
 
-interface TopbarProps {
-  onMenuClick?: () => void;
-}
-
-export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
+export const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
@@ -31,13 +25,10 @@ export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button
-          className="menu-toggle"
-          onClick={onMenuClick}
-          aria-label="Toggle Menu"
-        >
-          <Menu size={20} />
-        </button>
+        <div className="topbar-brand" onClick={() => router.push('/main')}>
+          <div className="brand-icon">V</div>
+          <span className="brand-name">Vangly</span>
+        </div>
 
         <div className="topbar-search">
           <Search size={16} className="search-icon" />
@@ -142,7 +133,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
                 <div className="notification-content">
                   <div className="notification-title">New Invites Sent</div>
                   <div className="notification-message">
-                    Sarah Jenkins sent 24 new invites to HQ Branch
+                    Sarah Jenkins sent 24 new invites to HQ Location
                   </div>
                   <div className="notification-time">2 minutes ago</div>
                 </div>
@@ -156,7 +147,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
                     New Members Registered
                   </div>
                   <div className="notification-message">
-                    Robert Fox registered 5 new members at Northside Branch
+                    Robert Fox registered 5 new members at Northside Location
                   </div>
                   <div className="notification-time">15 minutes ago</div>
                 </div>
@@ -168,7 +159,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
                 <div className="notification-content">
                   <div className="notification-title">New Worker Joined</div>
                   <div className="notification-message">
-                    Eleanor Pena joined as a worker at Westend Campus
+                    Eleanor Pena joined as a worker at Westend Center
                   </div>
                   <div className="notification-time">1 hour ago</div>
                 </div>

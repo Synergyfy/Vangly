@@ -10,16 +10,26 @@ import {
   MoreHorizontal,
   ChevronRight,
   ArrowUpRight,
-  Download
+  Download,
+  ClipboardList,
+  MessageSquare,
+  QrCode,
+  Wallet,
+  Settings,
+  Zap,
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/contexts/AuthContext';
 import './branch.css';
 
 export default function BranchDashboard() {
   const router = useRouter();
+  const { user } = useAuth();
 
-  // Mock Branch stats
+  // Mock Location stats
   const stats = {
     branchName: 'Downtown HQ',
     totalWorkers: 45,
@@ -27,6 +37,17 @@ export default function BranchDashboard() {
     totalAttended: 182,
     conversionRate: 28,
   };
+
+  const quickLinks = [
+    { label: "Add Worker", icon: UserPlus, path: "/branch/users", color: "var(--blue)" },
+    { label: "Invites", icon: ClipboardList, path: "/branch/workers/invites", color: "var(--green)" },
+    { label: "Messaging", icon: MessageSquare, path: "/branch/messages", color: "var(--blue)" },
+    { label: "QR Code", icon: QrCode, path: "/branch/display-qr", color: "var(--orange)" },
+    { label: "Wallet", icon: Wallet, path: "/branch/wallet", color: "var(--green)" },
+    { label: "Attendance", icon: CheckCircle2, path: "/branch/attendance", color: "var(--purple)" },
+    { label: "Settings", icon: Settings, path: "/branch/settings", color: "var(--text-tertiary)" },
+    { label: "Support", icon: Zap, path: "/branch/support", color: "var(--orange)" },
+  ];
 
   const workerStats = [
     { id: '1', name: 'Sarah Johnson', invites: 142, attended: 42, performance: 92 },
@@ -37,7 +58,7 @@ export default function BranchDashboard() {
   ];
 
   const handleViewInvites = (worker: any) => {
-    router.push(`/branch/workers/invites?id=${worker.id}&name=${encodeURIComponent(worker.name)}`);
+    router.push(`/location/workers/invites?id=${worker.id}&name=${encodeURIComponent(worker.name)}`);
   };
 
   const getInitials = (name: string) => {
@@ -45,139 +66,159 @@ export default function BranchDashboard() {
   };
 
   return (
-    <div className="branch-dashboard">
-      <div className="dashboard-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1>{stats.branchName}</h1>
-            <p>Managing {stats.totalWorkers} active workers and branch growth.</p>
-          </div>
-          <Button variant="outline" size="sm" style={{ gap: '0.5rem' }}>
-            <Download size={16} />
-            Export Data
+    <div className="location-dashboard-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
+            <ArrowLeft size={16} /> Back
           </Button>
+          <div className="header-badge">Location Admin</div>
+          <h1>{stats.branchName}</h1>
+          <p>Managing {stats.totalWorkers} active workers</p>
+        </div>
+        <div className="header-actions">
+          <div className="credit-pill-premium" onClick={() => router.push('/location/wallet')}>
+            <Wallet size={16} />
+            <span>45.2k Cr</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Premium Banner */}
+      <div className="premium-banner location-banner">
+        <div className="banner-content">
+          <div className="banner-badge">LOCAL GROWTH</div>
+          <h2>Nurture Your Community</h2>
+          <p>Track your top performers and optimize your location's outreach strategy.</p>
+          <Button className="btn-banner" onClick={() => {}}>View Weekly Trends</Button>
+        </div>
+        <div className="banner-illustration">
+          <Sparkles size={48} className="sparkle-icon" />
         </div>
       </div>
 
-      <div className="stats-grid">
-        <Card className="stat-card blue">
-          <div className="stat-icon-wrapper">
-            <UserPlus size={24} />
+      {/* Quick Access Grid */}
+      <div className="quick-access-grid">
+        {quickLinks.map((link, index) => (
+          <div key={index} className="grid-item" onClick={() => router.push(link.path)}>
+            <div className="grid-icon-box" style={{ color: link.color }}>
+              <link.icon size={24} />
+            </div>
+            <span className="grid-label">{link.label}</span>
           </div>
-          <div className="stat-label">Branch Invites</div>
-          <div className="stat-value">{stats.totalInvites.toLocaleString()}</div>
-          <div className="stat-trend up">
-            <ArrowUpRight size={14} />
-            <span>12% from last month</span>
-          </div>
-        </Card>
-
-        <Card className="stat-card green">
-          <div className="stat-icon-wrapper">
-            <CheckCircle2 size={24} />
-          </div>
-          <div className="stat-label">Total Attendance</div>
-          <div className="stat-value">{stats.totalAttended.toLocaleString()}</div>
-          <div className="stat-trend up">
-            <ArrowUpRight size={14} />
-            <span>8.4% from last month</span>
-          </div>
-        </Card>
-
-        <Card className="stat-card orange">
-          <div className="stat-icon-wrapper">
-            <TrendingUp size={24} />
-          </div>
-          <div className="stat-label">Conversion Rate</div>
-          <div className="stat-value">{stats.conversionRate}%</div>
-          <div className="stat-trend up">
-            <ArrowUpRight size={14} />
-            <span>2.1% improvement</span>
-          </div>
-        </Card>
-
-        <Card className="stat-card purple">
-          <div className="stat-icon-wrapper">
-            <Users size={24} />
-          </div>
-          <div className="stat-label">Group Performance</div>
-          <div className="stat-value">High</div>
-          <div className="stat-trend up">
-            <ArrowUpRight size={14} />
-            <span>Top 5% of all branches</span>
-          </div>
-        </Card>
+        ))}
       </div>
 
-      <div className="worker-performance">
-        <div className="section-title-wrapper">
-          <h2 className="section-title">Top Performing Workers</h2>
-          <Button variant="ghost" size="sm" style={{ color: 'var(--blue)', fontWeight: 600 }}>
-            View All Workers
-            <ChevronRight size={16} />
-          </Button>
-        </div>
-        
-        <Card className="table-card">
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '80px' }}>Rank</th>
-                  <th>Worker</th>
-                  <th>Invites</th>
-                  <th>Attended</th>
-                  <th>Success Rate</th>
-                  <th style={{ textAlign: 'right' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workerStats.map((worker, index) => {
-                  const conversion = Math.round((worker.attended / worker.invites) * 100) || 0;
-                  return (
-                    <tr key={worker.id}>
-                      <td data-label="Rank">
-                        <span className="rank-badge">{index + 1}</span>
-                      </td>
-                      <td data-label="Worker">
-                        <div className="worker-info">
-                          <div className="worker-avatar">{getInitials(worker.name)}</div>
-                          <div style={{ fontWeight: 600 }}>{worker.name}</div>
-                        </div>
-                      </td>
-                      <td data-label="Invites">{worker.invites}</td>
-                      <td data-label="Attended">{worker.attended}</td>
-                      <td data-label="Success Rate">
-                        <div className="progress-bar-wrapper">
-                          <div className="progress-bar-bg">
-                            <div 
-                              className="progress-bar-fill" 
-                              style={{ 
-                                width: `${conversion}%`,
-                                background: conversion > 30 ? 'var(--green)' : 'var(--blue)'
-                              }} 
-                            />
+      <div className="dashboard-main-content">
+        <div className="content-section">
+          <div className="section-header">
+            <h2>Top Performers</h2>
+            <button className="text-link" onClick={() => router.push('/location/users')}>
+              View All <ChevronRight size={14} />
+            </button>
+          </div>
+
+          <Card className="table-card-premium">
+            <div className="mobile-list-view">
+              {workerStats.map((worker) => {
+                const conversion = Math.round((worker.attended / worker.invites) * 100) || 0;
+                return (
+                  <div key={worker.id} className="location-performance-card" onClick={() => handleViewInvites(worker)}>
+                    <div className="location-card-top">
+                      <div className="location-card-identity">
+                        <div className="worker-avatar-sm">{getInitials(worker.name)}</div>
+                        <span className="location-card-name">{worker.name}</span>
+                      </div>
+                      <ChevronRight size={18} className="text-tertiary" />
+                    </div>
+
+                    <div className="location-card-stats-grid">
+                      <div className="location-card-stat">
+                        <span className="label">Invites</span>
+                        <span className="value">{worker.invites}</span>
+                      </div>
+                      <div className="location-card-stat">
+                        <span className="label">Attended</span>
+                        <span className="value text-success">{worker.attended}</span>
+                      </div>
+                      <div className="location-card-stat">
+                        <span className="label">Success</span>
+                        <span className="value">{conversion}%</span>
+                      </div>
+                    </div>
+
+                    <div className="location-card-progress">
+                      <div className="progress-track">
+                        <div
+                          className="progress-bar"
+                          style={{ 
+                            width: `${conversion}%`,
+                            background: conversion > 30 ? 'var(--green)' : 'var(--blue)'
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="table-responsive desktop-only">
+              <table className="data-table-premium">
+                <thead>
+                  <tr>
+                    <th>Worker</th>
+                    <th>Invites</th>
+                    <th>Attended</th>
+                    <th>Success Rate</th>
+                    <th style={{ textAlign: 'right' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {workerStats.map((worker) => {
+                    const conversion = Math.round((worker.attended / worker.invites) * 100) || 0;
+                    return (
+                      <tr key={worker.id}>
+                        <td>
+                          <div className="location-info-cell">
+                            <div className="worker-avatar-sm">{getInitials(worker.name)}</div>
+                            <span className="location-name-text">{worker.name}</span>
                           </div>
-                          <span className="progress-value">{conversion}%</span>
-                        </div>
-                      </td>
-                      <td data-label="Action" style={{ textAlign: 'right' }}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleViewInvites(worker)}
-                          style={{ padding: '0.5rem', color: 'var(--text-tertiary)' }}
-                        >
-                          <ChevronRight size={18} />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                        </td>
+                        <td>{worker.invites}</td>
+                        <td className="text-success font-medium">{worker.attended}</td>
+                        <td>
+                          <div className="conversion-cell">
+                            <div className="mini-progress-bg">
+                              <div
+                                className="mini-progress-fill"
+                                style={{ 
+                                  width: `${conversion}%`,
+                                  background: conversion > 30 ? 'var(--green)' : 'var(--blue)'
+                                }}
+                              ></div>
+                            </div>
+                            <span className="conversion-text">{conversion}%</span>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewInvites(worker)}
+                          >
+                            <ChevronRight size={18} />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

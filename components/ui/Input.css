@@ -1,7 +1,7 @@
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px; /* Increased from 10px for better clarity */
   width: auto;
 }
 
@@ -11,8 +11,10 @@
 
 .input-label {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 700; /* Bolder for premium look */
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  margin-bottom: 2px; /* Extra breathing room */
 }
 
 .input-container {

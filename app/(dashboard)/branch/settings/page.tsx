@@ -30,7 +30,7 @@ export default function BranchSettingsPage() {
   const [adminEmail, setAdminEmail] = useState('john@downtownhq.com');
   const [adminPhone, setAdminPhone] = useState('+234 801 234 5678');
   const [branchName, setBranchName] = useState('Downtown HQ');
-  const [branchAddress, setBranchAddress] = useState('123 Church Avenue, Lagos');
+  const [branchAddress, setBranchAddress] = useState('123 Organization Avenue, Lagos');
 
   const handleSave = () => {
     setIsSaving(true);
@@ -42,12 +42,12 @@ export default function BranchSettingsPage() {
   };
 
   return (
-    <div className="branch-settings-page">
+    <div className="location-settings-page">
       <div className="dashboard-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <h1>Settings & Profile</h1>
-            <p>Manage your personal account and branch identity.</p>
+            <p>Manage your personal account and location identity.</p>
           </div>
           <Button className="btn-premium" style={{ gap: '0.75rem' }} onClick={handleSave} disabled={isSaving}>
             <Save size={18} />
@@ -100,28 +100,28 @@ export default function BranchSettingsPage() {
               <div className="input-wrapper">
                 <label className="input-label">Administrative Role</label>
                 <div style={{ padding: '0.75rem 1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', fontSize: '0.875rem', border: '1px solid var(--border-light)' }}>
-                  Branch Administrator
+                  Location Administrator
                 </div>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Branch Identity Section */}
+        {/* Location Identity Section */}
         <div className="settings-section">
           <div className="settings-section-header">
-            <h2><Building2 size={20} style={{ color: 'var(--purple)' }} /> Branch Identity</h2>
-            <p>Manage the public information for your specific branch location.</p>
+            <h2><Building2 size={20} style={{ color: 'var(--purple)' }} /> Location Identity</h2>
+            <p>Manage the public information for your specific location location.</p>
           </div>
           <Card style={{ padding: '2rem' }}>
             <div className="settings-form-grid">
               <Input 
-                label="Branch Public Name" 
+                label="Location Public Name" 
                 value={branchName} 
                 onChange={(e) => setBranchName(e.target.value)} 
               />
               <div className="input-wrapper">
-                <label className="input-label">Branch Slug (for URLs)</label>
+                <label className="input-label">Location Slug (for URLs)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', color: 'var(--text-tertiary)', fontSize: '0.875rem', border: '1px solid var(--border-light)' }}>
                   <Globe size={14} /> vangly.app/f/downtown-hq
                 </div>
@@ -141,13 +141,13 @@ export default function BranchSettingsPage() {
         <div className="settings-section">
           <div className="settings-section-header">
             <h2><Bell size={20} style={{ color: 'var(--orange)' }} /> Notification Preferences</h2>
-            <p>Control when and how you receive updates about your branch.</p>
+            <p>Control when and how you receive updates about your location.</p>
           </div>
           <Card style={{ padding: '0' }}>
             <div className="notification-item">
               <div className="notification-info">
                 <h4>New Registration Alerts</h4>
-                <p>Receive an SMS when a new member joins your branch.</p>
+                <p>Receive an SMS when a new member joins your location.</p>
               </div>
               <div className="toggle-switch active">
                 <div className="toggle-handle" />
@@ -156,7 +156,7 @@ export default function BranchSettingsPage() {
             <div className="notification-item">
               <div className="notification-info">
                 <h4>Weekly Performance Reports</h4>
-                <p>Get a summary of branch growth and worker performance via email.</p>
+                <p>Get a summary of location growth and worker performance via email.</p>
               </div>
               <div className="toggle-switch active">
                 <div className="toggle-handle" />

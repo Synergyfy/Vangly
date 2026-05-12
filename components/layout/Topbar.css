@@ -20,25 +20,38 @@
     flex: 1;
 }
 
-.menu-toggle {
+.topbar-brand {
     display: flex;
-    background: transparent;
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px;
     border-radius: 12px;
     transition: all 0.2s ease;
 }
 
-.menu-toggle:hover {
-    background: white;
-    border-color: var(--blue);
-    color: var(--blue);
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+.topbar-brand:hover {
+    background: var(--bg);
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--blue);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.brand-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
 }
 
 .topbar-search {

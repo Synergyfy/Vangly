@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vangly — Church Evangelism Platform",
-  description: "Track, manage, and grow your church's outreach with precision.",
+  title: "Vangly — Organization Evangelism Platform",
+  description: "Track, manage, and grow your organization's outreach with precision.",
 };
 
 export default function RootLayout({

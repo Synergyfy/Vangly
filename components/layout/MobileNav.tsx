@@ -10,7 +10,9 @@ import {
   MessageSquare, 
   UserPlus,
   ClipboardList,
-  QrCode
+  QrCode,
+  Building2,
+  Wallet
 } from 'lucide-react';
 import './MobileNav.css';
 
@@ -24,16 +26,17 @@ export const MobileNav: React.FC = () => {
     switch (user.role) {
       case 'super_admin':
         return [
-          { href: '/hq', label: 'Dashboard', icon: LayoutDashboard },
-          { href: '/hq/all-invites', label: 'Invites', icon: ClipboardList },
-          { href: '/hq/workers', label: 'Workers', icon: Users },
-          { href: '/messages', label: 'Messages', icon: MessageSquare },
+          { href: '/main', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/main/manage-organization', label: 'Locations', icon: Building2 },
+          { href: '/main/messages', label: 'Messages', icon: MessageSquare },
+          { href: '/main/wallet', label: 'Wallet', icon: Wallet },
         ];
+      case 'location_admin':
       case 'branch_admin':
         return [
           { href: '/branch', label: 'Dashboard', icon: LayoutDashboard },
-          { href: '/manage-users', label: 'Workers', icon: Users },
-          { href: '/messages', label: 'Messages', icon: MessageSquare },
+          { href: '/branch/users', label: 'Workers', icon: Users },
+          { href: '/branch/messages', label: 'Messages', icon: MessageSquare },
         ];
       case 'worker':
         return [

@@ -34,7 +34,7 @@ export default function DisplayQRPage() {
   const inviteUrl = `${baseUrl}/f/${branchData.slug}`;
 
   const templates = [
-    { id: 'screen', title: 'Church Screen', desc: 'Optimized for high-contrast projectors and TVs.', icon: Monitor },
+    { id: 'screen', title: 'Organization Screen', desc: 'Optimized for high-contrast projectors and TVs.', icon: Monitor },
     { id: 'poster', title: 'A4 Poster', desc: 'Perfect for printing and placing on bulletin boards.', icon: FileText },
     { id: 'banner', title: 'Welcome Banner', desc: 'Wide format for entrance halls and events.', icon: Sparkles }
   ];
@@ -83,7 +83,7 @@ export default function DisplayQRPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1>Display QR Gateway</h1>
-            <p>Ready-to-use display formats for your church screens and posters.</p>
+            <p>Ready-to-use display formats for your organization screens and posters.</p>
           </div>
           <Button className="btn-premium" style={{ gap: '0.5rem' }} onClick={() => setIsPresenting(true)}>
             <Maximize2 size={18} />
@@ -103,8 +103,8 @@ export default function DisplayQRPage() {
               includeMargin={true}
             />
           </div>
-          <h2 className="preview-branch-name">{branchData.name}</h2>
-          <p className="preview-tagline">Scan this code to enter your details and connect with our branch today.</p>
+          <h2 className="preview-location-name">{branchData.name}</h2>
+          <p className="preview-tagline">Scan this code to enter your details and connect with our location today.</p>
           
           <div style={{ marginTop: '3rem', display: 'flex', gap: '1rem' }}>
             <Button variant="outline" style={{ gap: '0.5rem' }} onClick={handleDownload}>
@@ -161,7 +161,7 @@ export default function DisplayQRPage() {
               Pro Tip
             </h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              Use <strong>Presentation Mode</strong> on your church screen during service to allow new members to join seamlessly from their seats.
+              Use <strong>Presentation Mode</strong> on your organization screen during service to allow new members to join seamlessly from their seats.
             </p>
           </Card>
         </div>
