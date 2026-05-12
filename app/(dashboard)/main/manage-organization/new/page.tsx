@@ -97,15 +97,15 @@ export default function NewLocationPage() {
                 </div>
                 <div className="form-grid">
                   <div className="input-group-premium">
-                    <div className="label-row">
-                      <label>Location Name</label>
+                    <div className="label-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label style={{ margin: 0 }}>Location Name</label>
                       <Tooltip content="Choose a name that clearly identifies this site (e.g. Southpark Office)." />
                     </div>
                     <Input placeholder="e.g. Southpark Satellite" required />
                   </div>
                   <div className="input-group-premium">
-                    <div className="label-row">
-                      <label>Location / City</label>
+                    <div className="label-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label style={{ margin: 0 }}>Location / City</label>
                       <Tooltip content="The city or district where this location is physically located." />
                     </div>
                     <Input
@@ -119,8 +119,8 @@ export default function NewLocationPage() {
                   className="input-group-premium input-full"
                   style={{ marginTop: "20px" }}
                 >
-                  <div className="label-row">
-                    <label>Short Description</label>
+                  <div className="label-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <label style={{ margin: 0 }}>Short Description</label>
                     <Tooltip content="A 2-3 sentence overview of this location's focus or purpose." />
                   </div>
                   <textarea
@@ -133,9 +133,9 @@ export default function NewLocationPage() {
 
               <div className="form-section">
                 <div className="section-header">
-                  <div className="header-title-row">
+                  <div className="header-title-row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <ImageIcon size={20} className="text-primary" />
-                    <h3>Location Assets</h3>
+                    <h3 style={{ margin: 0 }}>Location Assets</h3>
                     <Tooltip content="Upload a high-quality photo to help members identify the site." />
                   </div>
                 </div>
@@ -158,21 +158,21 @@ export default function NewLocationPage() {
                 </div>
               </div>
 
-              <div className="form-actions-footer-premium">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => router.back()}
-                  className="btn-cancel-mobile"
-                >
-                  Cancel
-                </Button>
+              <div className="form-actions-footer-premium" style={{ marginTop: '32px', display: 'flex', gap: '16px', flexDirection: 'row-reverse' }}>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-submit-mobile"
+                  style={{ flex: 2 }}
                 >
                   {isSubmitting ? "Establishing..." : "Create Location"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  style={{ flex: 1 }}
+                >
+                  Cancel
                 </Button>
               </div>
             </form>

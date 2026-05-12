@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 // Mock User Roles: 'super_admin', 'branch_admin', 'worker', null
-export type UserRole = "super_admin" | "location_admin" | "branch_admin" | "worker" | null;
+export type UserRole = "super_admin" | "organization_admin" | "location_admin" | "branch_admin" | "worker" | null;
 
 interface User {
   id: string;

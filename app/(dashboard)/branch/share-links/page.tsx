@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Copy, 
   Download, 
@@ -10,7 +11,8 @@ import {
   Check, 
   Plus, 
   ExternalLink,
-  QrCode
+  QrCode,
+  ArrowLeft
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Card } from '@/components/ui/Card';
@@ -20,6 +22,7 @@ import { Modal } from '@/components/ui/Modal';
 import './share-links.css';
 
 export default function ShareLinksPage() {
+  const router = useRouter();
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
@@ -32,7 +35,8 @@ export default function ShareLinksPage() {
       description: 'Registration for official location evangelism staff.',
       url: 'https://vangly.app/join/downtown-workers',
       type: 'workers',
-      icon: Users
+      icon: Users,
+      color: '#3b82f6'
     },
     {
       id: 'volunteers',
@@ -40,13 +44,14 @@ export default function ShareLinksPage() {
       description: 'Registration for temporary or seasonal volunteers.',
       url: 'https://vangly.app/join/downtown-volunteers',
       type: 'volunteers',
-      icon: UserPlus
+      icon: UserPlus,
+      color: '#8b5cf6'
     }
   ];
 
-  const [customLinks, setCustomLinks] = useState([
-    { id: '1', name: 'Saturday Outreach Event', group: 'Evangelism Team', visits: 45, url: 'https://vangly.app/join/sat-outreach' },
-    { id: '2', name: 'Youth Camp 2026', group: 'Youth Workers', visits: 128, url: 'https://vangly.app/join/youth-camp' }
+  const [customLinks] = useState([
+    { id: '1', name: 'Saturday Outreach Event', team: 'Evangelism Team', visits: 45, url: 'https://vangly.app/join/sat-outreach' },
+    { id: '2', name: 'Youth Camp 2026', team: 'Youth Workers', visits: 128, url: 'https://vangly.app/join/youth-camp' }
   ]);
 
   const handleCopy = (url: string) => {
@@ -67,157 +72,136 @@ export default function ShareLinksPage() {
   };
 
   return (
-    <div className="share-links-page">
-      <div className="dashboard-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
+    <div className="hq-dashboard-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill">
+            <ArrowLeft size={16} /> Back
+          </Button>
+          <div style={{ marginTop: '12px' }}>
+            <div className="header-badge">Growth Tools</div>
             <h1>Registration Gateways</h1>
             <p>Direct links and QR codes to bring new members into your location.</p>
           </div>
-          <Button className="btn-premium" onClick={() => setIsCustomModalOpen(true)} style={{ gap: '0.5rem' }}>
-            <Plus size={18} />
-            Create Event Link
-          </Button>
         </div>
-      </div>
+        <div className="header-actions">
+           <Button className="btn-premium" size="lg" onClick={() => setIsCustomModalOpen(true)}>
+             <Plus size={18} style={{ marginRight: '8px' }} /> Create Event Link
+           </Button>
+        </div>
+      </header>
 
-      <div className="links-grid">
+      <div className="gateways-grid-premium">
         {registrationLinks.map((link) => (
-          <div key={link.id} className="link-card-premium">
-            <div className={`link-card-header ${link.type}`}>
-              <link.icon size={32} style={{ marginBottom: '1rem' }} />
-              <h3>{link.title}</h3>
-              <p>{link.description}</p>
+          <Card key={link.id} className="gateway-card-premium">
+            <div className="gateway-card-top">
+               <div className="gateway-icon-box" style={{ background: `${link.color}15`, color: link.color }}>
+                  <link.icon size={24} />
+               </div>
+               <div className="gateway-meta">
+                  <h3>{link.title}</h3>
+                  <p>{link.description}</p>
+               </div>
             </div>
             
-            <div className="qr-section">
-              <div className="qr-container">
-                <QRCodeCanvas 
-                  id={`qr-${link.id}`}
-                  value={link.url} 
-                  size={160} 
-                  level="H"
-                  includeMargin={true}
-                  imageSettings={{
-                    src: "/favicon.ico", // Placeholder for brand logo
-                    x: undefined,
-                    y: undefined,
-                    height: 24,
-                    width: 24,
-                    excavate: true,
-                  }}
-                />
-              </div>
-              
-              <div className="link-url-display" onClick={() => handleCopy(link.url)}>
-                {link.url}
-              </div>
+            <div className="gateway-qr-preview">
+               <div className="qr-wrap-premium">
+                  <QRCodeCanvas 
+                    id={`qr-${link.id}`}
+                    value={link.url} 
+                    size={160} 
+                    level="H"
+                    includeMargin={true}
+                  />
+               </div>
+               <div className="link-strip-premium" onClick={() => handleCopy(link.url)}>
+                  <span>{link.url}</span>
+                  {copiedLink === link.url ? <Check size={14} /> : <Copy size={14} />}
+               </div>
             </div>
 
-            <div className="link-card-actions">
-              <button className="action-btn-pill copy-btn" onClick={() => handleCopy(link.url)}>
-                {copiedLink === link.url ? <Check size={16} /> : <Copy size={16} />}
-                {copiedLink === link.url ? 'Copied!' : 'Copy Link'}
-              </button>
-              <button className="download-btn action-btn-pill" onClick={() => handleDownloadQR(link.id)}>
-                <Download size={16} />
-                Save QR
-              </button>
+            <div className="gateway-card-footer">
+               <Button variant="outline" fullWidth onClick={() => handleDownloadQR(link.id)}>
+                  <Download size={16} style={{ marginRight: '8px' }} /> Save QR
+               </Button>
+               <Button fullWidth onClick={() => handleCopy(link.url)}>
+                  {copiedLink === link.url ? 'Copied!' : 'Share Link'}
+               </Button>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
-      <div className="custom-link-section">
-        <div className="custom-link-header">
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Active Event Links</h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>Localized links for specific outreach activities.</p>
-          </div>
-        </div>
+      <div className="event-links-section-premium">
+         <div className="section-header">
+            <div>
+               <h2>Active Event Gateways</h2>
+               <p>Localized links for specific outreach activities.</p>
+            </div>
+         </div>
 
-        <Card style={{ overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--surface-secondary)', textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>
-                <th style={{ padding: '1rem' }}>Event Name</th>
-                <th style={{ padding: '1rem' }}>Target Group</th>
-                <th style={{ padding: '1rem' }}>Visits</th>
-                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customLinks.map((link) => (
-                <tr key={link.id} style={{ borderBottom: '1px solid var(--border-light)', fontSize: '0.875rem' }}>
-                  <td style={{ padding: '1rem', fontWeight: 600 }}>{link.name}</td>
-                  <td style={{ padding: '1rem' }}>
-                    <span style={{ padding: '0.25rem 0.5rem', background: 'var(--blue-subtle)', color: 'var(--blue)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                      {link.group}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1rem' }}>{link.visits}</td>
-                  <td style={{ padding: '1rem', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                      <Button variant="ghost" size="sm" onClick={() => handleCopy(link.url)}>
-                        <Copy size={16} />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        setSelectedLink(link);
-                        setIsQRModalOpen(true);
-                      }}>
-                        <QrCode size={16} />
-                      </Button>
-                      <a 
-                        className="btn btn-ghost btn-sm" 
-                        href={link.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <ExternalLink size={16} />
-                      </a>
+         <div className="event-links-list-premium">
+            {customLinks.map((link) => (
+              <Card key={link.id} className="event-link-item-premium">
+                 <div className="eli-content">
+                    <div className="eli-main">
+                       <h4>{link.name}</h4>
+                       <div className="eli-badges">
+                          <span className="team-badge-mini">{link.team}</span>
+                          <span className="visit-count">{link.visits} Visits</span>
+                       </div>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+                    <div className="eli-actions">
+                       <button className="icon-action-btn" onClick={() => handleCopy(link.url)}>
+                          {copiedLink === link.url ? <Check size={18} /> : <Copy size={18} />}
+                       </button>
+                       <button className="icon-action-btn" onClick={() => {
+                          setSelectedLink(link);
+                          setIsQRModalOpen(true);
+                       }}>
+                          <QrCode size={18} />
+                       </button>
+                       <a href={link.url} target="_blank" rel="noreferrer" className="icon-action-btn">
+                          <ExternalLink size={18} />
+                       </a>
+                    </div>
+                 </div>
+              </Card>
+            ))}
+         </div>
       </div>
 
-      {/* Modal for Custom Link creation placeholder */}
       <Modal
         isOpen={isCustomModalOpen}
         onClose={() => setIsCustomModalOpen(false)}
-        title="Create Event Link"
+        title="Create Event Gateway"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <Input label="Event Name" placeholder="e.g. Easter Special" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Assign to Group</label>
-            <select style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', outline: 'none' }}>
+        <div className="form-stack-premium">
+          <Input label="Event Name" placeholder="e.g. Easter Special 2026" />
+          <div className="select-group-premium">
+            <label>Assign to Outreach Team</label>
+            <select>
               <option>Evangelism Team</option>
-              <option>Youth Workers</option>
-              <option>Volunteers</option>
+              <option>Youth Outreach</option>
+              <option>Community Care</option>
             </select>
           </div>
-          <Button fullWidth onClick={() => setIsCustomModalOpen(false)}>Generate Gateway</Button>
+          <Button className="btn-premium" fullWidth size="lg">Generate Gateway</Button>
         </div>
       </Modal>
 
-      {/* QR Code Preview Modal */}
       <Modal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
-        title="QR Code Gateway"
+        title="QR Gateway Preview"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '1rem 0' }}>
-          <div style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{selectedLink?.name}</h3>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>{selectedLink?.group}</p>
+        <div className="qr-preview-stack">
+          <div className="qr-preview-header">
+            <h3>{selectedLink?.name}</h3>
+            <span className="team-badge-mini">{selectedLink?.team}</span>
           </div>
 
-          <div className="qr-container" style={{ padding: '1.5rem', background: 'white', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-light)' }}>
+          <div className="qr-modal-canvas-wrap">
             <QRCodeCanvas 
               id={`qr-modal-${selectedLink?.id}`}
               value={selectedLink?.url || ''} 
@@ -227,18 +211,17 @@ export default function ShareLinksPage() {
             />
           </div>
 
-          <div style={{ width: '100%', padding: '1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-light)' }}>
-            <code style={{ fontSize: '0.85rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{selectedLink?.url}</code>
+          <div className="qr-modal-url-box" onClick={() => handleCopy(selectedLink?.url)}>
+            <code>{selectedLink?.url}</code>
+            <Copy size={14} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%' }}>
-            <Button variant="outline" onClick={() => handleCopy(selectedLink?.url)}>
-              {copiedLink === selectedLink?.url ? <Check size={18} /> : <Copy size={18} />}
-              <span style={{ marginLeft: '0.5rem' }}>{copiedLink === selectedLink?.url ? 'Copied' : 'Copy'}</span>
+          <div className="qr-modal-actions">
+            <Button variant="outline" fullWidth onClick={() => handleCopy(selectedLink?.url)}>
+              {copiedLink === selectedLink?.url ? 'Copied!' : 'Copy Link'}
             </Button>
-            <Button onClick={() => handleDownloadQR(`modal-${selectedLink?.id}`)}>
-              <Download size={18} />
-              <span style={{ marginLeft: '0.5rem' }}>Download</span>
+            <Button fullWidth onClick={() => handleDownloadQR(`modal-${selectedLink?.id}`)}>
+              Download QR
             </Button>
           </div>
         </div>

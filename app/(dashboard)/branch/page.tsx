@@ -18,7 +18,8 @@ import {
   Settings,
   Zap,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Plus
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -28,197 +29,198 @@ import './branch.css';
 export default function BranchDashboard() {
   const router = useRouter();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = React.useState<'performance' | 'teams' | 'settings'>('performance');
 
-  // Mock Location stats
   const stats = {
     branchName: 'Downtown HQ',
-    totalWorkers: 45,
-    totalInvites: 650,
-    totalAttended: 182,
-    conversionRate: 28,
+    teams: 6,
+    members: 145,
+    submissions: 850,
   };
 
-  const quickLinks = [
-    { label: "Add Worker", icon: UserPlus, path: "/branch/users", color: "var(--blue)" },
-    { label: "Invites", icon: ClipboardList, path: "/branch/workers/invites", color: "var(--green)" },
-    { label: "Messaging", icon: MessageSquare, path: "/branch/messages", color: "var(--blue)" },
-    { label: "QR Code", icon: QrCode, path: "/branch/display-qr", color: "var(--orange)" },
-    { label: "Wallet", icon: Wallet, path: "/branch/wallet", color: "var(--green)" },
-    { label: "Attendance", icon: CheckCircle2, path: "/branch/attendance", color: "var(--purple)" },
-    { label: "Settings", icon: Settings, path: "/branch/settings", color: "var(--text-tertiary)" },
-    { label: "Support", icon: Zap, path: "/branch/support", color: "var(--orange)" },
+  const performanceStats = [
+    { label: 'Total Invites', value: '1,284', change: '+12.5%', isUp: true },
+    { label: 'Attended', value: '842', change: '+8.2%', isUp: true },
+    { label: 'Conversion', value: '65%', change: '-2.1%', isUp: false },
   ];
 
-  const workerStats = [
-    { id: '1', name: 'Sarah Johnson', invites: 142, attended: 42, performance: 92 },
-    { id: '2', name: 'Michael Brown', invites: 128, attended: 35, performance: 88 },
-    { id: '3', name: 'David Smith', invites: 95, attended: 25, performance: 75 },
-    { id: '4', name: 'Emily Davis', invites: 85, attended: 18, performance: 64 },
-    { id: '5', name: 'James Wilson', invites: 72, attended: 12, performance: 58 },
+  const teams = [
+    { id: 't1', name: 'Evangelism Team', members: 42, submissions: 310, performance: 92 },
+    { id: 't2', name: 'Youth Outreach', members: 35, submissions: 245, performance: 88 },
+    { id: 't3', name: 'Community Care', members: 25, submissions: 120, performance: 75 },
   ];
-
-  const handleViewInvites = (worker: any) => {
-    router.push(`/location/workers/invites?id=${worker.id}&name=${encodeURIComponent(worker.name)}`);
-  };
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('');
-  };
 
   return (
-    <div className="location-dashboard-premium">
+    <div className="hq-dashboard-premium">
       <header className="dashboard-header-premium">
         <div className="header-left">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
-            <ArrowLeft size={16} /> Back
-          </Button>
-          <div className="header-badge">Location Admin</div>
+          <div className="header-badge">Location Hub</div>
           <h1>{stats.branchName}</h1>
-          <p>Managing {stats.totalWorkers} active workers</p>
+          <p>Managing {stats.teams} teams and {stats.members} members.</p>
         </div>
         <div className="header-actions">
-          <div className="credit-pill-premium" onClick={() => router.push('/location/wallet')}>
-            <Wallet size={16} />
-            <span>45.2k Cr</span>
-          </div>
+           <div className="credit-pill-premium" onClick={() => router.push('/branch/wallet')}>
+             <Wallet size={16} />
+             <span>45.2k Credits</span>
+           </div>
         </div>
       </header>
 
-      {/* Premium Banner */}
-      <div className="premium-banner location-banner">
-        <div className="banner-content">
-          <div className="banner-badge">LOCAL GROWTH</div>
-          <h2>Nurture Your Community</h2>
-          <p>Track your top performers and optimize your location's outreach strategy.</p>
-          <Button className="btn-banner" onClick={() => {}}>View Weekly Trends</Button>
-        </div>
-        <div className="banner-illustration">
-          <Sparkles size={48} className="sparkle-icon" />
-        </div>
-      </div>
-
-      {/* Quick Access Grid */}
-      <div className="quick-access-grid">
-        {quickLinks.map((link, index) => (
-          <div key={index} className="grid-item" onClick={() => router.push(link.path)}>
-            <div className="grid-icon-box" style={{ color: link.color }}>
-              <link.icon size={24} />
+      <div className="location-management-hub">
+        <Card 
+          className={`hub-card-premium ${activeTab === 'performance' ? 'active' : ''}`}
+          onClick={() => setActiveTab('performance')}
+        >
+          <div className="hub-card-flex">
+            <div className="hub-card-icon-box blue">
+              <TrendingUp size={20} />
             </div>
-            <span className="grid-label">{link.label}</span>
+            <div>
+              <strong>Performance</strong>
+              <span>Analytics & Trends</span>
+            </div>
           </div>
-        ))}
+        </Card>
+
+        <Card 
+          className={`hub-card-premium ${activeTab === 'teams' ? 'active' : ''}`}
+          onClick={() => setActiveTab('teams')}
+        >
+          <div className="hub-card-flex">
+            <div className="hub-card-icon-box green">
+              <Users size={20} />
+            </div>
+            <div>
+              <strong>Teams</strong>
+              <span>Manage Members</span>
+            </div>
+          </div>
+        </Card>
+
+        <Card 
+          className={`hub-card-premium ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          <div className="hub-card-flex">
+            <div className="hub-card-icon-box grey">
+              <Settings size={20} />
+            </div>
+            <div>
+              <strong>Settings</strong>
+              <span>Configuration</span>
+            </div>
+          </div>
+        </Card>
       </div>
 
       <div className="dashboard-main-content">
-        <div className="content-section">
-          <div className="section-header">
-            <h2>Top Performers</h2>
-            <button className="text-link" onClick={() => router.push('/location/users')}>
-              View All <ChevronRight size={14} />
-            </button>
+        {activeTab === 'performance' && (
+          <div className="fade-in">
+            <div className="stats-grid-mobile">
+              {performanceStats.map((stat, i) => (
+                <Card key={i} className="stat-card-premium">
+                  <span className="stat-label">{stat.label}</span>
+                  <div className="stat-value-group">
+                    <span className="stat-value">{stat.value}</span>
+                    <span className={`stat-trend ${stat.isUp ? 'up' : 'down'}`}>
+                      {stat.isUp ? <ArrowUpRight size={12} /> : <ArrowUpRight size={12} style={{ transform: 'rotate(90deg)' }} />}
+                      {stat.change}
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="performance-card-mobile">
+               <div className="section-header">
+                 <h2>Top Teams</h2>
+                 <Button variant="ghost" size="sm" onClick={() => setActiveTab('teams')}>
+                   View All <ChevronRight size={14} />
+                 </Button>
+               </div>
+               <div className="performance-list">
+                 {teams.map(team => (
+                   <div key={team.id} className="performance-item" onClick={() => router.push(`/branch/teams?id=${team.id}`)}>
+                     <div>
+                       <span className="perf-name">{team.name}</span>
+                       <span className="perf-sub">{team.members} Members • {team.submissions} Forms</span>
+                     </div>
+                     <div className="perf-trend">
+                        <TrendingUp size={12} /> {team.performance}%
+                     </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
           </div>
+        )}
 
-          <Card className="table-card-premium">
-            <div className="mobile-list-view">
-              {workerStats.map((worker) => {
-                const conversion = Math.round((worker.attended / worker.invites) * 100) || 0;
-                return (
-                  <div key={worker.id} className="location-performance-card" onClick={() => handleViewInvites(worker)}>
-                    <div className="location-card-top">
-                      <div className="location-card-identity">
-                        <div className="worker-avatar-sm">{getInitials(worker.name)}</div>
-                        <span className="location-card-name">{worker.name}</span>
-                      </div>
-                      <ChevronRight size={18} className="text-tertiary" />
+        {activeTab === 'teams' && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2>Active Teams</h2>
+              <Button className="btn-premium" size="sm" onClick={() => router.push('/branch/teams')}>
+                <Plus size={16} /> Create Team
+              </Button>
+            </div>
+            <div className="locations-grid-mobile" style={{ marginTop: '20px' }}>
+              {teams.map(team => (
+                <Card key={team.id} className="location-modern-card" onClick={() => router.push(`/branch/teams?id=${team.id}`)}>
+                  <div className="loc-card-header">
+                    <div className="loc-icon-bg">
+                      <Users size={24} />
                     </div>
-
-                    <div className="location-card-stats-grid">
-                      <div className="location-card-stat">
-                        <span className="label">Invites</span>
-                        <span className="value">{worker.invites}</span>
-                      </div>
-                      <div className="location-card-stat">
-                        <span className="label">Attended</span>
-                        <span className="value text-success">{worker.attended}</span>
-                      </div>
-                      <div className="location-card-stat">
-                        <span className="label">Success</span>
-                        <span className="value">{conversion}%</span>
-                      </div>
+                    <div className="loc-title-group">
+                      <h3>{team.name}</h3>
+                      <span className="loc-status-badge high">Active</span>
                     </div>
-
-                    <div className="location-card-progress">
-                      <div className="progress-track">
-                        <div
-                          className="progress-bar"
-                          style={{ 
-                            width: `${conversion}%`,
-                            background: conversion > 30 ? 'var(--green)' : 'var(--blue)'
-                          }}
-                        ></div>
-                      </div>
+                    <ChevronRight size={20} className="text-tertiary" />
+                  </div>
+                  <div className="loc-stats-grid">
+                    <div className="loc-stat-item">
+                      <span className="label">Members</span>
+                      <span className="value">{team.members}</span>
+                    </div>
+                    <div className="loc-stat-item">
+                      <span className="label">Submissions</span>
+                      <span className="value">{team.submissions}</span>
                     </div>
                   </div>
-                );
-              })}
+                </Card>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Desktop Table View */}
-            <div className="table-responsive desktop-only">
-              <table className="data-table-premium">
-                <thead>
-                  <tr>
-                    <th>Worker</th>
-                    <th>Invites</th>
-                    <th>Attended</th>
-                    <th>Success Rate</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {workerStats.map((worker) => {
-                    const conversion = Math.round((worker.attended / worker.invites) * 100) || 0;
-                    return (
-                      <tr key={worker.id}>
-                        <td>
-                          <div className="location-info-cell">
-                            <div className="worker-avatar-sm">{getInitials(worker.name)}</div>
-                            <span className="location-name-text">{worker.name}</span>
-                          </div>
-                        </td>
-                        <td>{worker.invites}</td>
-                        <td className="text-success font-medium">{worker.attended}</td>
-                        <td>
-                          <div className="conversion-cell">
-                            <div className="mini-progress-bg">
-                              <div
-                                className="mini-progress-fill"
-                                style={{ 
-                                  width: `${conversion}%`,
-                                  background: conversion > 30 ? 'var(--green)' : 'var(--blue)'
-                                }}
-                              ></div>
-                            </div>
-                            <span className="conversion-text">{conversion}%</span>
-                          </div>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleViewInvites(worker)}
-                          >
-                            <ChevronRight size={18} />
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+        {activeTab === 'settings' && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2>Location Settings</h2>
             </div>
-          </Card>
-        </div>
+            <div className="settings-stack" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+               <Card className="setting-item-premium" onClick={() => router.push('/branch/settings')}>
+                  <div className="setting-icon-box">
+                    <Settings size={20} />
+                  </div>
+                  <div className="setting-info">
+                    <strong>General Config</strong>
+                    <span>Location details and protocols</span>
+                  </div>
+                  <ChevronRight size={18} />
+               </Card>
+               <Card className="setting-item-premium" onClick={() => router.push('/branch/display-qr')}>
+                  <div className="setting-icon-box">
+                    <QrCode size={20} />
+                  </div>
+                  <div className="setting-info">
+                    <strong>Display QR Code</strong>
+                    <span>Physical signage for this location</span>
+                  </div>
+                  <ChevronRight size={18} />
+               </Card>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

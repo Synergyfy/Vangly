@@ -21,14 +21,12 @@ import './wallet.css';
 function WalletContent() {
   const searchParams = useSearchParams();
   const [showBuyModal, setShowBuyModal] = useState(false);
-  const [buyType, setBuyType] = useState<'sms' | 'email'>('sms');
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   
-  // Custom purchase state
   const [customAmount, setCustomAmount] = useState<string>('');
   const [customCredits, setCustomCredits] = useState<string>('');
-  const RATE = 10; // ₦10 per SMS credit
+  const RATE = 10;
 
   useEffect(() => {
     const topup = searchParams.get('topup');
@@ -36,14 +34,13 @@ function WalletContent() {
       const units = Math.ceil(Number(topup));
       setCustomCredits(units.toString());
       setCustomAmount((units * RATE).toString());
-      setBuyType('sms');
       setShowBuyModal(true);
     }
   }, [searchParams]);
 
   const handleAmountChange = (val: string) => {
     setCustomAmount(val);
-    if (!isNaN(Number(val))) {
+    if (!isNaN(Number(val)) && val !== '') {
       setCustomCredits((Number(val) / RATE).toFixed(0));
     } else {
       setCustomCredits('');
@@ -52,23 +49,11 @@ function WalletContent() {
 
   const handleCreditsChange = (val: string) => {
     setCustomCredits(val);
-    if (!isNaN(Number(val))) {
+    if (!isNaN(Number(val)) && val !== '') {
       setCustomAmount((Number(val) * RATE).toString());
     } else {
       setCustomAmount('');
     }
-  };
-
-  // Mock balance
-  const balances = {
-    sms: 1250,
-    email: 0
-  };
-
-  const handleBuy = (type: 'sms' | 'email') => {
-    if (type === 'email') return; // Locked
-    setBuyType(type);
-    setShowBuyModal(true);
   };
 
   const processPayment = () => {
@@ -87,138 +72,142 @@ function WalletContent() {
   };
 
   return (
-    <div className="hq-dashboard">
-      <div className="page-header flex-between">
-        <div>
+    <div className="hq-dashboard-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <div className="header-badge">Financial Ops</div>
           <h1>Wallet & Credits</h1>
-          <p>Manage your communication resources for outreach.</p>
+          <p>Manage your outreach resources and billing history.</p>
         </div>
-        <div className="wallet-balance-total">
-          <Wallet size={18} />
-          <span>Active Resources</span>
-        </div>
-      </div>
+      </header>
 
-      <div className="wallet-grid">
-        <Card className="balance-card sms-theme">
-          <div className="balance-icon"><MessageSquare size={24} /></div>
-          <div className="balance-info">
-            <h3>SMS Credits</h3>
-            <p className="balance-value">{balances.sms.toLocaleString()}</p>
-            <span className="balance-subtitle">Available for campaigns</span>
-          </div>
-          <Button fullWidth onClick={() => handleBuy('sms')} className="btn-buy">
-            Top Up SMS <Plus size={16} />
-          </Button>
+      <div className="wallet-modern-grid">
+        <Card className="wallet-balance-card-premium sms">
+           <div className="wb-content">
+              <div className="wb-icon-box">
+                 <MessageSquare size={24} />
+              </div>
+              <div className="wb-info">
+                 <span className="wb-label">SMS Balance</span>
+                 <h2 className="wb-value">12,450 <span>Credits</span></h2>
+              </div>
+           </div>
+           <Button className="btn-buy-premium" fullWidth onClick={() => setShowBuyModal(true)}>
+              Top Up SMS <Plus size={18} style={{ marginLeft: '8px' }} />
+           </Button>
         </Card>
 
-        <Card className="balance-card email-theme" style={{ opacity: 0.7, position: 'relative' }}>
-          <div className="coming-soon-badge">Coming Soon</div>
-          <div className="balance-icon"><Mail size={24} /></div>
-          <div className="balance-info">
-            <h3>Email Credits</h3>
-            <p className="balance-value">0</p>
-            <span className="balance-subtitle">Email outreach is locked</span>
-          </div>
-          <Button fullWidth disabled className="btn-buy">
-            Locked
-          </Button>
-        </Card>
-      </div>
-
-      <div className="transaction-history">
-        <div className="section-header">
-          <h2><History size={18} /> Recent Top-ups</h2>
-        </div>
-        <Card className="history-card">
-          <div className="history-table">
-            <div className="history-row header">
-              <span>Type</span>
-              <span>Amount</span>
-              <span>Date</span>
-              <span>Status</span>
-            </div>
-            <div className="history-row" data-type="Type">
-              <span className="type-col"><Plus size={14} className="text-success" /> SMS Top-up</span>
-              <span className="amount-col">500 Credits</span>
-              <span className="date-col">Oct 24, 2023</span>
-              <span className="status-col status-badge success">Completed</span>
-            </div>
-          </div>
+        <Card className="wallet-balance-card-premium email locked">
+           <div className="wb-content">
+              <div className="wb-icon-box">
+                 <Mail size={24} />
+              </div>
+              <div className="wb-info">
+                 <span className="wb-label">Email Balance</span>
+                 <h2 className="wb-value">0 <span>Credits</span></h2>
+                 <span className="locked-tag">Coming Soon</span>
+              </div>
+           </div>
+           <Button className="btn-buy-premium" fullWidth disabled>
+              Locked
+           </Button>
         </Card>
       </div>
 
-      {/* Buy Credits Modal */}
+      <div className="transaction-section-premium">
+         <div className="section-header">
+            <h2>Recent Activity</h2>
+            <Button variant="ghost" size="sm">Download All</Button>
+         </div>
+         
+         <div className="history-list-premium">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="history-item-premium">
+                 <div className="hi-left">
+                    <div className="hi-icon">
+                       <ArrowUpRight size={18} />
+                    </div>
+                    <div className="hi-info">
+                       <span className="hi-title">SMS Credit Top-up</span>
+                       <span className="hi-meta">Oct {20 + i}, 2026 • 10:45 AM</span>
+                    </div>
+                 </div>
+                 <div className="hi-right">
+                    <span className="hi-amount">+500 Credits</span>
+                    <span className="hi-status success">Completed</span>
+                 </div>
+              </Card>
+            ))}
+         </div>
+      </div>
+
       {showBuyModal && (
-        <div className="modal-overlay">
-          <Card className="buy-credits-modal-v2">
+        <div className="modal-overlay-premium" onClick={() => setShowBuyModal(false)}>
+          <Card className="buy-modal-card-premium" onClick={e => e.stopPropagation()}>
             {success ? (
-              <div className="payment-success-view">
-                <CheckCircle2 size={64} className="text-success" />
-                <h2>Payment Successful!</h2>
-                <p>Your {customCredits} SMS credits have been added instantly.</p>
+              <div className="success-state-premium fade-in">
+                 <div className="success-icon-wrap">
+                    <CheckCircle2 size={48} />
+                 </div>
+                 <h2>Top-up Successful!</h2>
+                 <p>Your {customCredits} credits have been added to your wallet.</p>
               </div>
             ) : (
               <>
-                <div className="modal-header">
-                  <div className="modal-title-group">
-                    <h3>Top Up SMS Credits</h3>
-                    <p>Enter the amount you want to buy</p>
-                  </div>
-                  <button className="close-btn" onClick={() => setShowBuyModal(false)}><X size={20} /></button>
-                </div>
-                
-                <div className="custom-buy-form">
-                  <div className="input-group-premium">
-                    <label>Amount (₦)</label>
-                    <input 
-                      type="number" 
-                      placeholder="e.g. 5000" 
-                      value={customAmount}
-                      onChange={(e) => handleAmountChange(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="conversion-icon">
-                    <ArrowUpRight size={20} />
-                  </div>
-
-                  <div className="input-group-premium">
-                    <label>SMS Credits</label>
-                    <input 
-                      type="number" 
-                      placeholder="e.g. 500" 
-                      value={customCredits}
-                      onChange={(e) => handleCreditsChange(e.target.value)}
-                    />
-                  </div>
+                <div className="modal-header-premium">
+                   <div>
+                      <h3>Top Up Credits</h3>
+                      <p>SMS Credits (₦{RATE} per unit)</p>
+                   </div>
+                   <button className="close-modal-btn" onClick={() => setShowBuyModal(false)}>
+                      <X size={20} />
+                   </button>
                 </div>
 
-                <div className="buy-summary">
-                   <div className="summary-row">
-                      <span>Rate</span>
-                      <span>₦{RATE} / SMS</span>
+                <div className="topup-form-premium">
+                   <div className="input-group-premium">
+                      <label>Amount to Pay (₦)</label>
+                      <input 
+                        type="number" 
+                        value={customAmount}
+                        onChange={(e) => handleAmountChange(e.target.value)}
+                        placeholder="e.g. 5000"
+                      />
                    </div>
-                   <div className="summary-row total">
-                      <span>Total to Pay</span>
-                      <span>₦{Number(customAmount).toLocaleString() || 0}</span>
+
+                   <div className="form-connector">
+                      <ArrowUpRight size={20} />
                    </div>
+
+                   <div className="input-group-premium">
+                      <label>Credits to Receive</label>
+                      <input 
+                        type="number" 
+                        value={customCredits}
+                        onChange={(e) => handleCreditsChange(e.target.value)}
+                        placeholder="e.g. 500"
+                      />
+                   </div>
+                </div>
+
+                <div className="buy-total-strip">
+                   <span>Total Payment</span>
+                   <strong>₦{Number(customAmount).toLocaleString() || 0}</strong>
                 </div>
 
                 <Button 
+                  className="btn-premium" 
                   fullWidth 
                   size="lg" 
-                  className="btn-premium" 
-                  onClick={processPayment} 
+                  onClick={processPayment}
                   disabled={isProcessing || !customAmount}
                 >
-                  {isProcessing ? 'Processing...' : `Pay ₦${Number(customAmount).toLocaleString() || 0} Now`}
+                  {isProcessing ? "Processing Payment..." : `Pay ₦${Number(customAmount).toLocaleString() || 0} Now`}
                 </Button>
 
-                <div className="payment-footer">
-                  <div className="secure-badge">
-                    <ShieldCheck size={14} /> Secure Payment Gateway
-                  </div>
+                <div className="secure-footer">
+                   <ShieldCheck size={14} /> 
+                   <span>Secure Transaction via Paystack</span>
                 </div>
               </>
             )}

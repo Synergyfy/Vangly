@@ -99,9 +99,37 @@ export default function HQOverviewPage() {
       </header>
 
       <div className="dashboard-main-content">
+        {/* Quick Actions - Now inside Overview */}
+        <section className="quick-actions-section" style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className="section-title" style={{ margin: 0 }}>Management Actions</h2>
+          </div>
+          <div className="quick-actions-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+            {[
+              { label: "Add Location", icon: Building2, path: "/main/manage-organization/new", color: "#3b82f6" },
+              { label: "New Message", icon: Send, path: "/main/messages", color: "#8b5cf6" },
+              { label: "Setup Teams", icon: Users, path: "/main/manage-organization", color: "#f59e0b" },
+              { label: "Buy Credits", icon: CheckCircle2, path: "/main/wallet", color: "#10b981" },
+            ].map((action, i) => (
+              <button 
+                key={i} 
+                className="action-btn-mobile glass-morphism" 
+                onClick={() => router.push(action.path)}
+                style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+              >
+                <div className="action-icon" style={{ color: action.color, background: `${action.color}10`, width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <action.icon size={20} />
+                </div>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{action.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Global Stats Summary */}
-        <div className="content-section" style={{ marginBottom: '24px' }}>
-          <div className="stats-grid-premium" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+        <div className="content-section" style={{ marginBottom: '32px' }}>
+          <h2 className="section-title" style={{ marginBottom: '16px' }}>Growth Analytics</h2>
+          <div className="stats-grid-premium">
             {[
               {
                 label: "Total Locations",
@@ -132,7 +160,7 @@ export default function HQOverviewPage() {
                 trend: "22% conversion",
               },
             ].map((stat, i) => (
-              <Card key={i} className="stat-card-premium">
+              <Card key={i} className="stat-card-premium glass-morphism">
                 <div className={`icon-box ${stat.color}`}>
                   <stat.icon size={20} />
                 </div>
@@ -141,6 +169,7 @@ export default function HQOverviewPage() {
                   <div className="stat-value-row">
                     <span className="stat-value">{stat.value}</span>
                   </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '4px' }}>{stat.trend}</div>
                 </div>
               </Card>
             ))}
