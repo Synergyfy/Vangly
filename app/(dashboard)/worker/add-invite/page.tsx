@@ -49,33 +49,35 @@ export default function AddInvitePage() {
         ) : (
           <Card className="form-card">
             <form onSubmit={handleSubmit}>
-              <Input 
-                label="Full Name" 
-                placeholder="e.g. Jane Smith" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              
-              <Input 
-                label="Phone Number" 
-                placeholder="e.g. +1 234 567 8900" 
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-
-              <div className="input-wrapper input-full">
-                <label className="input-label" htmlFor="invite-note">Note (Optional)</label>
-                <textarea 
-                  id="invite-note"
-                  className="input-field textarea-field"
-                  placeholder="Where did you meet them? Any prayer requests?"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={4}
+              <div className="form-body">
+                <Input 
+                  label="Full Name" 
+                  placeholder="e.g. Jane Smith" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
                 />
+                
+                <Input 
+                  label="Phone Number" 
+                  placeholder="e.g. +1 234 567 8900" 
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+
+                <div className="input-wrapper input-full">
+                  <label className="input-label" htmlFor="invite-note">Note (Optional)</label>
+                  <textarea 
+                    id="invite-note"
+                    className="input-field textarea-field"
+                    placeholder="Where did you meet them? Any prayer requests?"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={4}
+                  />
+                </div>
               </div>
 
               <div className="form-actions">

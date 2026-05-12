@@ -24,12 +24,12 @@ export default function LandingPage() {
         </div>
 
         <h1 className="landing-headline">
-          Church Growth, <br />
+          Organization Growth, <br />
           Simplified.
         </h1>
         
         <p className="landing-description">
-          A streamlined platform for churches to manage outreach, track guest engagement, and nurture community connections with ease.
+          A streamlined platform for organizations to manage outreach, track engagement, and nurture community connections with ease.
         </p>
 
         <div className="landing-actions-stack">

@@ -6,7 +6,7 @@ interface BrandSettings {
   primaryColor: string;
   accentColor: string;
   logoUrl: string | null;
-  churchName: string;
+  organizationName: string;
 }
 
 interface BrandContextType {
@@ -21,7 +21,7 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     primaryColor: '#007AFF', // Default Apple Blue
     accentColor: '#AF52DE',  // Default Purple
     logoUrl: null,
-    churchName: 'Vangly Church',
+    organizationName: 'Vangly Organization',
   });
 
   const updateSettings = (newSettings: Partial<BrandSettings>) => {
