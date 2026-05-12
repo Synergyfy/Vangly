@@ -20,11 +20,10 @@ export default function BrandIdentityPage() {
   const [organizationName, setOrganizationName] = useState(settings.organizationName);
   const [primaryColor, setPrimaryColor] = useState(settings.primaryColor);
   const [accentColor, setAccentColor] = useState(settings.accentColor);
-  const [logoPreview, setLogoPreview] = useState<string | null>(
-    settings.logoUrl,
-  );
+  const [logoPreview, setLogoPreview] = useState<string | null>(settings.logoUrl);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<'config' | 'preview'>('config');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,24 +31,15 @@ export default function BrandIdentityPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
+      reader.onloadend = () => setLogoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSave = () => {
     setIsSaving(true);
-
-    // Simulate API save
     setTimeout(() => {
-      updateSettings({
-        organizationName,
-        primaryColor,
-        accentColor,
-        logoUrl: logoPreview,
-      });
+      updateSettings({ organizationName, primaryColor, accentColor, logoUrl: logoPreview });
       setIsSaving(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -57,200 +47,154 @@ export default function BrandIdentityPage() {
   };
 
   return (
-    <div className="hq-dashboard">
-      <div className="page-header">
-        <h1>Brand Identity</h1>
-        <p>Customize how your organization appears to workers and guests.</p>
+    <div className="hq-dashboard-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <div className="header-badge">Visual Identity</div>
+          <h1>Brand Identity</h1>
+          <p>Customize your organization's look across the entire platform.</p>
+        </div>
+      </header>
+
+      <div className="tab-switcher-premium lg:hidden" style={{ marginBottom: '24px' }}>
+        <button 
+          className={`tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+          onClick={() => setActiveTab('config')}
+        >
+          Configuration
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('preview')}
+        >
+          Live Preview
+        </button>
       </div>
 
-      <div className="brand-grid">
-        <div className="brand-config">
-          <Card className="brand-card">
-            <div className="card-section">
-              <h2 className="section-title">
-                <ImageIcon size={18} /> Organization Logo
-              </h2>
-              <div className="logo-upload-area">
-                <div className="logo-preview-box">
-                  {logoPreview ? (
-                    <img
-                      src={logoPreview}
-                      alt="Organization Logo"
-                      className="logo-preview-img"
-                    />
-                  ) : (
-                    <div className="logo-placeholder">
-                      <ImageIcon size={40} />
+      <div className="brand-modern-layout">
+        <div className={`brand-config-side ${activeTab === 'config' ? 'active' : 'hidden lg:block'}`}>
+          <Card className="brand-config-card-premium">
+             <div className="config-section">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <ImageIcon size={20} className="text-blue" />
+                  <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Organization Logo</h3>
+                </div>
+                
+                <div className="logo-upload-premium">
+                  <div className="logo-preview-box-large">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo" />
+                    ) : (
+                      <ImageIcon size={48} color="var(--text-tertiary)" />
+                    )}
+                  </div>
+                  <div className="upload-controls-premium">
+                    <input type="file" ref={fileInputRef} onChange={handleLogoUpload} accept="image/*" style={{ display: 'none' }} />
+                    <Button variant="outline" size="sm" fullWidth onClick={() => fileInputRef.current?.click()}>
+                      <Upload size={16} style={{ marginRight: '8px' }} /> Change Logo
+                    </Button>
+                    <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '8px', lineHeight: '1.4' }}>
+                      Square PNG or SVG works best. Max 2MB.
+                    </p>
+                  </div>
+                </div>
+             </div>
+
+             <div className="config-divider" />
+
+             <div className="config-section">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <Palette size={20} className="text-purple" />
+                  <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Color Palette</h3>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <Input 
+                    label="Organization Name"
+                    value={organizationName}
+                    onChange={(e) => setOrganizationName(e.target.value)}
+                  />
+                </div>
+
+                <div className="color-inputs-stack">
+                   <div className="color-field-premium">
+                      <label>Primary Color</label>
+                      <div className="color-picker-strip">
+                         <div className="color-swatch" style={{ background: primaryColor }}>
+                            <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+                         </div>
+                         <input type="text" className="hex-input" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+                      </div>
+                   </div>
+
+                   <div className="color-field-premium">
+                      <label>Accent Color</label>
+                      <div className="color-picker-strip">
+                         <div className="color-swatch" style={{ background: accentColor }}>
+                            <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
+                         </div>
+                         <input type="text" className="hex-input" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             <div className="config-footer-premium">
+                <Button className="btn-premium" fullWidth size="lg" onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? "Updating Brand..." : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {showSuccess ? <Check size={20} /> : <Save size={20} />}
+                      {showSuccess ? "Changes Saved!" : "Save Identity"}
                     </div>
                   )}
-                </div>
-                <div className="logo-upload-controls">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleLogoUpload}
-                    accept="image/*"
-                    style={{ display: "none" }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload size={16} style={{ marginRight: "8px" }} /> Upload
-                    New Logo
-                  </Button>
-                  <p className="upload-hint">
-                    Recommended: Square PNG with transparent background.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-section">
-              <h2 className="section-title">
-                <Palette size={18} /> Visual Identity
-              </h2>
-              <div className="form-row">
-                <Input
-                  label="Organization Name"
-                  value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)}
-                  placeholder="Enter organization name..."
-                />
-              </div>
-              <div className="color-picker-grid">
-                <div className="color-input-wrapper">
-                  <label className="input-label">Primary Brand Color</label>
-                  <div className="color-picker-input">
-                    <input
-                      type="color"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="color-dot"
-                    />
-                    <input
-                      type="text"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="color-hex"
-                    />
-                  </div>
-                </div>
-                <div className="color-input-wrapper">
-                  <label className="input-label">Accent Color</label>
-                  <div className="color-picker-input">
-                    <input
-                      type="color"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="color-dot"
-                    />
-                    <input
-                      type="text"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="color-hex"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-footer">
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="save-btn"
-              >
-                {isSaving ? (
-                  "Applying Changes..."
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    {showSuccess ? <Check size={18} /> : <Save size={18} />}
-                    {showSuccess
-                      ? "Saved Successfully!"
-                      : "Save Brand Settings"}
-                  </div>
-                )}
-              </Button>
-            </div>
+                </Button>
+             </div>
           </Card>
         </div>
 
-        <div className="brand-preview">
-          <h3>Live Preview</h3>
-          <div className="preview-scroll-wrapper">
-            <button
-              className="preview-scroll-btn left"
-              onClick={() => {
-                const el = document.getElementById("brand-preview-scroll");
-                if (el) el.scrollBy({ left: -200, behavior: "smooth" });
-              }}
-            >
-              <ChevronRight size={20} style={{ transform: "rotate(180deg)" }} />
-            </button>
-
-            <div
-              className="preview-container"
-              id="brand-preview-scroll"
-              style={
-                {
-                  "--preview-primary": primaryColor,
-                  "--preview-accent": accentColor,
-                } as any
-              }
-            >
-              <Card className="preview-sample-card">
-                <div className="preview-topbar">
-                  <div className="preview-logo-tiny">
-                    {logoPreview ? <img src={logoPreview} alt="" /> : "⛪"}
-                  </div>
-                  <div className="preview-name-tiny">
-                    {organizationName || "Your Organization"}
-                  </div>
-                </div>
-                <div className="preview-content-sample">
-                  <div className="preview-btn-sample">Primary Button</div>
-                  <div className="preview-stats-sample">
-                    <div className="stat-blob">142</div>
-                    <div className="stat-blob accent">28%</div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="preview-qr-sample">
-                <div className="qr-box-sample">
-                  <div className="qr-pattern">
-                    {[...Array(9)].map((_, i) => (
-                      <div key={i} className="qr-dot" />
-                    ))}
-                  </div>
-                  <div className="qr-logo-overlay">
-                    {logoPreview ? <img src={logoPreview} alt="" /> : "⛪"}
-                  </div>
-                </div>
-                <p>QR Code Center Logo Preview</p>
-              </Card>
-            </div>
-
-            <button
-              className="preview-scroll-btn right"
-              onClick={() => {
-                const el = document.getElementById("brand-preview-scroll");
-                if (el) el.scrollBy({ left: 200, behavior: "smooth" });
-              }}
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+        <div className={`brand-preview-side ${activeTab === 'preview' ? 'active' : 'hidden lg:block'}`}>
+           <div className="preview-sticky-wrap">
+              <h3 className="preview-label">Device Preview</h3>
+              <div className="iphone-preview-wrap">
+                 <div className="iphone-frame-premium">
+                    <div className="iphone-screen-premium">
+                       <div className="app-mockup" style={{ '--brand-p': primaryColor, '--brand-a': accentColor } as any}>
+                          <div className="mock-header">
+                             <div className="mock-logo-box">
+                                {logoPreview ? <img src={logoPreview} alt="" /> : "V"}
+                             </div>
+                             <span className="mock-org-name">{organizationName || "Your Organization"}</span>
+                          </div>
+                          <div className="mock-body">
+                             <div className="mock-card">
+                                <div className="mock-stat-flex">
+                                   <div className="mock-stat-item">
+                                      <span className="m-val">1.2k</span>
+                                      <span className="m-lab">Invites</span>
+                                   </div>
+                                   <div className="mock-stat-item accent">
+                                      <span className="m-val">34%</span>
+                                      <span className="m-lab">Success</span>
+                                   </div>
+                                </div>
+                                <div className="mock-btn-primary">Register New Guest</div>
+                             </div>
+                             
+                             <div className="mock-qr-preview">
+                                <div className="mock-qr-inner">
+                                   <div className="m-qr-pattern" />
+                                   <div className="m-qr-logo">
+                                      {logoPreview ? <img src={logoPreview} alt="" /> : "V"}
+                                   </div>
+                                </div>
+                                <p>QR Code Distribution</p>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </div>

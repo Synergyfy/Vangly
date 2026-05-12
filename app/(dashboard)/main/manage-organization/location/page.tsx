@@ -51,6 +51,7 @@ import {
   Image as ImageIcon,
   PenTool,
   Star,
+  Award,
   Link,
   ToggleLeft,
   MapPin,
@@ -77,27 +78,27 @@ const networkLocations = [
   { id: 'loc-3', name: 'Port Harcourt Hub', groups: ['Logistics', 'Warehouse', 'Shipping', 'Inventory'], forms: ['Inventory Check', 'Delivery Receipt', 'Safety Audit'] },
 ];
 
-function LocationPerformanceContent() {
+function LocationDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const locationName = searchParams.get('name') || 'Location';
 
-  const [activeTab, setActiveTab] = React.useState<'performance' | 'users' | 'settings'>('performance');
+  const [activeTab, setActiveTab] = React.useState<'performance' | 'teams' | 'settings'>('performance');
 
-  // Mock Users for this location
-  const [locationUsers, setLocationUsers] = React.useState([
-    { id: '1', name: 'John Admin', role: 'Admin', status: 'Active', phone: '+234 801 000 1111', email: 'admin@hq.com' },
-    { id: '2', name: 'Sarah Worker', role: 'Worker', status: 'Active', phone: '+234 801 000 2222', email: 'sarah@hq.com' },
-    { id: '3', name: 'Volunteer Mike', role: 'Volunteer', status: 'Active', phone: '+234 801 000 3333', email: 'mike@hq.com' },
-    { id: '4', name: 'Member Jane', role: 'Member', status: 'Inactive', phone: '+234 801 000 4444', email: 'jane@hq.com' },
+  // Mock Teams for this location
+  const [locationMembers, setLocationMembers] = React.useState([
+    { id: '1', name: 'John Admin', role: ['Admin'], status: 'Active', phone: '+234 801 000 1111', email: 'admin@hq.com', teamAdmins: ['Admin'], invites: 45 },
+    { id: '2', name: 'Sarah Worker', role: ['Staff', 'Workers'], status: 'Active', phone: '+234 801 000 2222', email: 'sarah@hq.com', teamAdmins: [], invites: 32 },
+    { id: '3', name: 'Volunteer Mike', role: ['Volunteer', 'Zones'], status: 'Active', phone: '+234 801 000 3333', email: 'mike@hq.com', teamAdmins: [], invites: 12 },
+    { id: '4', name: 'Member Jane', role: ['Member'], status: 'Inactive', phone: '+234 801 000 4444', email: 'jane@hq.com', teamAdmins: [], invites: 5 },
   ]);
 
   // Mock Performance Data
   const stats = [
     { label: 'Total Invites', value: '1,284', change: '+12.5%', isUp: true, icon: Users, color: 'blue' },
-    { label: 'Total Attended', value: '842', change: '+8.2%', isUp: true, icon: UserCheck, color: 'green' },
     { label: 'Conversion Rate', value: '65.5%', change: '-2.1%', isUp: false, icon: Target, color: 'purple' },
-    { label: 'Avg. Weekly Growth', value: '18%', change: '+4.3%', isUp: true, icon: TrendingUp, color: 'orange' },
+    { label: 'Top Team', value: 'Workers', change: '840 invites', isUp: true, icon: Award, color: 'green' },
+    { label: 'Top Inviter', value: 'Sarah W.', change: '42 invites', isUp: true, icon: Star, color: 'orange' },
   ];
 
   const [copied, setCopied] = React.useState(false);
@@ -106,13 +107,13 @@ function LocationPerformanceContent() {
   const [isFilterModalOpen, setIsFilterModalOpen] = React.useState(false);
   const [isUserActionModalOpen, setIsUserActionModalOpen] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<any>(null);
-  const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({ Admin: true });
-  const [selectedGroupForQR, setSelectedGroupForQR] = React.useState<string | null>(null);
-  const [groupViewState, setGroupViewState] = React.useState<'grid' | 'details'>('grid');
-  const [selectedGroupName, setSelectedGroupName] = React.useState<string | null>(null);
+  const [expandedTeams, setExpandedTeams] = React.useState<Record<string, boolean>>({ Admin: true });
+  const [selectedTeamForQR, setSelectedTeamForQR] = React.useState<string | null>(null);
+  const [teamViewState, setTeamViewState] = React.useState<'grid' | 'details'>('grid');
+  const [selectedTeamName, setSelectedTeamName] = React.useState<string | null>(null);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = React.useState(false);
-  const [isGroupSettingsModalOpen, setIsGroupSettingsModalOpen] = React.useState(false);
-  const [selectedGroupSettings, setSelectedGroupSettings] = React.useState<string | null>(null);
+  const [isTeamSettingsModalOpen, setIsTeamSettingsModalOpen] = React.useState(false);
+  const [selectedTeamSettings, setSelectedTeamSettings] = React.useState<string | null>(null);
   const [isFormBuilderOpen, setIsFormBuilderOpen] = React.useState(false);
   const [selectedRoleForForm, setSelectedRoleForForm] = React.useState<string | null>(null);
   const [formConfig, setFormConfig] = React.useState({
@@ -124,14 +125,30 @@ function LocationPerformanceContent() {
   const [formFields, setFormFields] = React.useState<any[]>([]);
   const [isFieldSelectorOpen, setIsFieldSelectorOpen] = React.useState(false);
   const [previewMode, setPreviewMode] = React.useState<'mobile' | 'tablet' | 'desktop' | null>(null);
-  const [groupForms, setGroupForms] = React.useState<Record<string, any[]>>({});
+  const [teamForms, setTeamForms] = React.useState<Record<string, any[]>>({
+    'Workers Team': [
+      {
+        id: 'default-form',
+        title: 'Default Form',
+        description: 'Standard team registration form',
+        status: 'published',
+        fields: [
+          { id: 'f1', type: 'text', title: 'Full Name', required: true },
+          { id: 'f2', type: 'phone', title: 'Phone Number', required: true }
+        ],
+        createdAt: new Date(),
+        responses: [],
+        analytics: { scans: 0, submissions: 0 }
+      }
+    ]
+  });
   const [formDistribution, setFormDistribution] = React.useState({
     memberAccess: { mode: 'all' as 'all' | 'selected', userIds: [] as string[] },
     publicAccess: { mode: 'public' as 'registered' | 'public' },
     addLogoToQR: true
   });
-  const [activeGroupTab, setActiveGroupTab] = React.useState<'members' | 'forms'>('members');
-  const [groupSubView, setGroupSubView] = React.useState<'home' | 'members' | 'forms'>('home');
+  const [activeTeamTab, setActiveTeamTab] = React.useState<'members' | 'forms'>('members');
+  const [teamSubView, setTeamSubView] = React.useState<'home' | 'members' | 'forms'>('home');
   const [isDistributionModalOpen, setIsDistributionModalOpen] = React.useState(false);
   const [selectedFormForDist, setSelectedFormForDist] = React.useState<any>(null);
 
@@ -167,7 +184,7 @@ function LocationPerformanceContent() {
     const group = selectedRoleForForm || 'General';
     const finalUrl = editingFormId ? `https://vangly.app/f/${editingFormId}` : `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
     
-    setGroupForms(prev => {
+    setTeamForms(prev => {
       const currentForms = [...(prev[group] || [])];
       
       if (editingFormId) {
@@ -214,16 +231,16 @@ function LocationPerformanceContent() {
   };
 
   const handleQuickTitleSave = (id: string) => {
-    setGroupForms(prev => {
-      const newGroups = { ...prev };
-      for (const group in newGroups) {
-        const idx = newGroups[group].findIndex(f => f.id === id);
+    setTeamForms(prev => {
+      const newTeams = { ...prev };
+      for (const group in newTeams) {
+        const idx = newTeams[group].findIndex(f => f.id === id);
         if (idx !== -1) {
-          newGroups[group][idx] = { ...newGroups[group][idx], title: tempFormTitle };
+          newTeams[group][idx] = { ...newTeams[group][idx], title: tempFormTitle };
           break;
         }
       }
-      return newGroups;
+      return newTeams;
     });
     setEditingFormTitleId(null);
   };
@@ -272,7 +289,7 @@ function LocationPerformanceContent() {
   };
   const [editingUser, setEditingUser] = React.useState<any>(null);
   const [userType, setUserType] = React.useState<'admin' | 'others'>('others');
-  const [groupConfigs, setGroupConfigs] = React.useState<Record<string, any>>({
+  const [teamConfigs, setTeamConfigs] = React.useState<Record<string, any>>({
     Admin: { allowJoin: false, allowPin: true, smsOtp: false },
     Member: { allowJoin: true, allowPin: true, smsOtp: false },
     Staff: { allowJoin: true, allowPin: true, smsOtp: false },
@@ -280,49 +297,53 @@ function LocationPerformanceContent() {
   });
   const [newUser, setNewUser] = React.useState({ 
     name: '', 
-    role: '', 
+    role: [] as string[], 
     phone: '', 
     email: '', 
     pin: '',
     isAdmin: false,
-    isGroupAdmin: false
+    isTeamLead: false
   });
 
-  const [groups, setGroups] = React.useState(['Admin', 'Staff', 'Member', 'Volunteer']);
-  const [groupDescriptions, setGroupDescriptions] = React.useState<Record<string, string>>({
+  const [teams, setTeams] = React.useState(['Admin', 'Staff', 'Member', 'Volunteer', 'Workers Team']);
+  const [teamDescriptions, setTeamDescriptions] = React.useState<Record<string, string>>({
     Admin: 'Full system access and management.',
     Staff: 'Regular employees with operational access.',
-    Member: 'Community members or customers.',
-    Volunteer: 'Occasional contributors and helpers.'
+    Member: 'Community members or outreach contacts.',
+    Volunteer: 'Occasional contributors and helpers.',
+    'Workers Team': 'Primary team for organization outreach and coordination.'
   });
-  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = React.useState(false);
-  const [newGroup, setNewGroup] = React.useState({ name: '', description: '', allowJoin: true, allowPin: true });
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = React.useState(false);
+  const [newTeam, setNewTeam] = React.useState({ name: '', description: '', allowJoin: true, allowPin: true });
 
-  const handleCreateGroup = () => {
-    if (!newGroup.name) return;
-    setGroups([...groups, newGroup.name]);
-    setGroupDescriptions({ ...groupDescriptions, [newGroup.name]: newGroup.description });
-    setGroupConfigs({ 
-      ...groupConfigs, 
-      [newGroup.name]: { allowJoin: newGroup.allowJoin, allowPin: newGroup.allowPin, smsOtp: false } 
+  const handleCreateTeam = () => {
+    if (!newTeam.name) return;
+    setTeams([...teams, newTeam.name]);
+    setTeamDescriptions({ ...teamDescriptions, [newTeam.name]: newTeam.description });
+    setTeamConfigs({ 
+      ...teamConfigs, 
+      [newTeam.name]: { allowJoin: newTeam.allowJoin, allowPin: newTeam.allowPin, smsOtp: false } 
     });
-    setIsCreateGroupModalOpen(false);
-    setNewGroup({ name: '', description: '', allowJoin: true, allowPin: true });
+    setIsCreateTeamModalOpen(false);
+    setNewTeam({ name: '', description: '', allowJoin: true, allowPin: true });
   };
 
   const handleAddUser = () => {
+    const roles = Array.isArray(newUser.role) ? newUser.role : [newUser.role || (userType === 'admin' ? 'Admin' : 'Member')];
     const user = {
       id: Math.random().toString(36).substr(2, 9),
       name: newUser.name,
-      role: selectedGroupName || (userType === 'admin' ? 'Admin' : 'Member'),
+      role: roles,
       phone: newUser.phone,
       email: newUser.email,
       status: 'Active',
-      pin: newUser.pin
+      pin: newUser.pin,
+      teamAdmins: newUser.isAdmin ? roles : [],
+      invites: 0
     };
-    setLocationUsers([...locationUsers, user]);
+    setLocationMembers([...locationMembers, user]);
     setIsAddUserModalOpen(false);
-    setNewUser({ name: '', role: '', phone: '', email: '', pin: '', isAdmin: false, isGroupAdmin: false });
+    setNewUser({ name: '', role: [], phone: '', email: '', pin: '', isAdmin: false, isTeamLead: false });
     setNewUserForms([]);
     setShouldAssignForms(false);
     setFormSearchQuery('');
@@ -333,7 +354,7 @@ function LocationPerformanceContent() {
 
   const handleUpdateUser = () => {
     if (!editingUser) return;
-    setLocationUsers(locationUsers.map(u => u.id === editingUser.id ? editingUser : u));
+    setLocationMembers(locationMembers.map(u => u.id === editingUser.id ? editingUser : u));
     setIsEditUserModalOpen(false);
     setEditingUser(null);
   };
@@ -343,10 +364,10 @@ function LocationPerformanceContent() {
     
     if (importType === 'group') {
       // Simulate cloning groups
-      alert(`Successfully imported ${selectedNetworkItems.length} groups from ${sourceLocation} to this location.`);
+      alert(`Successfully imported ${selectedNetworkItems.length} teams from ${sourceLocation} to this location.`);
     } else {
       // Simulate cloning forms
-      alert(`Successfully imported ${selectedNetworkItems.length} forms into the ${selectedGroupName} group.`);
+      alert(`Successfully imported ${selectedNetworkItems.length} forms into the ${selectedTeamName} team.`);
     }
     
     setIsImportNetworkModalOpen(false);
@@ -354,15 +375,15 @@ function LocationPerformanceContent() {
     setSourceLocation('');
   };
 
-  const groupedUsers = groups.reduce((acc, groupName) => {
-    acc[groupName] = locationUsers.filter(u => u.role === groupName);
+  const groupedUsers = teams.reduce((acc, teamName) => {
+    acc[teamName] = locationMembers.filter(u => Array.isArray(u.role) ? u.role.includes(teamName) : u.role === teamName);
     return acc;
-  }, {} as Record<string, typeof locationUsers>);
+  }, {} as Record<string, typeof locationMembers>);
 
 
   const exportContacts = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
-      + ["Name,Role,Phone,Email", ...locationUsers.map(u => `${u.name},${u.role},${u.phone},${u.email || ''}`)].join("\n");
+      + ["Name,Role,Phone,Email", ...locationMembers.map(u => `${u.name},${u.role},${u.phone},${u.email || ''}`)].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -433,110 +454,72 @@ function LocationPerformanceContent() {
   const currentData = attendanceData[timeframe] || attendanceData.week;
   const maxValue = Math.max(...currentData.map(d => d.value));
 
-  const toggleGroup = (groupName: string) => {
-    setExpandedGroups(prev => ({
+  const toggleTeam = (teamName: string) => {
+    setExpandedTeams(prev => ({
       ...prev,
-      [groupName]: !prev[groupName]
+      [teamName]: !prev[teamName]
     }));
   };
 
-  const getGroupInviteUrl = (groupName: string) => {
-    return `${locationUrl}/join?role=${encodeURIComponent(groupName)}`;
+  const getTeamInviteUrl = (teamName: string) => {
+    return `${locationUrl}/join?role=${encodeURIComponent(teamName)}`;
   };
 
   return (
-    <div className="hq-dashboard-premium">
-      <div className="page-header">
-        <Button variant="ghost" size="sm" onClick={() => router.push('/main/manage-organization')} className="back-btn-header">
-          <ArrowLeft size={18} /> Back to Network
-        </Button>
-        <div className="header-content-wrapper">
-          <div className="location-badge-section">
-            <div className="location-badge">Active Location</div>
+    <div className="hq-dashboard-premium animate-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/main/manage-organization')} className="back-btn-pill">
+            <ArrowLeft size={16} /> Back
+          </Button>
+          <div style={{ marginTop: '12px' }}>
+            <div className="header-badge">Location Command</div>
             <h1>{locationName}</h1>
-            <p>Direct management of this location's operations and intelligence.</p>
+            <p>Optimize performance and manage teams for this hub.</p>
           </div>
         </div>
-
+        
         <div className="location-management-hub">
-          <Card 
-            className={`hub-card-premium ${activeTab === 'performance' ? 'active' : ''}`}
-            onClick={() => setActiveTab('performance')}
-            style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.3s ease', border: activeTab === 'performance' ? '2px solid var(--blue)' : '1px solid var(--border-light)', background: activeTab === 'performance' ? 'var(--blue-subtle)' : 'white' }}
-          >
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div className="hub-card-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: activeTab === 'performance' ? 'var(--blue)' : 'var(--bg)', color: activeTab === 'performance' ? 'white' : 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BarChart3 size={20} />
+          {[
+            { id: 'performance', label: 'Analytics', icon: BarChart3, desc: 'Growth' },
+            { id: 'teams', label: 'Teams', icon: Users, desc: 'Structure' },
+            { id: 'settings', label: 'Setup', icon: Settings, desc: 'Config' }
+          ].map(tab => (
+            <div 
+              key={tab.id}
+              className={`hub-card-premium glass-morphism ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id as any)}
+            >
+              <div className="hub-card-icon-box">
+                <tab.icon size={20} />
               </div>
-              <div>
-                <strong style={{ display: 'block', fontSize: '15px' }}>Performance</strong>
-                <span className="hub-card-desc" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Analytics and growth tracking</span>
-              </div>
+              <strong>{tab.label}</strong>
+              <span className="hub-card-desc">{tab.desc}</span>
             </div>
-          </Card>
-
-          <Card 
-            className={`hub-card-premium ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
-            style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.3s ease', border: activeTab === 'users' ? '2px solid var(--blue)' : '1px solid var(--border-light)', background: activeTab === 'users' ? 'var(--blue-subtle)' : 'white' }}
-          >
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div className="hub-card-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: activeTab === 'users' ? 'var(--blue)' : 'var(--bg)', color: activeTab === 'users' ? 'white' : 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Users size={20} />
-              </div>
-              <div>
-                <strong style={{ display: 'block', fontSize: '15px' }}>Users & Groups</strong>
-                <span className="hub-card-desc" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Manage members and team assets</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card 
-            className={`hub-card-premium ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-            style={{ padding: '20px', cursor: 'pointer', transition: 'all 0.3s ease', border: activeTab === 'settings' ? '2px solid var(--blue)' : '1px solid var(--border-light)', background: activeTab === 'settings' ? 'var(--blue-subtle)' : 'white' }}
-          >
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div className="hub-card-icon-box" style={{ width: '40px', height: '40px', borderRadius: '12px', background: activeTab === 'settings' ? 'var(--blue)' : 'var(--bg)', color: activeTab === 'settings' ? 'white' : 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Settings size={20} />
-              </div>
-              <div>
-                <strong style={{ display: 'block', fontSize: '15px' }}>Settings</strong>
-                <span className="hub-card-desc" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Location config and security</span>
-              </div>
-            </div>
-          </Card>
+          ))}
         </div>
+      </header>
 
-        <div className="mobile-hub-description animate-fade-in" style={{ textAlign: 'center', padding: '16px 20px', marginTop: '12px' }}>
-          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: '600' }}>
-            {activeTab === 'performance' && "Analytics and growth tracking"}
-            {activeTab === 'users' && "Manage members and team assets"}
-            {activeTab === 'settings' && "Location config and security"}
-          </p>
-        </div>
-      </div>
-
-      <div className="location-content-area" style={{ marginTop: (activeTab === 'users' && groupViewState === 'details') ? '8px' : '24px' }}>
+      <main className="dashboard-main-content">
         {activeTab === 'performance' && (
-        <div className="fade-in">
-          <div className="stats-grid">
-            {stats.map((stat, i) => (
-              <Card key={i} className="stat-card">
-                <div className={`stat-icon-box ${stat.color}`}>
-                  <stat.icon size={24} />
-                </div>
-                <div className="stat-info">
-                  <p className="stat-label">{stat.label}</p>
-                  <h2 className="stat-value">{stat.value}</h2>
-                  <div className={`stat-change ${stat.isUp ? 'positive' : 'negative'}`}>
-                    {stat.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    <span>{stat.change} this month</span>
+          <div className="fade-in">
+            <div className="stats-grid">
+              {stats.map((stat, i) => (
+                <Card key={i} className="stat-card glass-morphism">
+                  <div className={`stat-icon-box ${stat.color}`}>
+                    <stat.icon size={20} />
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                  <div className="stat-info">
+                    <p className="stat-label">{stat.label}</p>
+                    <h2 className="stat-value">{stat.value}</h2>
+                    <div className={`stat-change ${stat.isUp ? 'positive' : 'negative'}`}>
+                      {stat.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                      <span>{stat.change}</span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           {/* ... existing chart layout below ... */}
 
       <div className="performance-layout-grid">
@@ -613,19 +596,19 @@ function LocationPerformanceContent() {
     </div>
   )}
 
-  {activeTab === 'users' && (
+  {activeTab === 'teams' && (
         <div className="fade-in">
           <div className="users-management-header">
             <div className="search-and-filter">
-              {groupViewState === 'grid' && (
+              {teamViewState === 'grid' && (
                 <div className="premium-search-bar">
                   <Search size={18} />
-                  <input type="text" placeholder="Search groups..." />
+                  <input type="text" placeholder="Search teams..." />
                 </div>
               )}
             </div>
             <div className="user-actions">
-              {groupViewState === 'grid' && (
+              {teamViewState === 'grid' && (
                 <>
                   <Button variant="outline" style={{ gap: '8px' }} onClick={exportContacts}>
                     <DownloadCloud size={18} /> Export All
@@ -633,32 +616,32 @@ function LocationPerformanceContent() {
                   <Button variant="ghost" style={{ gap: '8px' }} className="btn-network-pill" onClick={() => { setImportType('group'); setIsImportNetworkModalOpen(true); }}>
                     <Layers size={18} /> <span>Import Network</span>
                   </Button>
-                  <Button className="btn-premium" style={{ gap: '8px' }} onClick={() => setIsCreateGroupModalOpen(true)}>
-                    <Plus size={18} /> Create Group
+                  <Button className="btn-premium" style={{ gap: '8px' }} onClick={() => setIsCreateTeamModalOpen(true)}>
+                    <Plus size={18} /> Create Team
                   </Button>
                 </>
               )}
             </div>
           </div>
 
-          {groupViewState === 'grid' ? (
+          {teamViewState === 'grid' ? (
             <div className="groups-premium-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-              {Object.entries(groupedUsers).map(([groupName, members]) => (
+              {Object.entries(groupedUsers).map(([teamName, members]) => (
                 <Card 
-                  key={groupName} 
+                  key={teamName} 
                   className="group-card-premium fade-in"
                   style={{ cursor: 'pointer', transition: 'all 0.2s ease', border: '1px solid var(--border-light)' }}
                   onClick={() => { 
-                    setSelectedGroupName(groupName); 
-                    setGroupViewState('details');
-                    setGroupSubView('home');
+                    setSelectedTeamName(teamName); 
+                    setTeamViewState('details');
+                    setTeamSubView('home');
                   }}
                 >
                   <div style={{ padding: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                       <div className="group-info-main">
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '4px' }}>{groupName}</h3>
-                        <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', lineHeight: '1.4' }}>{groupDescriptions[groupName] || 'No description available.'}</p>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '4px' }}>{teamName}</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', lineHeight: '1.4' }}>{teamDescriptions[teamName] || 'No description available.'}</p>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
@@ -666,7 +649,7 @@ function LocationPerformanceContent() {
                             variant="ghost" 
                             size="sm" 
                             style={{ width: '36px', height: '36px', padding: '0', borderRadius: '10px', color: 'var(--blue)', background: 'var(--blue-subtle)' }}
-                            onClick={() => router.push(`/main/messages?target=group&name=${groupName}&location=${locationName}`)}
+                            onClick={() => router.push(`/main/messages?target=team&name=${teamName}&location=${locationName}`)}
                           >
                             <Smartphone size={16} />
                           </Button>
@@ -679,7 +662,7 @@ function LocationPerformanceContent() {
                             size="sm" 
                             style={{ width: '36px', height: '36px', padding: '0', borderRadius: '10px', background: 'var(--bg)' }}
                             onClick={() => {
-                              setSelectedRoleForForm(groupName);
+                              setSelectedRoleForForm(teamName);
                               setFormFields([]);
                               setEditingFormId(null);
                               setFormConfig({ title: '', description: '', status: 'draft', lastSaved: null });
@@ -697,8 +680,8 @@ function LocationPerformanceContent() {
                             size="sm" 
                             style={{ width: '36px', height: '36px', padding: '0', borderRadius: '10px', background: 'var(--bg)' }}
                             onClick={() => {
-                              setSelectedGroupSettings(groupName);
-                              setIsGroupSettingsModalOpen(true);
+                              setSelectedTeamSettings(teamName);
+                              setIsTeamSettingsModalOpen(true);
                             }}
                           >
                             <BarChart3 size={16} />
@@ -706,13 +689,13 @@ function LocationPerformanceContent() {
                           <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Setup</span>
                         </div>
 
-                        {groupName !== 'Admin' && (
+                        {teamName !== 'Admin' && (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                             <Button 
                               variant="ghost" 
                               size="sm" 
                               style={{ width: '36px', height: '36px', padding: '0', borderRadius: '10px', background: 'var(--bg)' }}
-                              onClick={() => setSelectedGroupForQR(groupName)}
+                              onClick={() => setSelectedTeamForQR(teamName)}
                             >
                               <QrCode size={16} />
                             </Button>
@@ -768,40 +751,40 @@ function LocationPerformanceContent() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      if (groupSubView === 'home') {
-                        setGroupViewState('grid');
+                      if (teamSubView === 'home') {
+                        setTeamViewState('grid');
                       } else {
-                        setGroupSubView('home');
+                        setTeamSubView('home');
                       }
                     }} style={{ padding: '0', width: '32px', height: '32px', background: 'var(--bg)', borderRadius: '10px' }}>
                       <ArrowLeft size={18} />
                     </Button>
-                    <h2 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-0.04em' }}>{selectedGroupName}</h2>
+                    <h2 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-0.04em' }}>{selectedTeamName}</h2>
                   </div>
                   <p style={{ color: 'var(--text-tertiary)', fontSize: '15px' }}>
-                    {groupSubView === 'home' && `Overview of assets and management for the ${selectedGroupName} group.`}
-                    {groupSubView === 'members' && `Managing member roster and permissions for ${selectedGroupName}.`}
-                    {groupSubView === 'forms' && `Advanced form builder and response tracking for ${selectedGroupName}.`}
+                    {teamSubView === 'home' && `Overview of assets and management for the ${selectedTeamName} team.`}
+                    {teamSubView === 'members' && `Managing member roster and permissions for ${selectedTeamName}.`}
+                    {teamSubView === 'forms' && `Advanced form builder and response tracking for ${selectedTeamName}.`}
                   </p>
                 </div>
              </div>
 
-             {groupSubView === 'home' && (
+              {teamSubView === 'home' && (
                <div className="group-home-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
                   <Card 
                     className="action-card-premium" 
                     style={{ padding: '32px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--border-light)' }}
-                    onClick={() => setGroupSubView('members')}
+                    onClick={() => setTeamSubView('members')}
                   >
                     <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'var(--blue-subtle)', color: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
                       <Users size={32} />
                     </div>
                     <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>Members</h3>
                     <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', lineHeight: '1.6', marginBottom: '20px' }}>
-                      Add members, bulk import users, and manage group administrative permissions.
+                      Add members, bulk import workers, and manage team administrative permissions.
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--blue)' }}>{groupedUsers[selectedGroupName || '']?.length || 0} Members</span>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--blue)' }}>{groupedUsers[selectedTeamName || '']?.length || 0} Members</span>
                       <ChevronRight size={18} color="var(--blue)" />
                     </div>
                   </Card>
@@ -809,31 +792,31 @@ function LocationPerformanceContent() {
                   <Card 
                     className="action-card-premium" 
                     style={{ padding: '32px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--border-light)' }}
-                    onClick={() => setGroupSubView('forms')}
+                    onClick={() => setTeamSubView('forms')}
                   >
                     <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'var(--purple-subtle)', color: 'var(--purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
                       <FileText size={32} />
                     </div>
                     <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>Forms</h3>
                     <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', lineHeight: '1.6', marginBottom: '20px' }}>
-                      Create advanced forms, manage data collection, and analyze group responses.
+                      Create advanced forms, manage data collection, and analyze team responses.
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--purple)' }}>{groupForms[selectedGroupName || '']?.length || 0} Forms</span>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--purple)' }}>{teamForms[selectedTeamName || '']?.length || 0} Forms</span>
                       <ChevronRight size={18} color="var(--purple)" />
                     </div>
                   </Card>
                </div>
-             )}
+              )}
 
-              {groupSubView === 'members' && (
+              {teamSubView === 'members' && (
                 <>
                   <div className="members-view-header animate-fade-in">
                     <div className="header-title-search">
-                      <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Group Members</h3>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Team Members</h3>
                       <div className="premium-search-bar">
                         <Search size={16} />
-                        <input type="text" placeholder={`Search in ${selectedGroupName}...`} />
+                        <input type="text" placeholder={`Search in ${selectedTeamName}...`} />
                       </div>
                     </div>
                     <div className="action-buttons-group">
@@ -842,7 +825,7 @@ function LocationPerformanceContent() {
                         size="sm" 
                         className="btn-sms-group"
                         style={{ gap: '8px', color: 'var(--blue)', borderColor: 'var(--blue)', background: 'var(--blue-subtle)' }} 
-                        onClick={() => router.push(`/main/messages?target=group&name=${selectedGroupName}&location=${locationName}`)}
+                        onClick={() => router.push(`/main/messages?target=team&name=${selectedTeamName}&location=${locationName}`)}
                       >
                         <MessageSquare size={16} /> <span className="btn-text">Send SMS</span>
                       </Button>
@@ -850,7 +833,7 @@ function LocationPerformanceContent() {
                         <FileUp size={16} /> <span className="btn-text">Import</span>
                       </Button>
                       <Button className="btn-premium" size="sm" onClick={() => {
-                        setUserType(selectedGroupName === 'Admin' ? 'admin' : 'others');
+                        setUserType(selectedTeamName === 'Admin' ? 'admin' : 'others');
                         setIsAddUserModalOpen(true);
                       }}>
                         <Plus size={16} /> <span className="btn-text">Add Member</span>
@@ -867,13 +850,20 @@ function LocationPerformanceContent() {
                         </tr>
                       </thead>
                       <tbody>
-                        {groupedUsers[selectedGroupName || '']?.map(u => (
+                        {groupedUsers[selectedTeamName || '']?.map(u => (
                           <tr key={u.id}>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div className="user-avatar-tiny">{u.name[0]}</div>
                                 <div>
-                                  <div style={{ fontWeight: '700', fontSize: '14px' }}>{u.name}</div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{u.name}</span>
+                                    {u.teamAdmins?.includes(selectedTeamName || '') && (
+                                      <span title="Team Admin" style={{ color: 'var(--blue)', display: 'flex' }}>
+                                        <Shield size={12} fill="var(--blue-subtle)" />
+                                      </span>
+                                    )}
+                                  </div>
                                   <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{u.phone}</div>
                                 </div>
                               </div>
@@ -912,10 +902,10 @@ function LocationPerformanceContent() {
                 </>
               )}
 
-             {groupSubView === 'forms' && (
+              {teamSubView === 'forms' && (
                <div className="group-forms-view fade-in">
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Created Forms</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Team Forms</h3>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <Button 
                         variant="ghost" 
@@ -933,31 +923,31 @@ function LocationPerformanceContent() {
                         size="sm" 
                         style={{ gap: '8px' }}
                         onClick={() => {
-                          setSelectedRoleForForm(selectedGroupName);
+                          setSelectedRoleForForm(selectedTeamName);
                           setFormFields([]);
                           setEditingFormId(null);
                           setFormConfig({ title: '', description: '', status: 'draft', lastSaved: null });
                           setIsFormBuilderOpen(true);
                         }}
                       >
-                        <Plus size={16} /> Create New Form
+                        <Plus size={16} /> Create Team Form
                       </Button>
                     </div>
                  </div>
                  
                  <div className="forms-grid-premium" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                    {(groupForms[selectedGroupName || ''] || []).length === 0 ? (
+                     {(teamForms[selectedTeamName || ''] || []).length === 0 ? (
                       <div className="empty-forms-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 20px', background: 'var(--bg)', borderRadius: '24px', border: '1px dashed var(--border-light)' }}>
                          <div style={{ width: '64px', height: '64px', background: 'white', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--text-tertiary)', boxShadow: 'var(--shadow-sm)' }}>
                             <FileText size={32} />
                          </div>
                          <h4 style={{ fontWeight: '800', marginBottom: '8px' }}>No forms created yet</h4>
                          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', maxWidth: '280px', margin: '0 auto' }}>
-                           Create your first form to start collecting data from {selectedGroupName} members.
+                           Create your first form to start collecting data from {selectedTeamName} members.
                          </p>
                       </div>
                     ) : (
-                      groupForms[selectedGroupName || ''].map(form => (
+                      teamForms[selectedTeamName || ''].map(form => (
                         <Card key={form.id} className="form-item-card-premium" style={{ padding: '20px', border: '1px solid var(--border-light)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                              <div>
@@ -1010,7 +1000,7 @@ function LocationPerformanceContent() {
                                <BarChart3 size={14} style={{ marginRight: '6px' }} /> Responses
                              </Button>
                              <Button variant="outline" size="sm" fullWidth style={{ fontSize: '12px' }} onClick={() => {
-                               setSelectedRoleForForm(selectedGroupName);
+                               setSelectedRoleForForm(selectedTeamName);
                                setFormConfig(form);
                                setFormFields(form.fields);
                                setEditingFormId(form.id);
@@ -1073,13 +1063,13 @@ function LocationPerformanceContent() {
       <Modal 
         isOpen={isAddUserModalOpen} 
         onClose={() => setIsAddUserModalOpen(false)}
-        title={`Add to ${selectedGroupName}`}
+        title={`Add to ${selectedTeamName}`}
       >
         <div className="add-user-flow-premium fade-in">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="modal-intro-section" style={{ marginBottom: '8px' }}>
                <p style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
-                 Registering a new member to the <strong>{selectedGroupName}</strong> group.
+                 Registering a new member to the <strong>{selectedTeamName}</strong> group.
                </p>
             </div>
 
@@ -1109,25 +1099,49 @@ function LocationPerformanceContent() {
               </div>
             </div>
 
+            <div className="multi-team-assignment" style={{ padding: '20px', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Layers size={16} /> Assign to Teams
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                {teams.map(team => (
+                  <label key={team} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', background: 'white', borderRadius: '10px', border: '1px solid var(--border-light)', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={Array.isArray(newUser.role) ? newUser.role.includes(team) : newUser.role === team}
+                      onChange={(e) => {
+                        const currentRoles = Array.isArray(newUser.role) ? newUser.role : [newUser.role || (userType === 'admin' ? 'Admin' : 'Member')];
+                        const newRoles = e.target.checked 
+                          ? [...currentRoles, team]
+                          : currentRoles.filter(r => r !== team);
+                        setNewUser({...newUser, role: newRoles});
+                      }}
+                    />
+                    <span style={{ fontSize: '13px', fontWeight: '600' }}>{team}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="group-admin-setup" style={{ padding: '20px', background: 'var(--blue-subtle)', borderRadius: '16px', border: '1px solid var(--blue-light)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <h4 style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--blue)', fontWeight: '800' }}>
-                  <Shield size={16} /> Make Group Admin
+                  <Shield size={16} /> Make Team Admin
                 </h4>
                 <input 
                   type="checkbox" 
-                  checked={newUser.isGroupAdmin}
-                  onChange={(e) => setNewUser({...newUser, isGroupAdmin: e.target.checked})}
+                  checked={newUser.isAdmin}
+                  onChange={(e) => setNewUser({...newUser, isAdmin: e.target.checked})}
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', lineHeight: '1.5' }}>
-                A <strong>Group Admin</strong> has the authority to manage other members specifically within this group. They can add, edit, or remove members from the {selectedGroupName} team.
+                A <strong>Team Admin</strong> has the authority to manage other members and forms within their assigned teams.
               </p>
             </div>
 
             {/* Form Assignment Section */}
-            {(groupForms[selectedGroupName || ''] || []).length > 0 && (
+            {(teamForms[selectedTeamName || ''] || []).length > 0 && (
               <div className="form-assignment-setup" style={{ padding: '20px', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <div>
@@ -1160,16 +1174,16 @@ function LocationPerformanceContent() {
                        <button 
                         style={{ fontSize: '11px', color: 'var(--blue)', fontWeight: '700', border: 'none', background: 'none', cursor: 'pointer' }}
                         onClick={() => {
-                          const allIds = groupForms[selectedGroupName || ''].map(f => f.id);
+                          const allIds = teamForms[selectedTeamName || ''].map(f => f.id);
                           setNewUserForms(newUserForms.length === allIds.length ? [] : allIds);
                         }}
                        >
-                         {newUserForms.length === groupForms[selectedGroupName || '']?.length ? 'Deselect All' : 'Select All'}
+                         {newUserForms.length === teamForms[selectedTeamName || '']?.length ? 'Deselect All' : 'Select All'}
                        </button>
                     </div>
 
                     <div className="form-options-list" style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(groupForms[selectedGroupName || ''] || [])
+                      {(teamForms[selectedTeamName || ''] || [])
                         .filter(f => f.title.toLowerCase().includes(formSearchQuery.toLowerCase()))
                         .map(form => (
                         <label key={form.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'white', borderRadius: '10px', border: '1px solid var(--border-light)', cursor: 'pointer' }}>
@@ -1209,7 +1223,7 @@ function LocationPerformanceContent() {
       <Modal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        title={groupViewState === 'details' ? `Import to ${selectedGroupName}s` : "Bulk Import Contacts"}
+        title={teamViewState === 'details' ? `Import to ${selectedTeamName}s` : "Bulk Import Contacts"}
       >
         <div className="import-modal-content fade-in">
           <div className="upload-placeholder-zone-premium" style={{ marginBottom: '24px' }}>
@@ -1222,16 +1236,16 @@ function LocationPerformanceContent() {
             </div>
           </div>
 
-          {groupViewState === 'grid' && (
+          {teamViewState === 'grid' && (
             <div className="target-group-selector" style={{ marginBottom: '24px' }}>
-              <label className="input-label" style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600' }}>Target Group</label>
+              <label className="input-label" style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600' }}>Target Team</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 {Object.keys(groupedUsers).map(group => (
                   <Button 
                     key={group} 
-                    variant={selectedGroupName === group ? 'primary' : 'outline'}
+                    variant={selectedTeamName === group ? 'primary' : 'outline'}
                     size="sm"
-                    onClick={() => setSelectedGroupName(group)}
+                    onClick={() => setSelectedTeamName(group)}
                     style={{ fontSize: '12px' }}
                   >
                     {group}s
@@ -1245,13 +1259,13 @@ function LocationPerformanceContent() {
             <h4 style={{ fontSize: '14px', marginBottom: '12px' }}>Import Instructions</h4>
             <ul style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '16px' }}>
               <li>File should contain <strong>Name</strong> and <strong>Phone</strong>.</li>
-              <li>Contacts will be imported directly into the <strong>{groupViewState === 'details' ? selectedGroupName : (selectedGroupName || 'selected')}</strong> group.</li>
+              <li>Contacts will be imported directly into the <strong>{teamViewState === 'details' ? selectedTeamName : (selectedTeamName || 'selected')}</strong> group.</li>
             </ul>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
              <Button variant="ghost" onClick={() => setIsImportModalOpen(false)}>Close</Button>
-             <Button className="btn-premium" disabled={groupViewState === 'grid' && !selectedGroupName}>Process Import</Button>
+             <Button className="btn-premium" disabled={teamViewState === 'grid' && !selectedTeamName}>Process Import</Button>
           </div>
         </div>
       </Modal>
@@ -1348,7 +1362,7 @@ function LocationPerformanceContent() {
              </Button>
              <div style={{ height: '1px', background: 'var(--border-light)', margin: '8px 0' }}></div>
              <Button variant="ghost" fullWidth style={{ justifyContent: 'flex-start', gap: '12px', color: 'var(--red)' }} onClick={() => {
-                setLocationUsers(locationUsers.filter(u => u.id !== selectedUser?.id));
+                setLocationMembers(locationMembers.filter(u => u.id !== selectedUser?.id));
                 setIsUserActionModalOpen(false);
              }}>
                 <Trash2 size={18} /> Remove User from Location
@@ -1357,17 +1371,17 @@ function LocationPerformanceContent() {
         </div>
       </Modal>
 
-      {/* Group QR Modal */}
+      {/* Team QR Modal */}
       <Modal
-        isOpen={!!selectedGroupForQR}
-        onClose={() => setSelectedGroupForQR(null)}
-        title={`${selectedGroupForQR} Group Invite`}
+        isOpen={!!selectedTeamForQR}
+        onClose={() => setSelectedTeamForQR(null)}
+        title={`${selectedTeamForQR} Team Invite`}
       >
         <div className="group-qr-modal-content fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', padding: '12px 0' }}>
           <div className="qr-container-premium" style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid var(--border-light)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
             <QRCodeSVG
               id="group-invite-qr"
-              value={selectedGroupForQR ? getGroupInviteUrl(selectedGroupForQR) : ''}
+              value={selectedTeamForQR ? getTeamInviteUrl(selectedTeamForQR) : ''}
               size={200}
               level="H"
               includeMargin={true}
@@ -1383,9 +1397,9 @@ function LocationPerformanceContent() {
           </div>
           
           <div style={{ textAlign: 'center' }}>
-            <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px' }}>Join {selectedGroupForQR}s</h4>
+            <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px' }}>Join {selectedTeamForQR} Team</h4>
             <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', maxWidth: '280px' }}>
-              People can scan this code to automatically register and join the {selectedGroupForQR} group for this location.
+              People can scan this code to automatically register and join the {selectedTeamForQR} group for this location.
             </p>
           </div>
 
@@ -1406,7 +1420,7 @@ function LocationPerformanceContent() {
                        ctx.drawImage(img, 20, 20);
                        const pngFile = canvas.toDataURL('image/png');
                        const downloadLink = document.createElement('a');
-                       downloadLink.download = `${selectedGroupForQR}-group-qr.png`;
+                       downloadLink.download = `${selectedTeamForQR}-team-qr.png`;
                        downloadLink.href = pngFile;
                        downloadLink.click();
                      }
@@ -1417,7 +1431,7 @@ function LocationPerformanceContent() {
                 <Download size={18} /> Download QR
              </Button>
              <Button className="btn-premium" fullWidth onClick={() => {
-                navigator.clipboard.writeText(getGroupInviteUrl(selectedGroupForQR || ''));
+                navigator.clipboard.writeText(getTeamInviteUrl(selectedTeamForQR || ''));
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
              }}>
@@ -1465,7 +1479,7 @@ function LocationPerformanceContent() {
                 onChange={(e) => setEditingUser({...editingUser, pin: e.target.value.replace(/[^0-9]/g, '')})}
               />
               <Input 
-                label="Assigned Role / Group Name" 
+                label="Assigned Role / Team Name" 
                 value={editingUser.role}
                 onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
               />
@@ -1478,15 +1492,15 @@ function LocationPerformanceContent() {
         </div>
       </Modal>
 
-      {/* Group Settings Modal */}
+      {/* Team Settings Modal */}
       <Modal
-        isOpen={isGroupSettingsModalOpen}
-        onClose={() => setIsGroupSettingsModalOpen(false)}
-        title={`${selectedGroupSettings} Group Settings`}
+        isOpen={isTeamSettingsModalOpen}
+        onClose={() => setIsTeamSettingsModalOpen(false)}
+        title={`${selectedTeamSettings} Team Settings`}
       >
         <div className="group-settings-modal-content fade-in">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {selectedGroupSettings !== 'Admin' ? (
+            {selectedTeamSettings !== 'Admin' ? (
               <div className="setting-toggle-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg)', borderRadius: '12px' }}>
                 <div>
                   <strong style={{ display: 'block', fontSize: '14px' }}>Enable Joining</strong>
@@ -1494,8 +1508,8 @@ function LocationPerformanceContent() {
                 </div>
                 <input 
                   type="checkbox" 
-                  checked={groupConfigs[selectedGroupSettings || '']?.allowJoin}
-                  onChange={(e) => setGroupConfigs({...groupConfigs, [selectedGroupSettings || '']: {...groupConfigs[selectedGroupSettings || ''], allowJoin: e.target.checked}})}
+                  checked={teamConfigs[selectedTeamSettings || '']?.allowJoin}
+                  onChange={(e) => setTeamConfigs({...teamConfigs, [selectedTeamSettings || '']: {...teamConfigs[selectedTeamSettings || ''], allowJoin: e.target.checked}})}
                 />
               </div>
             ) : (
@@ -1503,7 +1517,7 @@ function LocationPerformanceContent() {
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', color: 'var(--blue)' }}>
                    <Shield size={20} />
                    <div>
-                     <strong style={{ fontSize: '14px', display: 'block' }}>Protected Admin Group</strong>
+                     <strong style={{ fontSize: '14px', display: 'block' }}>Protected Admin Team</strong>
                      <p style={{ fontSize: '12px', opacity: 0.8 }}>Admin roles cannot be joined via public links. They must be manually created by a Super Admin.</p>
                    </div>
                 </div>
@@ -1517,8 +1531,8 @@ function LocationPerformanceContent() {
               </div>
               <input 
                 type="checkbox" 
-                checked={groupConfigs[selectedGroupSettings || '']?.allowPin}
-                onChange={(e) => setGroupConfigs({...groupConfigs, [selectedGroupSettings || '']: {...groupConfigs[selectedGroupSettings || ''], allowPin: e.target.checked}})}
+                checked={teamConfigs[selectedTeamSettings || '']?.allowPin}
+                onChange={(e) => setTeamConfigs({...teamConfigs, [selectedTeamSettings || '']: {...teamConfigs[selectedTeamSettings || ''], allowPin: e.target.checked}})}
               />
             </div>
 
@@ -1531,7 +1545,7 @@ function LocationPerformanceContent() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
-              <Button className="btn-premium" fullWidth onClick={() => setIsGroupSettingsModalOpen(false)}>Save Group Settings</Button>
+              <Button className="btn-premium" fullWidth onClick={() => setIsTeamSettingsModalOpen(false)}>Save Team Settings</Button>
             </div>
           </div>
         </div>
@@ -1928,7 +1942,7 @@ function LocationPerformanceContent() {
 
             {formDistribution.memberAccess.mode === 'selected' && (
               <div className="member-selection-list animate-slide-down" style={{ marginTop: '16px', padding: '16px', background: 'var(--bg)', borderRadius: '16px', maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--border-light)' }}>
-                {groupedUsers[selectedGroupName || '']?.map(user => (
+                {groupedUsers[selectedTeamName || '']?.map(user => (
                   <label key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', cursor: 'pointer' }}>
                     <input 
                       type="checkbox" 
@@ -2000,8 +2014,8 @@ function LocationPerformanceContent() {
             <Button className="btn-premium" fullWidth onClick={() => {
               if (editingFormId) {
                 // Just saving settings for existing form
-                setGroupForms(prev => {
-                  const group = selectedGroupName || 'General';
+                setTeamForms(prev => {
+                  const group = selectedTeamName || 'General';
                   const forms = [...(prev[group] || [])];
                   const idx = forms.findIndex(f => f.id === editingFormId);
                   if (idx !== -1) {
@@ -2056,16 +2070,16 @@ function LocationPerformanceContent() {
            </div>
         </div>
       </Modal>
-      {/* Create Group Modal */}
+      {/* Create Team Modal */}
       <Modal
-        isOpen={isCreateGroupModalOpen}
-        onClose={() => setIsCreateGroupModalOpen(false)}
-        title="New Organizational Group"
+        isOpen={isCreateTeamModalOpen}
+        onClose={() => setIsCreateTeamModalOpen(false)}
+        title="New Organizational Team"
       >
-        <div className="create-group-premium-flow fade-in">
+        <div className="create-group-premium-flow fade-in" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
           <div className="modal-intro-section" style={{ marginBottom: '28px', paddingBottom: '20px', borderBottom: '1px solid var(--border-light)' }}>
              <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', lineHeight: '1.6' }}>
-               Create a dedicated space for your team. Groups allow you to manage members, forms, and security settings in one place.
+               Create a dedicated space for your team. Teams allow you to manage members, forms, and security settings in one place.
              </p>
           </div>
 
@@ -2076,28 +2090,28 @@ function LocationPerformanceContent() {
                 <div style={{ width: '32px', height: '32px', background: 'var(--blue-subtle)', color: 'var(--blue)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Type size={18} />
                 </div>
-                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>Group Identity</h4>
+                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>Team Identity</h4>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="input-group-premium">
                   <Input 
-                    label="What is the name of this group?" 
+                    label="What is the name of this Team?" 
                     placeholder="e.g. Media Team, Hospitality, Security..." 
-                    value={newGroup.name}
-                    onChange={(e) => setNewGroup({...newGroup, name: e.target.value})}
+                    value={newTeam.name}
+                    onChange={(e) => setNewTeam({...newTeam, name: e.target.value})}
                   />
                   <div className="suggestions-cloud" style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {['Technical', 'Communications', 'Logistics', 'Youth', 'Education', 'Worship'].map(s => (
+                    {['Workers', 'Leaders', 'Zones', 'Cells', 'Logistics', 'Youth', 'Education', 'Worship'].map(s => (
                       <button 
                         key={s} 
-                        className={`suggestion-pill ${newGroup.name === s ? 'active' : ''}`}
-                        onClick={() => setNewGroup({...newGroup, name: s})}
+                        className={`suggestion-pill ${newTeam.name === s ? 'active' : ''}`}
+                        onClick={() => setNewTeam({...newTeam, name: s})}
                         style={{ 
                           padding: '6px 14px', 
-                          background: newGroup.name === s ? 'var(--blue)' : 'var(--bg)', 
-                          color: newGroup.name === s ? 'white' : 'var(--text-primary)',
-                          border: '1px solid ' + (newGroup.name === s ? 'var(--blue)' : 'var(--border-light)'), 
+                          background: newTeam.name === s ? 'var(--blue)' : 'var(--bg)', 
+                          color: newTeam.name === s ? 'white' : 'var(--text-primary)',
+                          border: '1px solid ' + (newTeam.name === s ? 'var(--blue)' : 'var(--border-light)'), 
                           borderRadius: '20px', 
                           fontSize: '11px', 
                           fontWeight: '600',
@@ -2113,13 +2127,13 @@ function LocationPerformanceContent() {
 
                 <div className="textarea-group-premium">
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-                    Group Purpose <span title="Briefly describe what this group does for your organization."><Info size={14} style={{ opacity: 0.5 }} /></span>
+                    Team Purpose <span title="Briefly describe what this group does for your organization."><Info size={14} style={{ opacity: 0.5 }} /></span>
                   </label>
                   <textarea 
                     placeholder="Describe the responsibilities or goals of this group..." 
                     style={{ width: '100%', minHeight: '100px', borderRadius: '16px', border: '1px solid var(--border-light)', padding: '16px', fontSize: '14px', background: 'var(--bg)', resize: 'vertical', transition: 'border-color 0.2s' }}
-                    value={newGroup.description}
-                    onChange={(e) => setNewGroup({...newGroup, description: e.target.value})}
+                    value={newTeam.description}
+                    onChange={(e) => setNewTeam({...newTeam, description: e.target.value})}
                   />
                 </div>
               </div>
@@ -2138,13 +2152,13 @@ function LocationPerformanceContent() {
                 <div 
                   className="setting-card-interactive" 
                   style={{ padding: '16px', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border-light)', cursor: 'pointer' }}
-                  onClick={() => setNewGroup({...newGroup, allowJoin: !newGroup.allowJoin})}
+                  onClick={() => setNewTeam({...newTeam, allowJoin: !newTeam.allowJoin})}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <div style={{ width: '24px', height: '24px', background: 'white', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-light)' }}>
                       <Share size={12} />
                     </div>
-                    <input type="checkbox" checked={newGroup.allowJoin} readOnly />
+                    <input type="checkbox" checked={newTeam.allowJoin} readOnly />
                   </div>
                   <strong style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Public Access</strong>
                   <p style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>Allow people to join via Link or QR code.</p>
@@ -2153,13 +2167,13 @@ function LocationPerformanceContent() {
                 <div 
                   className="setting-card-interactive" 
                   style={{ padding: '16px', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border-light)', cursor: 'pointer' }}
-                  onClick={() => setNewGroup({...newGroup, allowPin: !newGroup.allowPin})}
+                  onClick={() => setNewTeam({...newTeam, allowPin: !newTeam.allowPin})}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <div style={{ width: '24px', height: '24px', background: 'white', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-light)' }}>
                       <LogIn size={12} />
                     </div>
-                    <input type="checkbox" checked={newGroup.allowPin} readOnly />
+                    <input type="checkbox" checked={newTeam.allowPin} readOnly />
                   </div>
                   <strong style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>PIN Security</strong>
                   <p style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>Require a 6-digit PIN for dashboard access.</p>
@@ -2169,14 +2183,14 @@ function LocationPerformanceContent() {
           </div>
 
           <div className="modal-footer-premium" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid var(--border-light)' }}>
-            <Button variant="ghost" onClick={() => setIsCreateGroupModalOpen(false)} style={{ fontWeight: '600' }}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setIsCreateTeamModalOpen(false)} style={{ fontWeight: '600' }}>Cancel</Button>
             <Button 
               className="btn-premium" 
-              onClick={handleCreateGroup} 
-              disabled={!newGroup.name}
+              onClick={handleCreateTeam} 
+              disabled={!newTeam.name}
               style={{ padding: '0 32px', height: '48px', fontSize: '14px' }}
             >
-              Initialize Group
+              Initialize Team
             </Button>
           </div>
         </div>
@@ -2212,7 +2226,7 @@ function LocationPerformanceContent() {
                       <div>
                         <strong style={{ display: 'block', fontSize: '15px' }}>{loc.name}</strong>
                         <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                          {importType === 'group' ? `${loc.groups.length} Groups available` : `${loc.forms.length} Forms available`}
+                          {importType === 'group' ? `${loc.groups.length} Teams available` : `${loc.forms.length} Forms available`}
                         </span>
                       </div>
                       <ChevronRight size={18} color="var(--text-tertiary)" />
@@ -2294,7 +2308,7 @@ function LocationPerformanceContent() {
                   onClick={handleImportNetworkItems}
                   style={{ padding: '0 24px' }}
                 >
-                  Import {importType === 'group' ? 'Groups' : 'Forms'}
+                  Import {importType === 'group' ? 'Teams' : 'Forms'}
                 </Button>
               </div>
             </div>
@@ -2491,15 +2505,15 @@ function LocationPerformanceContent() {
         </div>
       </Modal>
 
-      </div>
+      </main>
     </div>
   );
 }
 
 export default function LocationPerformancePage() {
   return (
-    <Suspense fallback={<div>Loading location performance...</div>}>
-      <LocationPerformanceContent />
+    <Suspense fallback={<div>Loading location dashboard...</div>}>
+      <LocationDashboardContent />
     </Suspense>
   );
 }

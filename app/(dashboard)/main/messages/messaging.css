@@ -799,25 +799,66 @@
     border: 1px solid #FECACA;
 }
 
-/* --- Mobile Composer Cleanup --- */
-@media (max-width: 1024px) {
-    .composer-main {
-        padding: 24px;
-        border-radius: 24px;
-    }
-    
-    .composer-textarea {
-        min-height: 160px;
-        font-size: 16px;
-        padding: 16px;
-    }
-    
-    .composer-stats-bar {
-        gap: 6px;
-    }
-    
-    .stat-pill {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
+/* --- New Messaging Hub Grid --- */
+.messaging-actions-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.msg-hub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 16px !important;
+  border-radius: 24px !important;
+  cursor: pointer;
+  transition: all 0.3s ease !important;
+  border: 1px solid var(--border-light) !important;
+  background: white;
+}
+
+.msg-hub-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.05) !important;
+  border-color: #3b82f6 !important;
+}
+
+.msg-hub-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.msg-hub-card.blue .msg-hub-icon { background: #eff6ff; color: #3b82f6; }
+.msg-hub-card.purple .msg-hub-icon { background: #f5f3ff; color: #8b5cf6; }
+.msg-hub-card.green .msg-hub-icon { background: #f0fdf4; color: #22c55e; }
+.msg-hub-card.orange .msg-hub-icon { background: #fff7ed; color: #f97316; }
+
+.msg-hub-card strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  .messaging-actions-hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .msg-hub-card {
+    padding: 20px 12px !important;
+  }
+  
+  .msg-hub-icon {
+    width: 44px;
+    height: 44px;
+  }
 }

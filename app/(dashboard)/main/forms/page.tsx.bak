@@ -59,7 +59,6 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import '../main.css';
-import '../management.css';
 
 export default function FormsPage() {
   const router = useRouter();
@@ -82,7 +81,7 @@ export default function FormsPage() {
   ];
 
   // Mock data for forms
-  const [forms, setForms] = useState<any[]>([
+  const [forms, setForms] = useState([
     { id: '1', title: 'Member Registration', type: 'Outreach', status: 'Active', responses: 124, lastModified: '2 days ago', access: 'Public', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'public' }, locations: ['loc1'], teams: ['team1', 'team2'] } },
     { id: '2', title: 'Weekly Feedback', type: 'Internal', status: 'Active', responses: 45, lastModified: '5 days ago', access: 'Members Only', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'registered' }, locations: ['loc2'], teams: ['team3'] } },
     { id: '3', title: 'Event Signup', type: 'Outreach', status: 'Draft', responses: 0, lastModified: '1 week ago', access: 'Public', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'public' }, locations: [], teams: [] } },
@@ -116,21 +115,17 @@ export default function FormsPage() {
     { id: 'number', label: 'Number', icon: Hash, cat: 'Standard', desc: 'Numeric input only.' },
     { id: 'email', label: 'Email', icon: AtSign, cat: 'Standard', desc: 'Email address validation.' },
     { id: 'phone', label: 'Phone', icon: Smartphone, cat: 'Standard', desc: 'International phone format.' },
-    { id: 'url', label: 'Website URL', icon: LinkIcon, cat: 'Standard', desc: 'Valid URL address.' },
     { id: 'checkbox', label: 'Checkbox', icon: CheckSquare, cat: 'Choice', desc: 'Select multiple options.' },
     { id: 'radio', label: 'Radio Choice', icon: Circle, cat: 'Choice', desc: 'Select exactly one option.' },
     { id: 'dropdown', label: 'Dropdown', icon: List, cat: 'Choice', desc: 'Choose from a compact list.' },
-    { id: 'multiselect', label: 'Multi-Select', icon: List, cat: 'Choice', desc: 'Select multiple items from a list.' },
-    { id: 'yesno', label: 'Yes/No', icon: ToggleLeft, cat: 'Choice', desc: 'Simple boolean selection.' },
     { id: 'date', label: 'Date', icon: Calendar, cat: 'Date & Time', desc: 'Pick a specific calendar date.' },
     { id: 'time', label: 'Time', icon: Clock, cat: 'Date & Time', desc: 'Select a specific time.' },
-    { id: 'monthday', label: 'Month & Day', icon: Calendar, cat: 'Date & Time', desc: 'Recurring yearly date.' },
     { id: 'fileupload', label: 'File Upload', icon: FileUp, cat: 'Media', desc: 'Documents or generic files.' },
     { id: 'image', label: 'Image', icon: ImageIcon, cat: 'Media', desc: 'Photos or visual assets.' },
     { id: 'signature', label: 'Signature', icon: PenTool, cat: 'Advanced', desc: 'Digital signature capture.' },
     { id: 'rating', label: 'Rating', icon: Star, cat: 'Advanced', desc: 'Star or scale-based feedback.' },
+    { id: 'yesno', label: 'Yes/No', icon: ToggleLeft, cat: 'Choice', desc: 'Simple boolean selection.' },
     { id: 'address', label: 'Address', icon: MapPin, cat: 'Advanced', desc: 'Location or postal details.' },
-    { id: 'paragraph', label: 'Paragraph Text', icon: Type, cat: 'Layout', desc: 'Display-only informational text.' },
     { id: 'divider', label: 'Divider', icon: Minus, cat: 'Layout', desc: 'Visual separation between fields.' },
   ];
 
@@ -174,23 +169,22 @@ export default function FormsPage() {
     setIsFormBuilderOpen(true);
   };
 
-  const handlePublishForm = (isDraft = false) => {
+  const handlePublishForm = () => {
     const finalUrl = `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
     if (editingFormId) {
       setForms(forms.map(f => f.id === editingFormId ? { 
           ...f, 
-          title: formConfig.title || 'Untitled Form', 
-          status: isDraft ? 'Draft' : 'Active', 
+          title: formConfig.title, 
+          status: 'Active', 
           fields: formFields,
-          distribution: formDistribution,
-          lastModified: 'Just now'
+          distribution: formDistribution
         } : f));
     } else {
       const newForm = {
         id: Math.random().toString(36).substr(2, 9),
         title: formConfig.title || 'Untitled Form',
         type: 'Outreach',
-        status: isDraft ? 'Draft' : 'Active',
+        status: 'Active',
         responses: 0,
         lastModified: 'Just now',
         access: formDistribution.publicAccess.mode === 'public' ? 'Public' : 'Members Only',
@@ -202,15 +196,8 @@ export default function FormsPage() {
     setPublishedFormUrl(finalUrl);
     setIsDistributionModalOpen(false);
     setIsFormBuilderOpen(false);
-    if (!isDraft) {
-      setIsPublishSuccessOpen(true);
-    }
+    setIsPublishSuccessOpen(true);
   };
-
-  const handleSaveDraft = () => {
-    handlePublishForm(true);
-  };
-
 
   const toggleLocation = (id: string) => {
       setFormDistribution(prev => ({
@@ -382,7 +369,6 @@ export default function FormsPage() {
         <div className="form-builder-container-premium">
           {!previewMode ? (
             <div className="builder-interface fade-in">
-              {/* Builder Header */}
               <div className="builder-header-sticky">
                 <div className="header-main-info">
                   <div className="title-area">
@@ -399,23 +385,24 @@ export default function FormsPage() {
                     </div>
                   </div>
                   <div className="header-actions">
-                    <Button variant="ghost" size="sm" onClick={() => setPreviewMode('mobile')} title="Preview Form">
+                    <Button variant="ghost" size="sm" onClick={() => setPreviewMode('mobile')}>
                       <Eye size={18} /> <span className="hide-mobile">Preview</span>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleSaveDraft()}>
+                    <Button variant="outline" size="sm" onClick={() => setIsFormBuilderOpen(false)}>
                        Save Draft
-                     </Button>
+                    </Button>
                     <Button 
-                      className="btn-premium" 
-                      size="sm" 
-                      onClick={() => setIsDistributionModalOpen(true)}
-                      style={{ opacity: formFields.length === 0 ? 0.5 : 1, pointerEvents: formFields.length === 0 ? 'none' : 'auto' }}
+                        className="btn-premium" 
+                        size="sm" 
+                        onClick={() => setIsDistributionModalOpen(true)}
+                        disabled={formFields.length === 0}
+                        style={{ opacity: formFields.length === 0 ? 0.5 : 1 }}
                     >
-                      Publish Form
+                      {editingFormId ? 'Update & Publish' : 'Publish Form'}
                     </Button>
                   </div>
                 </div>
-                <div className="description-area">
+                <div className="description-area" style={{ marginTop: '12px' }}>
                   <textarea 
                     className="form-desc-input-ghost"
                     placeholder="Add an optional description for this form..."
@@ -427,7 +414,6 @@ export default function FormsPage() {
                       <Button 
                         className="btn-premium btn-add-field-premium" 
                         onClick={() => setIsFieldSelectorOpen(true)}
-                        style={{ gap: '10px', padding: '12px 24px', borderRadius: '14px', fontSize: '14px', fontWeight: '800', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}
                       >
                         <Plus size={20} /> Add New Field
                       </Button>
@@ -436,22 +422,18 @@ export default function FormsPage() {
                 </div>
               </div>
 
-              {/* Builder Content */}
               <div className="builder-body-scrollable">
                 <div className="fields-stack">
                   {formFields.length === 0 ? (
-                    <div className="empty-builder-state fade-in" style={{ textAlign: 'center', padding: '80px 40px', background: 'white', borderRadius: '32px', border: '2px dashed var(--border-light)' }}>
-                      <div className="empty-icon" style={{ width: '80px', height: '80px', background: 'var(--bg)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--blue)' }}>
+                    <div className="empty-builder-state fade-in">
+                      <div className="empty-icon">
                         <Layout size={40} />
                       </div>
-                      <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '12px' }}>Your form is empty</h3>
-                      <p style={{ color: 'var(--text-tertiary)', fontSize: '15px', maxWidth: '300px', margin: '0 auto 24px' }}>
-                        Start by adding your first field below to begin building your custom form.
-                      </p>
+                      <h3>Your form is empty</h3>
+                      <p>Start by adding your first field below to begin building your custom form.</p>
                       <Button 
                         className="btn-premium btn-add-field-premium first-field" 
                         onClick={() => setIsFieldSelectorOpen(true)}
-                        style={{ gap: '10px', padding: '14px 32px', borderRadius: '16px', fontSize: '15px', fontWeight: '800', boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
                       >
                         <Plus size={22} /> Add Your First Field
                       </Button>
@@ -461,12 +443,12 @@ export default function FormsPage() {
                       <div key={field.id} className="field-card-premium animate-slide-up">
                         <div className="field-card-drag-handle"><GripVertical size={16} /></div>
                         
-                        <div className="field-card-header">
+                        <div className="field-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div className="field-type-badge">
                             {fieldTypes.find(t => t.id === field.type)?.icon && React.createElement(fieldTypes.find(t => t.id === field.type)!.icon, { size: 14 })}
                             <span>{fieldTypes.find(t => t.id === field.type)?.label}</span>
                           </div>
-                          <div className="field-actions-top">
+                          <div className="field-actions-top" style={{ display: 'flex', gap: '8px' }}>
                             <Button variant="ghost" size="sm" onClick={() => {
                               const newField = {...field, id: Math.random().toString(36).substr(2, 9)};
                               setFormFields([...formFields.slice(0, idx + 1), newField, ...formFields.slice(idx + 1)]);
@@ -504,12 +486,11 @@ export default function FormsPage() {
                             />
                           )}
 
-                          {/* Dynamic Content based on type */}
-                          {['radio', 'checkbox', 'dropdown', 'multiselect', 'yesno'].includes(field.type) && (
+                          {['radio', 'checkbox', 'dropdown', 'yesno'].includes(field.type) && (
                             <div className="options-editor">
-                              <div style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                              <div className="options-header">
                                 <span>Configure Options</span>
-                                <span>{field.options.length} {field.options.length === 1 ? 'Option' : 'Options'}</span>
+                                <span>{field.options.length} Options</span>
                               </div>
                               {field.options.map((opt: string, oIdx: number) => (
                                 <div key={oIdx} className="option-row animate-slide-right">
@@ -551,18 +532,6 @@ export default function FormsPage() {
                               >
                                 <Plus size={14} /> Add Option
                               </Button>
-
-                              <div style={{ marginTop: '16px', padding: '12px', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                                 <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-tertiary)', display: 'block', marginBottom: '8px' }}>LIVE PREVIEW</span>
-                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                    {field.options.map((o: string, i: number) => (
-                                      <div key={i} style={{ padding: '6px 12px', background: 'white', border: '1px solid var(--border-light)', borderRadius: '8px', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                         {field.type === 'radio' || field.type === 'yesno' ? <Circle size={10} color="var(--border)" /> : <CheckSquare size={10} color="var(--border)" />}
-                                         {o || `Option ${i+1}`}
-                                      </div>
-                                    ))}
-                                 </div>
-                              </div>
                             </div>
                           )}
 
@@ -573,12 +542,10 @@ export default function FormsPage() {
                                </div>
                             </div>
                           )}
-
-                          {field.type === 'divider' && <div className="divider-preview" style={{ borderTop: '2px solid var(--border-light)', margin: '16px 0' }} />}
                         </div>
 
-                        <div className="field-card-footer">
-                           <div className="footer-left">
+                        <div className="field-card-footer" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-light)' }}>
+                           <div className="footer-left" style={{ display: 'flex', gap: '16px' }}>
                               <label className="toggle-label-premium">
                                  <input 
                                    type="checkbox" 
@@ -605,8 +572,8 @@ export default function FormsPage() {
                               </label>
                            </div>
                            <div className="footer-right">
-                              <Button variant="ghost" size="sm" title="Advanced Settings">
-                                <Filter size={16} />
+                              <Button variant="ghost" size="sm">
+                                <Settings size={16} />
                               </Button>
                            </div>
                         </div>
@@ -615,7 +582,6 @@ export default function FormsPage() {
                   )}
                 </div>
               </div>
-
             </div>
           ) : (
             /* Preview Mode - HIGH QUALITY FRAME */
@@ -640,62 +606,45 @@ export default function FormsPage() {
                             <label>{f.title} {f.required && <span className="text-red">*</span>}</label>
                             {f.showDescription && <p className="field-desc">{f.description}</p>}
                             <div className="preview-input-container">
-                               {['text', 'email', 'phone', 'url', 'number'].includes(f.type) && <Input placeholder={`Enter your ${f.type}...`} readOnly />}
-                               {f.type === 'longtext' && <textarea placeholder="Describe in detail..." readOnly className="preview-textarea" style={{ width: '100%', borderRadius: '12px', border: '1px solid var(--border-light)', minHeight: '100px', padding: '12px', fontSize: '14px', outline: 'none' }} />}
+                               {['text', 'email', 'phone', 'number'].includes(f.type) && <Input placeholder={`Enter your ${f.type}...`} readOnly />}
+                               {f.type === 'longtext' && <textarea placeholder="Describe in detail..." readOnly className="preview-textarea" />}
                                {['radio', 'checkbox', 'yesno'].includes(f.type) && (
                                  <div className="preview-options">
                                    {f.options.map((o: string) => (
-                                     <label key={o} className="preview-option-pill" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', marginBottom: '10px', padding: '10px', background: 'var(--bg)', borderRadius: '10px', cursor: 'pointer' }}>
-                                       <input type={f.type === 'yesno' ? 'radio' : f.type} disabled style={{ accentColor: 'var(--blue)' }} /> {o}
+                                     <label key={o} className="preview-option-pill">
+                                       <input type={f.type === 'yesno' ? 'radio' : f.type} disabled /> {o}
                                      </label>
                                    ))}
                                  </div>
                                )}
                                {f.type === 'dropdown' && (
-                                 <select disabled className="preview-select" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-light)', background: 'var(--bg)', fontSize: '14px' }}>
+                                 <select disabled className="preview-select">
                                    <option>Select an option...</option>
                                    {f.options.map((o: string) => <option key={o}>{o}</option>)}
                                  </select>
                                )}
-                               {f.type === 'multiselect' && (
-                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', border: '1px solid var(--border-light)', borderRadius: '12px' }}>
-                                   <span style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>Select multiple...</span>
-                                 </div>
-                               )}
-                               {['date', 'time', 'monthday'].includes(f.type) && (
-                                 <div className="preview-date-time-box" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: '1px solid var(--border-light)', borderRadius: '12px', background: 'var(--bg)', color: 'var(--text-tertiary)' }}>
-                                   <Calendar size={18} /> <span>Pick a {f.type === 'monthday' ? 'date' : f.type}...</span>
+                               {['date', 'time'].includes(f.type) && (
+                                 <div className="preview-date-time-box">
+                                   <Calendar size={18} /> <span>Pick a {f.type}...</span>
                                  </div>
                                )}
                                {['fileupload', 'image'].includes(f.type) && (
-                                 <div className="preview-upload-box" style={{ padding: '32px', border: '2px dashed var(--border-light)', borderRadius: '16px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-                                    <FileUp size={24} style={{ margin: '0 auto 8px' }} />
-                                    <p style={{ fontSize: '13px' }}>Click or drag {f.type === 'image' ? 'image' : 'file'} to upload</p>
+                                 <div className="preview-upload-box">
+                                    <FileUp size={24} />
+                                    <p>Click or drag to upload</p>
                                  </div>
                                )}
                                {f.type === 'signature' && (
-                                 <div className="preview-signature-pad" style={{ width: '100%', height: '120px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                                 <div className="preview-signature-pad">
                                    Draw your signature here...
                                  </div>
                                )}
-                               {f.type === 'address' && (
-                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                   <Input placeholder="Street Address" readOnly />
-                                   <div style={{ display: 'flex', gap: '8px' }}>
-                                      <Input placeholder="City" readOnly />
-                                      <Input placeholder="Zip Code" readOnly />
-                                   </div>
-                                 </div>
-                               )}
-                               {f.type === 'paragraph' && (
-                                 <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>{f.description || 'Paragraph informational text will appear here.'}</p>
-                               )}
                                {f.type === 'rating' && (
-                                 <div className="preview-rating" style={{ display: 'flex', gap: '12px', justifyContent: 'center', padding: '10px' }}>
-                                   {[1,2,3,4,5].map(n => <Star key={n} size={32} style={{ color: 'var(--border-light)', cursor: 'pointer' }} />)}
+                                 <div className="preview-rating">
+                                   {[1,2,3,4,5].map(n => <Star key={n} size={32} />)}
                                  </div>
                                )}
-                               {f.type === 'divider' && <hr className="preview-divider" style={{ border: 'none', borderTop: '2px solid var(--bg)', margin: '12px 0' }} />}
+                               {f.type === 'divider' && <hr className="preview-divider" />}
                             </div>
                           </div>
                         ))}
@@ -717,7 +666,7 @@ export default function FormsPage() {
         onClose={() => setIsDistributionModalOpen(false)}
         title="Form Settings & Distribution"
       >
-        <div className="distribution-modal-content fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '40px' }}>
+        <div className="distribution-modal-content fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           
           <section className="dist-section">
             <div className="dist-section-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
@@ -791,7 +740,7 @@ export default function FormsPage() {
 
           <div className="modal-footer-actions" style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
             <Button variant="ghost" fullWidth onClick={() => setIsDistributionModalOpen(false)}>Cancel</Button>
-            <Button className="btn-premium" fullWidth onClick={() => handlePublishForm(false)}>
+            <Button className="btn-premium" fullWidth onClick={handlePublishForm}>
               {editingFormId ? 'Save & Update' : 'Publish & Go Live'}
             </Button>
           </div>
@@ -812,7 +761,7 @@ export default function FormsPage() {
            </div>
            
            <div className="selector-categories">
-             {['Standard', 'Choice', 'Date & Time', 'Media', 'Advanced', 'Layout'].map(cat => (
+             {['Standard', 'Choice', 'Date & Time', 'Media', 'Advanced'].map(cat => (
                <div key={cat} className="selector-cat-group">
                  <h4 className="cat-title">{cat}</h4>
                  <div className="selector-grid">

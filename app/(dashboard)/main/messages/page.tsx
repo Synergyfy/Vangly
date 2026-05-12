@@ -28,15 +28,15 @@ const TEMPLATES = [
 ];
 
 const LOCATIONS = [
-  { id: 'l1', name: 'Northside Campus', contacts: 450, groups: 12 },
-  { id: 'l2', name: 'Main HQ', contacts: 800, groups: 25 },
-  { id: 'l3', name: 'East Valley', contacts: 120, groups: 5 },
+  { id: 'l1', name: 'Northside Campus', contacts: 450, teams: 12 },
+  { id: 'l2', name: 'Main HQ', contacts: 800, teams: 25 },
+  { id: 'l3', name: 'East Valley', contacts: 120, teams: 5 },
 ];
 
-const GROUPS = [
-  { id: 'g1', name: 'Worship Team', members: 25, contacts: 25 },
-  { id: 'g2', name: 'Youth Ministry', members: 150, contacts: 150 },
-  { id: 'g3', name: 'Volunteers', members: 85, contacts: 85 },
+const TEAMS = [
+  { id: 't1', name: 'Evangelism Team', members: 25, contacts: 25 },
+  { id: 't2', name: 'Youth Ministry', members: 150, contacts: 150 },
+  { id: 't3', name: 'Volunteers', members: 85, contacts: 85 },
 ];
 
 function MessagingContent() {
@@ -55,7 +55,7 @@ function MessagingContent() {
   // Message Flow State
   const [recipientType, setRecipientType] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [filters, setFilters] = useState<string[]>(['all']);
   const [message, setMessage] = useState("");
   const [messageTitle, setMessageTitle] = useState("");
@@ -64,7 +64,7 @@ function MessagingContent() {
   // Derived Values
   const charCount = message.length;
   const smsUnitsPerMsg = Math.ceil(charCount / 160) || 1;
-  const estimatedRecipients = recipientType === 'organization' ? 1248 : (recipientType === 'location' ? 450 : (recipientType === 'group' ? 85 : 1));
+  const estimatedRecipients = recipientType === 'organization' ? 1248 : (recipientType === 'location' ? 450 : (recipientType === 'team' ? 85 : 1));
   const totalUnitsNeeded = smsUnitsPerMsg * estimatedRecipients;
   const hasLowCredit = totalUnitsNeeded > availableCredits;
 
@@ -105,74 +105,73 @@ function MessagingContent() {
   // --- Render Functions ---
 
   const renderDashboard = () => (
-    <div className="messaging-hub">
-      <div className="page-header" style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-           <div style={{ padding: '8px', background: 'var(--ms-primary-soft)', color: 'var(--ms-primary)', borderRadius: '10px' }}>
-              <MessageSquare size={20} />
-           </div>
-           <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ms-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Communication Hub</span>
+    <div className="hq-dashboard-premium animate-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <div className="header-badge">Communication Hub</div>
+          <h1>Messaging</h1>
+          <p>Manage your communications and reach your community instantly.</p>
         </div>
-        <h1>Messaging Center</h1>
-        <p>Manage your communications and reach your community instantly.</p>
-      </div>
+        
+        <div className="sms-balance-card glass-morphism" style={{ padding: '16px 20px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid var(--border-light)' }}>
+          <div className="balance-info">
+            <h3 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0 }}>Credits</h3>
+            <div className="balance-amount" style={{ fontSize: '20px', fontWeight: 800 }}>{availableCredits.toLocaleString()}</div>
+          </div>
+          <Button onClick={() => router.push('/main/wallet')} className="btn-premium" size="sm">
+            Top Up
+          </Button>
+        </div>
+      </header>
 
-      {/* SMS Balance Card */}
-      <div className="sms-balance-card">
-        <div className="balance-info">
-          <h3>Current Balance</h3>
-          <div className="balance-amount">{availableCredits.toLocaleString()} <span>Credits</span></div>
+      <main className="dashboard-main-content">
+        <div className="messaging-actions-hub-grid">
+          {[
+            { id: 'new', label: 'New Msg', icon: Send, action: handleStartFlow, color: 'blue' },
+            { id: 'temp', label: 'Templates', icon: LayoutTemplate, action: () => setCurrentView('templates'), color: 'purple' },
+            { id: 'up', label: 'Upload', icon: UserPlus, action: () => {}, color: 'green' },
+            { id: 'hist', label: 'History', icon: History, action: () => setCurrentView('history'), color: 'orange' },
+          ].map(action => (
+            <Card 
+              key={action.id} 
+              className={`msg-hub-card ${action.color}`} 
+              onClick={action.action}
+            >
+              <div className="msg-hub-icon">
+                <action.icon size={24} />
+              </div>
+              <strong>{action.label}</strong>
+            </Card>
+          ))}
         </div>
-        <button className="buy-credits-btn" onClick={() => router.push('/main/wallet')}>
-          <Wallet size={18} style={{ marginRight: '8px', display: 'inline' }} />
-          Buy Credits
-        </button>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="quick-actions-grid">
-        <div className="action-card" onClick={handleStartFlow}>
-          <div className="action-icon-wrapper"><Send size={24} /></div>
-          <span>New Message</span>
-        </div>
-        <div className="action-card" onClick={() => setCurrentView('templates')}>
-          <div className="action-icon-wrapper"><LayoutTemplate size={24} /></div>
-          <span>Templates</span>
-        </div>
-        <div className="action-card">
-          <div className="action-icon-wrapper"><UserPlus size={24} /></div>
-          <span>Upload Contacts</span>
-        </div>
-        <div className="action-card" onClick={() => setCurrentView('history')}>
-          <div className="action-icon-wrapper"><History size={24} /></div>
-          <span>History</span>
-        </div>
-      </div>
 
       {/* Recent Messages */}
-      <div className="section-header">
-        <h2>Recent Activity</h2>
-        <Button variant="ghost" onClick={() => setCurrentView('history')}>View All</Button>
-      </div>
-      <div className="recent-messages-list">
-        {RECENT_MESSAGES.map(msg => (
-          <div key={msg.id} className="message-item-card">
-            <div className="msg-main-info">
-              <div className="msg-title">{msg.title}</div>
-              <div className="msg-meta">
-                <span>{msg.recipients} recipients</span>
-                <span>•</span>
-                <span>{msg.date}</span>
-                <span className={`msg-status ${msg.status}`}>{msg.status}</span>
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 800 }}>Recent Activity</h2>
+          <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>View All</Button>
+        </div>
+
+        <div className="team-grid-premium">
+          {RECENT_MESSAGES.map(msg => (
+            <Card key={msg.id} className="team-card-premium glass-morphism" style={{ padding: '16px !important' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{msg.title}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
+                    {msg.recipients} recipients • {msg.date}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 800, fontSize: '14px' }}>{msg.cost}</div>
+                  <span className={`header-badge ${msg.status === 'sent' ? 'positive' : ''}`} style={{ fontSize: '9px', margin: 0, padding: '2px 8px' }}>
+                    {msg.status}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="msg-cost" style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span>{msg.cost}</span>
-              <Button variant="ghost" size="sm" onClick={() => openMessageDetails(msg.id)}><ChevronRight size={16} /></Button>
-            </div>
-          </div>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      </main>
     </div>
   );
 
@@ -192,7 +191,7 @@ function MessagingContent() {
               {[
                 { id: 'organization', title: 'Entire Organization', desc: 'Send to every contact in your network.', icon: <Users size={32} /> },
                 { id: 'location', title: 'By Location', desc: 'Target people at a specific campus or office.', icon: <MapPin size={32} /> },
-                { id: 'group', title: 'By Group', desc: 'Message a specific team or volunteer group.', icon: <MessageSquare size={32} /> },
+                { id: 'team', title: 'By Team', desc: 'Message a specific outreach team or team.', icon: <Users size={32} /> },
                 { id: 'specific', title: 'Specific People', desc: 'Search and pick individual contacts.', icon: <User size={32} /> },
                 { id: 'upload', title: 'Upload Contacts', desc: 'Import numbers from a CSV or Excel file.', icon: <UserPlus size={32} /> },
                 { id: 'manual', title: 'Type Phone Numbers', desc: 'Enter numbers manually separated by commas.', icon: <Type size={32} /> },
@@ -203,7 +202,7 @@ function MessagingContent() {
                   onClick={() => {
                     setRecipientType(type.id);
                     if (type.id === 'organization' || type.id === 'specific' || type.id === 'manual') handleNext();
-                    else handleNext(); // For location/group we'll go to selection steps
+                    else handleNext(); // For location/team we'll go to selection steps
                   }}
                 >
                   <div className="recipient-icon-bg">{type.icon}</div>
@@ -231,7 +230,7 @@ function MessagingContent() {
                     <div className="recipient-icon-bg"><MapPin size={32} /></div>
                     <div className="recipient-info">
                       <h3>{loc.name}</h3>
-                      <p>{loc.contacts} contacts • {loc.groups} groups</p>
+                      <p>{loc.contacts} contacts • {loc.teams} teams</p>
                     </div>
                   </div>
                 ))}
@@ -239,21 +238,21 @@ function MessagingContent() {
             </div>
           );
         }
-        if (recipientType === 'group') {
+        if (recipientType === 'team') {
           return (
             <div className="messaging-hub">
               <div className="wizard-header">
                 <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
-                <h1>Select Group</h1>
-                <p>Choose the specific group within your organization.</p>
+                <h1>Select Team</h1>
+                <p>Choose the specific team within your organization.</p>
               </div>
               <div className="recipient-cards-grid">
-                {GROUPS.map(grp => (
-                  <div key={grp.id} className="recipient-type-card" onClick={() => { setSelectedGroup(grp.name); handleNext(); }}>
+                {TEAMS.map(team => (
+                  <div key={team.id} className="recipient-type-card" onClick={() => { setSelectedTeam(team.name); handleNext(); }}>
                     <div className="recipient-icon-bg"><Users size={32} /></div>
                     <div className="recipient-info">
-                      <h3>{grp.name}</h3>
-                      <p>{grp.members} members • {grp.contacts} contacts</p>
+                      <h3>{team.name}</h3>
+                      <p>{team.members} members • {team.contacts} contacts</p>
                     </div>
                   </div>
                 ))}
@@ -261,7 +260,7 @@ function MessagingContent() {
             </div>
           );
         }
-        // Fallthrough if not location/group
+        // Fallthrough if not location/team
         handleNext(); return null;
 
       case 3: // Filtering (Optional)
@@ -463,7 +462,7 @@ function MessagingContent() {
               <div className="review-summary-card">
                 <div className="summary-item">
                   <span className="summary-label">Target Audience</span>
-                  <span className="summary-value">{recipientType === 'organization' ? 'Entire Organization' : (selectedLocation || selectedGroup || 'Selected People')}</span>
+                  <span className="summary-value">{recipientType === 'organization' ? 'Entire Organization' : (selectedLocation || selectedTeam || 'Selected People')}</span>
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">Total Recipients</span>
