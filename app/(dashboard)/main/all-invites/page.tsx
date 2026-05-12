@@ -6,7 +6,16 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { MessageSquare, Users, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { 
+  MessageSquare, 
+  Users, 
+  ChevronDown, 
+  ChevronUp, 
+  ArrowLeft,
+  Search,
+  MapPin,
+  Filter
+} from 'lucide-react';
 import '../main.css';
 
 export default function AllInvitesPage() {
@@ -84,112 +93,94 @@ export default function AllInvitesPage() {
         </Button>
       </div>
 
-      <Card className="filter-card" style={{ marginBottom: '20px', padding: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-          <Input 
-            label="Search Invitee" 
-            placeholder="Name or phone..." 
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <div className="input-wrapper">
-            <label className="input-label">Filter by Location</label>
-            <select 
-              className="input-field select-field"
-              value={filterBranch}
+      <Card className="filter-card-premium glass-morphism" style={{ marginBottom: '32px' }}>
+        <div className="filter-grid-v2">
+          <div className="premium-search-bar" style={{ flex: 1.5 }}>
+            <Search size={18} />
+            <input 
+              type="text" 
+              placeholder="Search invitees by name or phone..." 
+              value={searchTerm}
               onChange={(e) => {
-                setFilterBranch(e.target.value);
+                setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-            >
-              <option value="all">All Locations</option>
-              <option value="HQ Location">HQ Location</option>
-              <option value="Northside Location">Northside Location</option>
-              <option value="Westend Center">Westend Center</option>
-            </select>
+            />
           </div>
-          <div className="input-wrapper">
-            <label className="input-label">Filter by Status</label>
-            <select 
-              className="input-field select-field"
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                setCurrentPage(1);
-              }}
-            >
-              <option value="all">All Status</option>
-              <option value="invited">Invited</option>
-              <option value="attended">Attended</option>
-            </select>
+          
+          <div className="filter-controls-group">
+            <div className="premium-select-box">
+              <MapPin size={16} />
+              <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
+                <option value="all">All Locations</option>
+                <option value="HQ Location">HQ Location</option>
+                <option value="Northside Location">Northside Location</option>
+                <option value="Westend Center">Westend Center</option>
+              </select>
+            </div>
+            
+            <div className="premium-select-box">
+              <Filter size={16} />
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="all">All Status</option>
+                <option value="invited">Invited</option>
+                <option value="attended">Attended</option>
+              </select>
+            </div>
           </div>
         </div>
       </Card>
 
-      <Card className="table-card-premium">
-        {/* Mobile View: Short Expandable Lines */}
-        <div className="mobile-only invites-mobile-list">
+      <div className="table-card-premium">
+        {/* Mobile View: Premium Expandable Cards */}
+        <div className="mobile-only invites-mobile-stack-premium">
           {paginatedInvites.map((invite) => (
-            <div key={invite.id} className={`invite-mobile-row ${expandedInviteId === invite.id ? 'expanded' : ''}`}>
-              <div className="invite-mobile-summary" onClick={() => toggleInvite(invite.id)}>
-                <div className="summary-left">
-                  <div className="person-name">{invite.name}</div>
-                  <span className={`status-badge-dot ${invite.status}`}></span>
-                </div>
-                <div className="summary-right">
-                  <span className={`status-text ${invite.status}`}>
-                    {invite.status === 'attended' ? 'Attended' : 'Invited'}
-                  </span>
-                  <div className="expand-trigger">
-                    {expandedInviteId === invite.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            <Card key={invite.id} className={`invite-mobile-card-v2 ${expandedInviteId === invite.id ? 'active' : ''}`}>
+              <div className="invite-mobile-header-v2" onClick={() => toggleInvite(invite.id)}>
+                <div className="invitee-avatar-v2">{invite.name[0]}</div>
+                <div className="invitee-core-info">
+                  <div className="name-status-row">
+                    <h4>{invite.name}</h4>
+                    <span className={`status-pill-v2 ${invite.status}`}>
+                      {invite.status}
+                    </span>
                   </div>
+                  <div className="invitee-sub-meta">
+                    <MapPin size={12} /> <span>{invite.location}</span>
+                  </div>
+                </div>
+                <div className="invite-expand-icon">
+                  {expandedInviteId === invite.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </div>
               </div>
               
               {expandedInviteId === invite.id && (
-                <div className="invite-mobile-details fade-in">
-                  <div className="detail-item">
-                    <span className="detail-label">Phone</span>
-                    <span className="detail-value monospace">{invite.phone}</span>
+                <div className="invite-expanded-body-v2 fade-in">
+                  <div className="info-grid-v2">
+                    <div className="info-cell-v2">
+                      <span className="label">Phone</span>
+                      <span className="value">{invite.phone}</span>
+                    </div>
+                    <div className="info-cell-v2">
+                      <span className="label">Date</span>
+                      <span className="value">{invite.date}</span>
+                    </div>
+                    <div className="info-cell-v2" style={{ gridColumn: 'span 2' }}>
+                      <span className="label">Invited By</span>
+                      <span className="value">{invite.worker}</span>
+                    </div>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Location</span>
-                    <span className="detail-value">{invite.location}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Worker</span>
-                    <span className="detail-value">{invite.worker}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Date</span>
-                    <span className="detail-value">{invite.date}</span>
-                  </div>
-                  <div className="detail-actions">
-                    <Button 
-                      variant="outline" 
-                      fullWidth
-                      onClick={() => handleWhatsAppChat(invite.phone)}
-                      style={{ gap: '8px' }}
-                    >
-                      <Image src="/whatsapp.svg" alt="WhatsApp" width={18} height={18} />
-                      WhatsApp
+                  <div className="invite-card-footer-v2">
+                    <Button variant="outline" size="sm" fullWidth onClick={() => handleWhatsAppChat(invite.phone)} style={{ gap: '8px' }}>
+                      <Image src="/whatsapp.svg" alt="WA" width={16} height={16} /> WhatsApp
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      fullWidth
-                      onClick={() => handleMessageUser(invite.phone)}
-                      style={{ gap: '8px' }}
-                    >
-                      <MessageSquare size={18} />
-                      Message
+                    <Button variant="outline" size="sm" fullWidth onClick={() => handleMessageUser(invite.phone)} style={{ gap: '8px' }}>
+                      <MessageSquare size={16} /> Message
                     </Button>
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           ))}
           {paginatedInvites.length === 0 && (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
@@ -274,7 +265,7 @@ export default function AllInvitesPage() {
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

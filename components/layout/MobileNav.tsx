@@ -12,7 +12,9 @@ import {
   ClipboardList,
   QrCode,
   Building2,
-  Wallet
+  Wallet,
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import './MobileNav.css';
 
@@ -20,30 +22,29 @@ export const MobileNav: React.FC = () => {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  if (!user) return null;
-
   const getNavItems = () => {
-    switch (user.role) {
+    switch (user?.role) {
       case 'super_admin':
+      case 'organization_admin':
         return [
-          { href: '/main', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/main', label: 'Home', icon: LayoutDashboard },
           { href: '/main/manage-organization', label: 'Locations', icon: Building2 },
+          { href: '/main/forms', label: 'Forms', icon: FileText },
           { href: '/main/messages', label: 'Messages', icon: MessageSquare },
-          { href: '/main/wallet', label: 'Wallet', icon: Wallet },
         ];
       case 'location_admin':
       case 'branch_admin':
         return [
-          { href: '/branch', label: 'Dashboard', icon: LayoutDashboard },
-          { href: '/branch/users', label: 'Workers', icon: Users },
+          { href: '/branch', label: 'Performance', icon: LayoutDashboard },
+          { href: '/branch/teams', label: 'Teams', icon: Users },
           { href: '/branch/messages', label: 'Messages', icon: MessageSquare },
         ];
       case 'worker':
         return [
-          { href: '/worker', label: 'Home', icon: LayoutDashboard },
-          { href: '/worker/add-invite', label: 'Add', icon: UserPlus },
+          { href: '/worker/overview', label: 'Dashboard', icon: LayoutDashboard },
           { href: '/worker/share', label: 'Share', icon: QrCode },
-          { href: '/worker/invites', label: 'Invites', icon: ClipboardList },
+          { href: '/worker/invites', label: 'Members', icon: Users },
+          { href: '/worker/messages', label: 'Messages', icon: MessageSquare },
         ];
       default:
         return [];

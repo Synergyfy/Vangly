@@ -21,62 +21,79 @@ export default function SettingsPage() {
   const settingsOptions = [
     {
       title: 'Brand Identity',
-      description: 'Customize logos, colors, and the overall look of your organization platform.',
+      description: 'Customize logos, colors, and the white-label experience for your community.',
       icon: <Palette size={24} />,
       href: '/main/brand',
-      color: 'var(--blue)'
+      color: '#3b82f6',
+      badge: 'Visuals'
     },
     {
       title: 'Custom Domain',
-      description: 'Connect your own domain (e.g. connect.myorganization.com) for a full white-label experience.',
+      description: 'Connect your own professional URL for a completely custom brand experience.',
       icon: <Globe size={24} />,
       href: '/main/settings/domain',
-      color: 'var(--purple)'
+      color: '#8b5cf6',
+      badge: 'Networking'
     },
     {
-      title: 'User Management',
-      description: 'Manage administrative roles, permissions, and security settings.',
-      icon: <Users size={24} />,
-      href: '/main/manage-organization', // Reuse the location/admin management
-      color: 'var(--green)'
+      title: 'Administrative Access',
+      description: 'Manage roles, permissions, and security for your organization leads.',
+      icon: <ShieldCheck size={24} />,
+      href: '/main/manage-organization',
+      color: '#10b981',
+      badge: 'Security'
     }
   ];
 
   return (
-    <div className="hq-dashboard">
-      <div className="page-header">
-        <h1>Global Settings</h1>
-        <p>Configure your organization network's global preferences and white-labeling.</p>
-      </div>
+    <div className="hq-dashboard-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <div className="header-badge">Organization Config</div>
+          <h1>Global Settings</h1>
+          <p>Configure your organization network's global preferences and white-labeling.</p>
+        </div>
+      </header>
 
-      <div className="settings-options-grid">
+      <div className="settings-grid-premium">
         {settingsOptions.map((option) => (
           <Card 
             key={option.title} 
-            className="settings-option-card clickable"
+            className="settings-card-premium"
             onClick={() => router.push(option.href)}
           >
-            <div className="option-icon" style={{ backgroundColor: `${option.color}15`, color: option.color }}>
-              {option.icon}
+            <div className="settings-card-header">
+               <div className="settings-icon-box" style={{ background: `${option.color}15`, color: option.color }}>
+                  {option.icon}
+               </div>
+               <span className="settings-badge-mini" style={{ color: option.color, background: `${option.color}10` }}>
+                  {option.badge}
+               </span>
             </div>
-            <div className="option-content">
-              <h3>{option.title}</h3>
-              <p>{option.description}</p>
+            <div className="settings-card-body">
+               <h3>{option.title}</h3>
+               <p>{option.description}</p>
             </div>
-            <ChevronRight size={20} className="option-arrow" />
+            <div className="settings-card-footer">
+               <span>Configure Now</span>
+               <ChevronRight size={18} />
+            </div>
           </Card>
         ))}
       </div>
 
-      <div className="settings-footer-info">
-        <Card className="info-banner-card">
-          <ShieldCheck size={20} className="text-primary" />
-          <div className="banner-text">
-            <h4>System Status: Fully Operational</h4>
-            <p>Your organization network is currently synced across all locations.</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => {}}>View Logs <ExternalLink size={14} /></Button>
-        </Card>
+      <div className="settings-system-status">
+         <Card className="status-banner-premium">
+            <div className="status-indicator">
+               <div className="pulse-dot" />
+               <span>System Fully Operational</span>
+            </div>
+            <div className="status-content">
+               <h4>Network Synchronized</h4>
+               <p>All locations and team data are currently up to date across your organization.</p>
+            </div>
+            <Button variant="outline" size="sm" className="btn-status">View System Logs</Button>
+         </Card>
       </div>
     </div>
   );

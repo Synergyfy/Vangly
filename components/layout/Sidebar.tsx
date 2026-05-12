@@ -17,6 +17,7 @@ import {
   UserCheck,
   QrCode,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import "./Sidebar.css";
@@ -32,34 +33,32 @@ export function Sidebar({ isOpen, onClose, isCollapsed = true }: SidebarProps) {
   const { user, logout } = useAuth();
 
   const mainNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
-    { name: "Dashboard", href: "/main", icon: LayoutDashboard },
+    { name: "Home", href: "/main", icon: LayoutDashboard },
     { name: "Locations", href: "/main/manage-organization", icon: Building2 },
+    { name: "Teams", href: "/main/teams", icon: Users },
+    { name: "Forms", href: "/main/forms", icon: FileText },
+    { name: "Invites", href: "/main/all-invites", icon: Sparkles },
     { name: "Messaging", href: "/main/messages", icon: MessageSquare },
     { name: "Brand Identity", href: "/main/brand", icon: Palette },
-    { name: "Wallet/Credits", href: "/main/wallet", icon: Wallet, badge: "New" },
     { name: "Settings", href: "/main/settings", icon: Settings },
   ];
 
   const locationNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
-    { name: "Dashboard", href: "/location", icon: LayoutDashboard },
-    { name: "Monitor Users", href: "/location/users", icon: Users },
-    { name: "Manage Groups", href: "/location/manage-groups", icon: UserSquare2 },
-    { name: "Share Links", href: "/location/share-links", icon: Share2 },
-    { name: "Messaging", href: "/location/messages", icon: MessageSquare },
-    { name: "Manage Credits", href: "/location/wallet", icon: Wallet },
-    { name: "Settings", href: "/location/settings", icon: Settings },
+    { name: "Performance", href: "/branch", icon: LayoutDashboard },
+    { name: "Teams", href: "/branch/teams", icon: Users },
+    { name: "Settings", href: "/branch/settings", icon: Settings },
   ];
 
   const workerNavItems: Array<{ name: string; href: string; icon: any; badge?: string }> = [
-    { name: "Dashboard", href: "/worker", icon: LayoutDashboard },
-    { name: "Share Invite", href: "/worker/share", icon: Share2 },
-    { name: "Invites", href: "/worker/invites", icon: Users },
+    { name: "Dashboard", href: "/worker/overview", icon: LayoutDashboard },
+    { name: "Share Link", href: "/worker/share", icon: Share2 },
+    { name: "Members", href: "/worker/invites", icon: Users },
     { name: "Messaging", href: "/worker/messages", icon: MessageSquare },
     { name: "Profile", href: "/worker/profile", icon: Settings },
   ];
 
   const navItems =
-    user?.role === "super_admin"
+    user?.role === "super_admin" || user?.role === "organization_admin"
       ? mainNavItems
       : (user?.role === "branch_admin" || user?.role === "location_admin")
         ? locationNavItems

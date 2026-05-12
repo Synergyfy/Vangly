@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ArrowLeft,
   Check,
+  MapPin,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import "../main.css";
@@ -40,7 +41,7 @@ export default function UserSetupPage() {
   const [isCustomRoleActive, setIsCustomRoleActive] = useState(false);
 
   // Permissions State
-  const [groupPermissions, setGroupPermissions] = useState<Record<string, any>>(
+  const [teamPermissions, setTeamPermissions] = useState<Record<string, any>>(
     {
       Workers: {
         canInvite: true,
@@ -62,7 +63,7 @@ export default function UserSetupPage() {
   );
 
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<string | null>(null);
+  const [editingTeam, setEditingTeam] = useState<string | null>(null);
 
   // Registration Links State
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
@@ -71,21 +72,21 @@ export default function UserSetupPage() {
       id: "1",
       name: "Workers Registration",
       url: "organization.com/join/workers",
-      group: "Workers",
+      team: "Workers",
       location: "All Branches",
     },
     {
       id: "2",
       name: "Volunteers Registration",
       url: "organization.com/join/volunteers",
-      group: "Volunteers",
+      team: "Volunteers",
       location: "All Branches",
     },
   ]);
 
   const [newRegLink, setNewRegLink] = useState({
     name: "",
-    group: "Workers",
+    team: "Workers",
     location: "All Branches",
   });
 
@@ -135,7 +136,7 @@ export default function UserSetupPage() {
     "Southpark Satellite",
   ];
 
-  const customGroups = [
+  const customTeams = [
     "Workers",
     "Volunteers",
     "Members",
@@ -173,25 +174,25 @@ export default function UserSetupPage() {
   };
 
   return (
-    <div className="hq-dashboard">
-      <div className="page-header flex-between">
-        <div className="header-main">
-          <div className="header-badge">Staff Management</div>
-          <h1>User Setup</h1>
+    <div className="hq-dashboard-premium animate-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <div className="header-badge">User Operations</div>
+          <h1>Staff & Users</h1>
           <p>
             Configure access for Location Admins and Organization Workers across your
             network.
           </p>
         </div>
-        <div className="header-actions">
-          <Button variant="ghost" onClick={() => setIsRegModalOpen(true)}>
-            <Shield size={18} /> <span>Registration Links</span>
+        <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
+          <Button variant="ghost" onClick={() => setIsRegModalOpen(true)} className="back-btn-pill">
+            <Shield size={18} /> <span>Links</span>
           </Button>
           <Button className="btn-premium" onClick={() => setIsModalOpen(true)}>
-            <UserPlus size={18} /> <span>Add New User</span>
+            <UserPlus size={18} /> <span>Add User</span>
           </Button>
         </div>
-      </div>
+      </header>
 
       <Modal
         isOpen={isRegModalOpen}
@@ -211,12 +212,12 @@ export default function UserSetupPage() {
               />
               <div className="reg-select-group">
                 <select
-                  value={newRegLink.group}
+                  value={newRegLink.team}
                   onChange={(e) =>
-                    setNewRegLink({ ...newRegLink, group: e.target.value })
+                    setNewRegLink({ ...newRegLink, team: e.target.value })
                   }
                 >
-                  {customGroups.map((g) => (
+                  {customTeams.map((g) => (
                     <option key={g} value={g}>
                       {g}
                     </option>
@@ -248,13 +249,13 @@ export default function UserSetupPage() {
                       id: Math.random().toString(),
                       name: newRegLink.name,
                       url: `organization.com/join/${slug}`,
-                      group: newRegLink.group,
+                      team: newRegLink.team,
                       location: newRegLink.location,
                     },
                   ]);
                   setNewRegLink({
                     name: "",
-                    group: "Workers",
+                    team: "Workers",
                     location: "All Branches",
                   });
                 }}
@@ -270,7 +271,7 @@ export default function UserSetupPage() {
                 <div className="reg-link-info">
                   <span className="reg-link-title">{link.name}</span>
                   <div className="reg-link-meta">
-                    <span className="badge">{link.group}</span>
+                    <span className="badge">{link.team}</span>
                     <span className="badge-ghost">{link.location}</span>
                   </div>
                   <div className="reg-link-url-container">
@@ -302,102 +303,63 @@ export default function UserSetupPage() {
         </div>
       </Modal>
 
-      <div className="user-setup-content">
-        {/* ... (Existing Filter Card and Table remain same) ... */}
-        <Card className="management-filter-card">
-          <div className="search-container-premium">
-            <div className="search-input-wrapper">
-              <Search size={18} className="search-icon" />
+      <main className="dashboard-main-content">
+        <Card className="stat-card glass-morphism" style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div className="search-input-wrapper" style={{ flex: 1, position: 'relative' }}>
+              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-placeholder)' }} />
               <input
                 type="text"
-                placeholder="Search users by name, email, or role..."
+                className="input-premium"
+                style={{ width: '100%', paddingLeft: '40px' }}
+                placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="filter-actions">
-              <Button variant="ghost" className="filter-btn">
-                <Filter size={16} /> <span>Filters</span>
-              </Button>
-            </div>
+            <Button variant="ghost" className="filter-btn" style={{ borderRadius: '12px' }}>
+              <Filter size={16} />
+            </Button>
           </div>
         </Card>
 
-        <Card className="user-table-card-premium">
-          <div className="table-responsive">
-            <table className="user-data-table">
+        <Card className="team-card-premium glass-morphism">
+          <div className="table-responsive" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>User Details</th>
-                  <th>Role & Status</th>
-                  <th>Assigned Location</th>
-                  <th className="text-right">Actions</th>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-light)' }}>
+                  <th style={{ padding: '16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Member</th>
+                  <th style={{ padding: '16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Role</th>
+                  <th style={{ padding: '16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>Location</th>
+                  <th style={{ padding: '16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="user-row">
-                    <td data-label="User Details">
-                      <div className="user-cell-profile">
-                        <div className="user-avatar-initials">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                  <tr key={user.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--blue-subtle)', color: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '14px' }}>
+                          {user.name.charAt(0)}
                         </div>
-                        <div className="user-meta-info">
-                          <span className="user-display-name">{user.name}</span>
-                          <div className="user-contact-links">
-                            <span>
-                              <Mail size={12} /> {user.email}
-                            </span>
-                            <span>
-                              <Phone size={12} /> {user.phone}
-                            </span>
-                          </div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '14px' }}>{user.name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{user.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td data-label="Role & Status">
-                      <div className="role-status-stack">
-                        <span className={`role-pill ${user.role}`}>
-                          {user.role}
-                        </span>
-                        <span className={`status-indicator ${user.status}`}>
-                          {user.status}
-                        </span>
+                    <td style={{ padding: '16px' }}>
+                      <span className="header-badge" style={{ margin: 0, background: 'var(--bg-main)', color: 'var(--text-secondary)' }}>{user.role}</span>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-tertiary)' }}>
+                        <MapPin size={14} /> {user.location}
                       </div>
                     </td>
-                    <td data-label="Assigned Location">
-                      <div className="location-assignment">
-                        <Users size={14} />
-                        <span>{user.location}</span>
-                      </div>
-                    </td>
-                    <td data-label="Actions" className="text-right">
-                      <div className="table-action-group">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="action-icon-btn"
-                        >
-                          <Edit3 size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="action-icon-btn text-danger"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="action-icon-btn"
-                        >
-                          <MoreHorizontal size={16} />
-                        </Button>
-                      </div>
+                    <td style={{ padding: '16px', textAlign: 'right' }}>
+                      <Button variant="ghost" size="sm" style={{ borderRadius: '8px' }}>
+                        <MoreHorizontal size={16} />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -405,7 +367,7 @@ export default function UserSetupPage() {
             </table>
           </div>
         </Card>
-      </div>
+      </main>
 
       <Modal
         isOpen={isModalOpen}
@@ -456,25 +418,25 @@ export default function UserSetupPage() {
 
                 <div className="wizard-section-label">
                   <Users size={16} />
-                  <span>Select Group Role</span>
+                  <span>Select Team Role</span>
                 </div>
 
-                <div className="custom-groups-grid">
-                  {customGroups.map((group) => (
+                <div className="custom-teams-grid">
+                  {customTeams.map((team) => (
                     <div
-                      key={group}
-                      className={`group-select-card ${formData.role === group ? "active" : ""}`}
+                      key={team}
+                      className={`team-select-card ${formData.role === team ? "active" : ""}`}
                       onClick={() => {
-                        setFormData({ ...formData, role: group });
+                        setFormData({ ...formData, role: team });
                         setIsCustomRoleActive(false);
                       }}
                     >
-                      <span>{group}</span>
-                      {formData.role === group && <Check size={18} />}
+                      <span>{team}</span>
+                      {formData.role === team && <Check size={18} />}
                     </div>
                   ))}
                   <div
-                    className={`group-select-card custom-trigger ${isCustomRoleActive ? "active" : ""}`}
+                    className={`team-select-card custom-trigger ${isCustomRoleActive ? "active" : ""}`}
                     onClick={() => {
                       setIsCustomRoleActive(true);
                       setFormData({ ...formData, role: "" });
@@ -487,7 +449,7 @@ export default function UserSetupPage() {
                 {isCustomRoleActive && (
                   <div className="custom-role-input-wrapper fade-in">
                     <Input
-                      placeholder="Enter custom group name..."
+                      placeholder="Enter custom team name..."
                       value={customRoleInput}
                       onChange={(e) => {
                         setCustomRoleInput(e.target.value);
@@ -547,7 +509,7 @@ export default function UserSetupPage() {
             <div className="wizard-step-content fade-in">
               <p className="wizard-hint">
                 Define what members of the <strong>{formData.role}</strong>{" "}
-                group can do.
+                team can do.
               </p>
 
               <div className="permissions-list">
@@ -583,10 +545,10 @@ export default function UserSetupPage() {
                     className="permission-item"
                     onClick={() => {
                       const current =
-                        groupPermissions[formData.role] ||
-                        groupPermissions.Workers;
-                      setGroupPermissions({
-                        ...groupPermissions,
+                        teamPermissions[formData.role] ||
+                        teamPermissions.Workers;
+                      setTeamPermissions({
+                        ...teamPermissions,
                         [formData.role]: {
                           ...current,
                           [perm.id]: !current[perm.id],
@@ -599,7 +561,7 @@ export default function UserSetupPage() {
                       <span className="perm-desc">{perm.desc}</span>
                     </div>
                     <div
-                      className={`perm-toggle ${(groupPermissions[formData.role] || groupPermissions.Workers)[perm.id] ? "active" : ""}`}
+                      className={`perm-toggle ${(teamPermissions[formData.role] || teamPermissions.Workers)[perm.id] ? "active" : ""}`}
                     >
                       <div className="toggle-knob" />
                     </div>
@@ -619,16 +581,16 @@ export default function UserSetupPage() {
                       className="perm-number-input"
                       value={
                         (
-                          groupPermissions[formData.role] ||
-                          groupPermissions.Workers
+                          teamPermissions[formData.role] ||
+                          teamPermissions.Workers
                         ).dailyLimit
                       }
                       onChange={(e) => {
                         const current =
-                          groupPermissions[formData.role] ||
-                          groupPermissions.Workers;
-                        setGroupPermissions({
-                          ...groupPermissions,
+                          teamPermissions[formData.role] ||
+                          teamPermissions.Workers;
+                        setTeamPermissions({
+                          ...teamPermissions,
                           [formData.role]: {
                             ...current,
                             dailyLimit: parseInt(e.target.value) || 0,
@@ -714,11 +676,11 @@ export default function UserSetupPage() {
       <Modal
         isOpen={isPermissionsModalOpen}
         onClose={() => setIsPermissionsModalOpen(false)}
-        title={`Permissions: ${editingGroup}`}
+        title={`Permissions: ${editingTeam}`}
       >
         <div className="permissions-container fade-in">
           <p className="permissions-hint">
-            Define what members of the <strong>{editingGroup}</strong> group can
+            Define what members of the <strong>{editingTeam}</strong> team can
             do.
           </p>
 
@@ -755,10 +717,10 @@ export default function UserSetupPage() {
                 className="permission-item"
                 onClick={() => {
                   const current =
-                    groupPermissions[editingGroup!] || groupPermissions.Workers;
-                  setGroupPermissions({
-                    ...groupPermissions,
-                    [editingGroup!]: {
+                    teamPermissions[editingTeam!] || teamPermissions.Workers;
+                  setTeamPermissions({
+                    ...teamPermissions,
+                    [editingTeam!]: {
                       ...current,
                       [perm.id]: !current[perm.id],
                     },
@@ -770,7 +732,7 @@ export default function UserSetupPage() {
                   <span className="perm-desc">{perm.desc}</span>
                 </div>
                 <div
-                  className={`perm-toggle ${(groupPermissions[editingGroup!] || groupPermissions.Workers)[perm.id] ? "active" : ""}`}
+                  className={`perm-toggle ${(teamPermissions[editingTeam!] || teamPermissions.Workers)[perm.id] ? "active" : ""}`}
                 >
                   <div className="toggle-knob" />
                 </div>
@@ -790,17 +752,17 @@ export default function UserSetupPage() {
                   className="perm-number-input"
                   value={
                     (
-                      groupPermissions[editingGroup!] ||
-                      groupPermissions.Workers
+                      teamPermissions[editingTeam!] ||
+                      teamPermissions.Workers
                     ).dailyLimit
                   }
                   onChange={(e) => {
                     const current =
-                      groupPermissions[editingGroup!] ||
-                      groupPermissions.Workers;
-                    setGroupPermissions({
-                      ...groupPermissions,
-                      [editingGroup!]: {
+                      teamPermissions[editingTeam!] ||
+                      teamPermissions.Workers;
+                    setTeamPermissions({
+                      ...teamPermissions,
+                      [editingTeam!]: {
                         ...current,
                         dailyLimit: parseInt(e.target.value) || 0,
                       },
