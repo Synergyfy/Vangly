@@ -120,7 +120,7 @@ export default function ManageGroupsPage() {
       <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
           <h1>Manage Groups</h1>
-          <p>Organize your workers into branch-specific or global HQ groups.</p>
+          <p>Organize your workers into location-specific or global HQ groups.</p>
         </div>
         <Button className="btn-premium" onClick={() => setIsCreateModalOpen(true)} style={{ gap: '0.5rem' }}>
           <Plus size={18} />
@@ -153,7 +153,7 @@ export default function ManageGroupsPage() {
             <div className="group-card-header">
               <div>
                 <span className={`group-badge ${group.type}`}>
-                  {group.type === 'hq' ? 'HQ Group' : 'Branch Group'}
+                  {group.type === 'hq' ? 'HQ Group' : 'Location Group'}
                 </span>
                 <h3 className="group-title">{group.name}</h3>
               </div>

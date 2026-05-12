@@ -39,7 +39,7 @@ export default function WorkerFormsPage() {
     {
       id: '3',
       title: 'Event Interest Form',
-      description: 'Track people interested in upcoming church programs.',
+      description: 'Track people interested in upcoming organization programs.',
       icon: <Target size={24} />,
       color: 'var(--orange)',
       href: '/worker/add-invite', // Defaulting to add-invite for now

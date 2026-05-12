@@ -48,7 +48,7 @@ export default function BranchMessagingPage() {
     {
       id: "t1",
       name: "Team Welcome",
-      content: "Welcome to the team! We're excited to have you serving with us today at [Branch Name].",
+      content: "Welcome to the team! We're excited to have you serving with us today at [Location Name].",
     },
     {
       id: "t2",
@@ -61,7 +61,7 @@ export default function BranchMessagingPage() {
   const characterCount = message.length;
   const smsUnits = Math.ceil(characterCount / 160) || 1;
   const costPerSms = 4.0; // Naira cost
-  const estimatedCost = (smsUnits * 452 * costPerSms).toLocaleString(); // Mock 452 recipients for this branch
+  const estimatedCost = (smsUnits * 452 * costPerSms).toLocaleString(); // Mock 452 recipients for this location
   
   const isHighRisk =
     message.toLowerCase().includes("immediate action") ||
@@ -69,12 +69,12 @@ export default function BranchMessagingPage() {
     message.toLowerCase().includes("click here");
 
   return (
-    <div className="branch-messages-page">
+    <div className="location-messages-page">
       <div className="dashboard-header flex-between">
         <div className="header-main">
           <h1>Communication Center</h1>
           <p>
-            Engage your entire branch or target specific teams with SMS and Email.
+            Engage your entire location or target specific teams with SMS and Email.
           </p>
         </div>
         <Card style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--blue-subtle)' }}>
@@ -117,7 +117,7 @@ export default function BranchMessagingPage() {
               <div className="selected-groups-display">
                 <span className="selected-count">Full Audience Selected</span>
                 <div className="selected-tags">
-                  <span className="selected-tag">Entire Branch Hub</span>
+                  <span className="selected-tag">Entire Location Hub</span>
                   <span className="selected-tag">All Members</span>
                   <span className="selected-tag">All Workers</span>
                 </div>
@@ -259,7 +259,7 @@ export default function BranchMessagingPage() {
                 <div className="phone-avatar-v2">
                   <User size={16} />
                 </div>
-                <span className="phone-number-v2">Branch Hub</span>
+                <span className="phone-number-v2">Location Hub</span>
               </div>
               <div className="phone-chat-v2">
                 <div className="chat-bubble-v2">

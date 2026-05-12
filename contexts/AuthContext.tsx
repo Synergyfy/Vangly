@@ -3,14 +3,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 // Mock User Roles: 'super_admin', 'branch_admin', 'worker', null
-export type UserRole = "super_admin" | "branch_admin" | "worker" | null;
+export type UserRole = "super_admin" | "location_admin" | "branch_admin" | "worker" | null;
 
 interface User {
   id: string;
   name: string;
   role: UserRole;
-  church_id: string;
+  organization_id: string;
   branch_id?: string;
+  credits: number; // Added SMS credits
 }
 
 interface AuthContextType {
@@ -36,8 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem("vemtap_user", JSON.stringify(userData));
+    const userWithCredits = { ...userData, credits: userData.credits ?? 500 }; // Default to 500 credits if new
+    setUser(userWithCredits);
+    localStorage.setItem("vemtap_user", JSON.stringify(userWithCredits));
   };
 
   const logout = () => {

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, MessageSquare, Mail } from 'lucide-react';
-import '../../../hq/hq.css'; // Reuse HQ styles
+import '../../branch.css';
 
 const MessageIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,7 +20,7 @@ function WorkerInvitesContent() {
   const workerName = searchParams.get('name') || 'Worker';
   const workerId = searchParams.get('id');
 
-  // Mock invites for this specific worker (simulating branch context)
+  // Mock invites for this specific worker (simulating location context)
   const workerInvites = [
     { id: 'i1', name: 'James Wilson', phone: '+1 555 9001', status: 'attended', date: 'Oct 22, 2023' },
     { id: 'i2', name: 'Mary Adams', phone: '+1 555 9002', status: 'invited', date: 'Oct 21, 2023' },

@@ -8,7 +8,11 @@
     position: sticky;
     top: 0;
     z-index: 1100;
-    transition: transform var(--duration) var(--ease);
+    transition: width 0.3s var(--ease), transform var(--duration) var(--ease);
+}
+
+.sidebar.collapsed {
+    width: 80px;
 }
 
 .sidebar-header {
@@ -16,6 +20,12 @@
     justify-content: space-between;
     align-items: center;
     padding-right: 16px;
+    transition: padding 0.3s var(--ease);
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding-right: 0;
+    justify-content: center;
 }
 
 .sidebar-brand {
@@ -23,6 +33,12 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    transition: padding 0.3s var(--ease);
+}
+
+.sidebar.collapsed .sidebar-brand {
+    padding: 24px 0;
+    justify-content: center;
 }
 
 .brand-icon {
@@ -36,6 +52,7 @@
     border-radius: 8px;
     font-weight: 800;
     font-size: 18px;
+    flex-shrink: 0;
 }
 
 .brand-name {
@@ -43,6 +60,7 @@
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.02em;
+    white-space: nowrap;
 }
 
 .sidebar-close-btn {
@@ -60,6 +78,12 @@
     flex-direction: column;
     gap: 4px;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar.collapsed .sidebar-nav {
+    padding: 12px 8px;
+    align-items: center;
 }
 
 .nav-item {
@@ -73,6 +97,15 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .nav-item {
+    padding: 12px;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
 }
 
 .nav-item:hover {
@@ -88,6 +121,12 @@
 
 .nav-label {
     flex: 1;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .nav-label {
+    display: none;
 }
 
 .nav-badge {
@@ -108,6 +147,12 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    transition: padding 0.3s var(--ease);
+}
+
+.sidebar.collapsed .sidebar-footer {
+    padding: 16px 8px;
+    align-items: center;
 }
 
 .user-pill {
@@ -117,6 +162,13 @@
     padding: 8px;
     border-radius: var(--radius-md);
     background: var(--bg);
+    overflow: hidden;
+}
+
+.sidebar.collapsed .user-pill {
+    padding: 0;
+    background: none;
+    justify-content: center;
 }
 
 .user-avatar {
@@ -130,12 +182,18 @@
     border-radius: var(--radius-full);
     font-weight: 700;
     font-size: 14px;
+    flex-shrink: 0;
 }
 
 .user-info {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: width 0.2s ease;
+}
+
+.sidebar.collapsed .user-info {
+    display: none;
 }
 
 .user-name {
@@ -167,6 +225,18 @@
     cursor: pointer;
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .logout-btn {
+    padding: 12px;
+    justify-content: center;
+    width: 44px;
+}
+
+.sidebar.collapsed .logout-btn span {
+    display: none;
 }
 
 .logout-btn:hover {
@@ -196,8 +266,21 @@
     .sidebar {
         position: fixed;
         left: 0;
+        width: 260px !important;
         transform: translateX(-100%);
         box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar.collapsed .nav-label,
+    .sidebar.collapsed .brand-name,
+    .sidebar.collapsed .user-info,
+    .sidebar.collapsed .logout-btn span {
+        display: flex !important;
+    }
+
+    .sidebar.collapsed .nav-item {
+        width: 100% !important;
+        justify-content: flex-start !important;
     }
 
     .sidebar.open {

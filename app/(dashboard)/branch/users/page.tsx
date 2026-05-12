@@ -12,14 +12,17 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import './users.css';
 
 export default function MonitorUsersPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'workers' | 'volunteers' | 'members'>('workers');
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -59,9 +62,14 @@ export default function MonitorUsersPage() {
     <div className="monitor-users-page">
       <div className="dashboard-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1>Monitor Users</h1>
-            <p>Track performance and engagement across all branch roles.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill">
+              <ArrowLeft size={16} /> Back
+            </Button>
+            <div>
+              <h1>Monitor Users</h1>
+              <p>Track performance and engagement across all location roles.</p>
+            </div>
           </div>
           <div className="activity-summary" style={{ display: 'flex', gap: '1rem' }}>
             <Card style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

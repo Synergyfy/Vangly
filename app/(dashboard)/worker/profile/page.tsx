@@ -11,9 +11,9 @@ export default function WorkerProfilePage() {
   const worker = {
     name: 'Alex Johnson',
     role: 'Evangelism Worker',
-    email: 'alex.j@church.com',
+    email: 'alex.j@organization.com',
     phone: '+1 555 987 654',
-    branch: 'Northside Campus',
+    location: 'Northside Campus',
     joined: 'Jan 2024',
   };
 
@@ -45,8 +45,8 @@ export default function WorkerProfilePage() {
               <span>{worker.phone}</span>
             </div>
             <div className="detail-row">
-              <span>Branch</span>
-              <span>{worker.branch}</span>
+              <span>Location</span>
+              <span>{worker.location}</span>
             </div>
             <div className="detail-row">
               <span>Joined</span>

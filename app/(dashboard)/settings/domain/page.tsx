@@ -39,18 +39,18 @@ export default function CustomDomainPage() {
     <div className="domain-settings-page">
       <div className="page-header">
         <h1>Custom Domain</h1>
-        <p>Connect your own domain to white-label your church's evangelism system.</p>
+        <p>Connect your own domain to white-label your organization's evangelism system.</p>
       </div>
 
       <div className="onboarding-container">
         {step === 1 && (
           <Card className="onboarding-card glass">
             <h2>Use Your Own Domain</h2>
-            <p className="subtitle">Connect your church domain so members see your brand instead of Invitely.</p>
+            <p className="subtitle">Connect your organization domain so members see your brand instead of Invitely.</p>
             <form onSubmit={handleContinue}>
               <Input 
                 label="Custom Domain" 
-                placeholder="e.g. connect.mychurch.com" 
+                placeholder="e.g. connect.myorganization.com" 
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 required

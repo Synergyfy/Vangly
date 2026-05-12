@@ -57,12 +57,12 @@ export default function BranchWalletPage() {
   };
 
   return (
-    <div className="branch-wallet-page">
+    <div className="location-wallet-page">
       <div className="dashboard-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1>Manage Credits</h1>
-            <p>Control your branch's communication power and billing.</p>
+            <p>Control your location's communication power and billing.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Button variant="outline" style={{ gap: '0.5rem' }}>

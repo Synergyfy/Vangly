@@ -1,5 +1,5 @@
-/* ── Overhauled Messaging UI (Branch Specific) ── */
-.branch-messages-page {
+/* ── Overhauled Messaging UI (Location Specific) ── */
+.location-messages-page {
     padding: 24px;
     max-width: 1200px;
     margin: 0 auto;
@@ -722,7 +722,7 @@
 }
 
 @media (max-width: 640px) {
-    .branch-messages-page {
+    .location-messages-page {
         padding: 16px;
     }
 

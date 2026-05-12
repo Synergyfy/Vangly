@@ -69,7 +69,7 @@ export default function FirstTimerPage({ params }: { params: Promise<{ unique_co
   return (
     <div className="first-timer-container">
       <div className="first-timer-header">
-        <div className="church-logo-wrapper">
+        <div className="organization-logo-wrapper">
           <Sparkles size={40} style={{ color: 'var(--blue)' }} />
         </div>
         <h1>Welcome Home</h1>
@@ -82,7 +82,7 @@ export default function FirstTimerPage({ params }: { params: Promise<{ unique_co
           <span>Joining as a guest of {workerDisplayName}</span>
         </div>
         
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <div style={{ position: 'relative' }}>
             <User size={18} style={{ position: 'absolute', right: '1rem', top: '42px', color: 'var(--text-tertiary)', zIndex: 2 }} />
             <Input 

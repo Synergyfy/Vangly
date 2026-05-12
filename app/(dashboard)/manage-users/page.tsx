@@ -14,9 +14,9 @@ export default function ManageUsersPage() {
 
   // Mock users list
   const users = [
-    { id: '1', name: 'Sarah Johnson', phone: '+1 555 0101', role: 'worker', branch: 'HQ Branch' },
-    { id: '2', name: 'Michael Brown', phone: '+1 555 0102', role: 'worker', branch: 'HQ Branch' },
-    { id: '3', name: 'Jane Doe', phone: '+1 555 0105', role: 'branch_admin', branch: 'HQ Branch' },
+    { id: '1', name: 'Sarah Johnson', phone: '+1 555 0101', role: 'worker', location: 'HQ Location' },
+    { id: '2', name: 'Michael Brown', phone: '+1 555 0102', role: 'worker', location: 'HQ Location' },
+    { id: '3', name: 'Jane Doe', phone: '+1 555 0105', role: 'branch_admin', location: 'HQ Location' },
   ];
 
   const handleAddUser = (e: React.FormEvent) => {
@@ -69,7 +69,7 @@ export default function ManageUsersPage() {
                 onChange={(e) => setRole(e.target.value)}
               >
                 <option value="worker">Worker</option>
-                <option value="branch_admin">Branch Admin</option>
+                <option value="branch_admin">Location Admin</option>
               </select>
             </div>
             <div className="form-actions">
@@ -87,7 +87,7 @@ export default function ManageUsersPage() {
                 <th>Name</th>
                 <th>Phone Number</th>
                 <th>Role</th>
-                <th>Branch</th>
+                <th>Location</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -98,10 +98,10 @@ export default function ManageUsersPage() {
                   <td className="monospace">{user.phone}</td>
                   <td>
                     <span className={`role-badge role-${user.role}`}>
-                      {user.role === 'branch_admin' ? 'Branch Admin' : 'Worker'}
+                      {user.role === 'branch_admin' ? 'Location Admin' : 'Worker'}
                     </span>
                   </td>
-                  <td>{user.branch}</td>
+                  <td>{user.location}</td>
                   <td>
                     <Button variant="outline" size="sm">Edit</Button>
                   </td>

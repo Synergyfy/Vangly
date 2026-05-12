@@ -28,15 +28,15 @@ export default function ShareLinksPage() {
   const registrationLinks = [
     {
       id: 'workers',
-      title: 'Branch Workers',
-      description: 'Registration for official branch evangelism staff.',
+      title: 'Location Workers',
+      description: 'Registration for official location evangelism staff.',
       url: 'https://vangly.app/join/downtown-workers',
       type: 'workers',
       icon: Users
     },
     {
       id: 'volunteers',
-      title: 'Branch Volunteers',
+      title: 'Location Volunteers',
       description: 'Registration for temporary or seasonal volunteers.',
       url: 'https://vangly.app/join/downtown-volunteers',
       type: 'volunteers',
@@ -72,7 +72,7 @@ export default function ShareLinksPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1>Registration Gateways</h1>
-            <p>Direct links and QR codes to bring new members into your branch.</p>
+            <p>Direct links and QR codes to bring new members into your location.</p>
           </div>
           <Button className="btn-premium" onClick={() => setIsCustomModalOpen(true)} style={{ gap: '0.5rem' }}>
             <Plus size={18} />

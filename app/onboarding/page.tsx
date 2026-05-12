@@ -42,11 +42,12 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   // Step 1: Account Creation
-  const [churchName, setChurchName] = useState('');
+  const [orgName, setOrgName] = useState('');
   const [adminName, setAdminName] = useState('');
   const [countryCode, setCountryCode] = useState('+234');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
 
   // Step 2: Subdomain
   const [subdomain, setSubdomain] = useState('');
@@ -55,15 +56,15 @@ export default function OnboardingPage() {
   const [primaryColor, setPrimaryColor] = useState('#007AFF');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  // Step 4: HQ Branch
-  const [branchName, setBranchName] = useState('Headquarters');
-  const [location, setLocation] = useState('');
+  // Step 4: HQ Location
+  const [locationName, setLocationName] = useState('Headquarters');
+  const [locationAddr, setLocationAddr] = useState('');
 
   useEffect(() => {
-    if (churchName) {
-      setSubdomain(churchName.toLowerCase().replace(/\s+/g, '-'));
+    if (orgName) {
+      setSubdomain(orgName.toLowerCase().replace(/\s+/g, '-'));
     }
-  }, [churchName]);
+  }, [orgName]);
 
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
@@ -71,7 +72,7 @@ export default function OnboardingPage() {
   const handleFinish = () => {
     setIsLoading(true);
     updateSettings({
-      churchName,
+      organizationName: orgName, // Updated key
       primaryColor,
       logoUrl: logoPreview
     });
@@ -81,9 +82,10 @@ export default function OnboardingPage() {
         id: 'hq_admin',
         name: adminName,
         role: 'super_admin',
-        church_id: subdomain
+        organization_id: subdomain,
+        credits: 100
       });
-      router.push('/hq');
+      router.push('/main');
     }, 1500);
   };
 
@@ -98,47 +100,72 @@ export default function OnboardingPage() {
   return (
     <div className="onboarding-page">
       <div className="onboarding-container">
+        {step > 1 && step < 5 && (
+          <button className="onboarding-back-btn" onClick={handleBack}>
+            <ArrowLeft size={18} /> Back
+          </button>
+        )}
+        
         {renderProgress()}
 
         {step === 1 && (
           <div className="onboarding-step-view">
             <div className="step-header">
-              <h1>Let's build your church system</h1>
+              <h1>Let's build your Organization system</h1>
               <p>Start by creating your main administrator account.</p>
             </div>
             <Card className="onboarding-card">
               <div className="form-stack">
-                <Input label="Church Name" placeholder="Grace Community Church" value={churchName} onChange={(e) => setChurchName(e.target.value)} required />
-                <Input label="Admin Full Name" placeholder="John Doe" value={adminName} onChange={(e) => setAdminName(e.target.value)} required />
-                
-                <div className="input-wrapper">
-                  <label className="input-label">Phone Number</label>
-                  <div className="phone-input-group">
-                    <div className="country-selector-wrapper">
-                      <select 
-                        className="country-select" 
-                        value={countryCode} 
-                        onChange={(e) => setCountryCode(e.target.value)}
-                      >
-                        {countryCodes.map(c => (
-                          <option key={c.country} value={c.code}>{c.country} {c.code}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className="selector-arrow" />
-                    </div>
-                    <input 
-                      type="tel" 
-                      className="phone-number-field" 
-                      placeholder="801 234 5678"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                      required
-                    />
-                  </div>
+                <div className="input-group-with-desc">
+                  <Input label="Organization Name" placeholder="e.g. Synergyfy Global" value={orgName} onChange={(e) => setOrgName(e.target.value)} required />
+                  <span className="field-desc">The official name of your company or community.</span>
                 </div>
 
-                <Input label="Security PIN (6 digits)" type="password" placeholder="••••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} maxLength={6} required />
-                <Button fullWidth size="lg" onClick={handleNext} disabled={!churchName || !adminName || !phoneNumber || pin.length < 6}>
+                <div className="input-group-with-desc">
+                  <Input label="Admin Full Name" placeholder="John Doe" value={adminName} onChange={(e) => setAdminName(e.target.value)} required />
+                  <span className="field-desc">The person who will have full access to this system.</span>
+                </div>
+                
+                <div className="input-group-with-desc">
+                  <div className="input-wrapper">
+                    <label className="input-label">Phone Number</label>
+                    <div className="phone-input-group">
+                      <div className="country-selector-wrapper">
+                        <select 
+                          className="country-select" 
+                          value={countryCode} 
+                          onChange={(e) => setCountryCode(e.target.value)}
+                        >
+                          {countryCodes.map(c => (
+                            <option key={c.country} value={c.code}>{c.country} {c.code}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="selector-arrow" />
+                      </div>
+                      <input 
+                        type="tel" 
+                        className="phone-number-field" 
+                        placeholder="801 234 5678"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <span className="field-desc">Used for secure login and account recovery.</span>
+                </div>
+
+                <div className="input-group-with-desc">
+                  <Input label="Security PIN (6 digits)" type="password" placeholder="••••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} maxLength={6} required />
+                  <span className="field-desc">Choose a secret 6-digit number to protect your account.</span>
+                </div>
+
+                <div className="input-group-with-desc">
+                  <Input label="Confirm Security PIN" type="password" placeholder="••••••" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))} maxLength={6} required />
+                  <span className="field-desc">Retype your 6-digit PIN to make sure it matches.</span>
+                </div>
+
+                <Button fullWidth size="lg" onClick={handleNext} disabled={!orgName || !adminName || !phoneNumber || pin.length < 6 || pin !== confirmPin}>
                   Continue <ChevronRight size={18} />
                 </Button>
               </div>
@@ -149,7 +176,7 @@ export default function OnboardingPage() {
         {step === 2 && (
           <div className="onboarding-step-view">
             <div className="step-header">
-              <h1>Your church domain</h1>
+              <h1>Your Organization domain</h1>
               <p>This is where your staff and guests will access the system.</p>
             </div>
             <Card className="onboarding-card">
@@ -160,7 +187,7 @@ export default function OnboardingPage() {
                     <span>.vangly.com</span>
                   </div>
                 </div>
-                <p className="hint-text">You can change this later in settings.</p>
+                <p className="hint-text">A unique web address for your organization portal.</p>
                 <Button fullWidth size="lg" onClick={handleNext} disabled={!subdomain}>
                   Reserve Domain <ChevronRight size={18} />
                 </Button>
@@ -173,15 +200,16 @@ export default function OnboardingPage() {
           <div className="onboarding-step-view">
             <div className="step-header">
               <h1>Brand Identity</h1>
-              <p>Make the platform feel like home for your church members.</p>
+              <p>Make the platform feel like home for your members.</p>
             </div>
             <Card className="onboarding-card">
               <div className="form-stack">
-                <label className="input-label">Church Logo</label>
+                <label className="input-label">Organization Logo</label>
                 <div className="onboarding-logo-upload" onClick={() => {}}>
                   {logoPreview ? <img src={logoPreview} alt="" /> : <Upload size={24} />}
                   <span>{logoPreview ? 'Change Logo' : 'Upload Logo'}</span>
                 </div>
+                <span className="field-desc">Upload a high-quality PNG or JPG of your logo.</span>
                 
                 <label className="input-label">Primary Brand Color</label>
                 <div className="onboarding-color-select">
@@ -197,6 +225,7 @@ export default function OnboardingPage() {
                   ))}
                   <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="custom-color-trigger" />
                 </div>
+                <span className="field-desc">Pick a color that matches your brand identity.</span>
 
                 <Button fullWidth size="lg" onClick={handleNext}>
                   Save & Continue
@@ -209,15 +238,23 @@ export default function OnboardingPage() {
         {step === 4 && (
           <div className="onboarding-step-view">
             <div className="step-header">
-              <h1>Create first branch</h1>
-              <p>Every church starts with its first location (usually Headquarters).</p>
+              <h1>Create First Location</h1>
+              <p>Every organization starts with its first operational location.</p>
             </div>
             <Card className="onboarding-card">
               <div className="form-stack">
-                <Input label="Branch Name" placeholder="Headquarters" value={branchName} onChange={(e) => setBranchName(e.target.value)} required />
-                <Input label="Location (Optional)" placeholder="e.g. Lagos, Nigeria" value={location} onChange={(e) => setLocation(e.target.value)} icon={<MapPin size={16} />} />
-                <Button fullWidth size="lg" onClick={handleNext} disabled={!branchName}>
-                  Create Branch
+                <div className="input-group-with-desc">
+                  <Input label="Location Name" placeholder="Headquarters" value={locationName} onChange={(e) => setLocationName(e.target.value)} required />
+                  <span className="field-desc">e.g. Lagos Office, Downtown Center, or HQ.</span>
+                </div>
+
+                <div className="input-group-with-desc">
+                  <Input label="Address (Optional)" placeholder="e.g. 123 Main St, Lagos" value={locationAddr} onChange={(e) => setLocationAddr(e.target.value)} icon={<MapPin size={16} />} />
+                  <span className="field-desc">The physical address of this location.</span>
+                </div>
+
+                <Button fullWidth size="lg" onClick={handleNext} disabled={!locationName}>
+                  Create Location
                 </Button>
               </div>
             </Card>
@@ -229,11 +266,11 @@ export default function OnboardingPage() {
             <Card className="onboarding-card success-onboarding">
               <div className="success-lottie">✨</div>
               <h1>You're all set!</h1>
-              <p>Your church system has been established. You can now start adding workers and tracking invites.</p>
+              <p>Your Organization System has been established. You can now start adding workers and tracking progress.</p>
               <div className="onboarding-summary">
                 <div className="summary-item"><CheckCircle2 size={16} /> Domain: {subdomain}.vangly.com</div>
                 <div className="summary-item"><CheckCircle2 size={16} /> Admin: {adminName}</div>
-                <div className="summary-item"><CheckCircle2 size={16} /> Branch: {branchName}</div>
+                <div className="summary-item"><CheckCircle2 size={16} /> Location: {locationName}</div>
               </div>
               <Button fullWidth size="lg" onClick={handleFinish} disabled={isLoading}>
                 {isLoading ? 'Preparing Dashboard...' : 'Go to Dashboard'}

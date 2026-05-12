@@ -34,8 +34,8 @@ export default function ShareInvitePage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join us at ${settings.churchName}!`,
-          text: `Hi! I'd love to see you at church. You can check in here:`,
+          title: `Join us at ${settings.organizationName}!`,
+          text: `Hi! I'd love to see you at organization. You can check in here:`,
           url: inviteLink,
         });
       } catch (err) {
@@ -64,7 +64,7 @@ export default function ShareInvitePage() {
         ctx.drawImage(img, 20, 20);
         const pngFile = canvas.toDataURL('image/png');
         const downloadLink = document.createElement('a');
-        downloadLink.download = `${settings.churchName.toLowerCase().replace(/\s+/g, '-')}-invite-qr.png`;
+        downloadLink.download = `${settings.organizationName.toLowerCase().replace(/\s+/g, '-')}-invite-qr.png`;
         downloadLink.href = pngFile;
         downloadLink.click();
       }
@@ -130,7 +130,7 @@ export default function ShareInvitePage() {
           <div className="share-tips">
             <h3>Quick Tips:</h3>
             <ul>
-              <li>The QR code includes the <strong>{settings.churchName}</strong> branding.</li>
+              <li>The QR code includes the <strong>{settings.organizationName}</strong> branding.</li>
               <li>Show the QR code on your phone for a quick scan.</li>
               <li>Post your link on your social media bio.</li>
             </ul>
