@@ -33,7 +33,7 @@ export default function WorkerDashboard() {
     { label: "Add Invite", icon: UserPlus, path: "/worker/add-invite", color: "var(--blue)" },
     { label: "My Invites", icon: ClipboardList, path: "/worker/invites", color: "var(--green)" },
     { label: "Forms", icon: FileText, path: "/worker/forms", color: "var(--purple)" },
-    { label: "Messaging", icon: MessageSquare, path: "/messages", color: "var(--blue)" },
+    { label: "Messaging", icon: MessageSquare, path: "/worker/messages", color: "var(--blue)" },
     { label: "Top Up", icon: Wallet, path: "/worker/top-up", color: "var(--orange)" },
     { label: "Share QR", icon: Share2, path: "/worker/share", color: "var(--orange)" },
     { label: "My Profile", icon: Zap, path: "/worker/profile", color: "var(--blue)" },
