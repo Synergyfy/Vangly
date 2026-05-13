@@ -1576,11 +1576,8 @@ function LocationDashboardContent() {
                     </div>
                   </div>
                   <div className="header-actions">
-                    <Button variant="ghost" size="sm" onClick={() => setPreviewMode('mobile')} title="Preview Form">
-                      <Eye size={18} /> <span className="hide-mobile">Preview</span>
-                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleSaveDraft()}>
-                       Save Draft
+                       Save
                      </Button>
                     <Button 
                       className="btn-premium" 
@@ -1588,7 +1585,10 @@ function LocationDashboardContent() {
                       onClick={() => setIsDistributionModalOpen(true)}
                       style={{ opacity: formFields.length === 0 ? 0.5 : 1, pointerEvents: formFields.length === 0 ? 'none' : 'auto' }}
                     >
-                      Publish Form
+                      Publish
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setPreviewMode('mobile')} title="Preview Form">
+                      <Eye size={18} />
                     </Button>
                   </div>
                 </div>
@@ -1600,13 +1600,13 @@ function LocationDashboardContent() {
                     onChange={(e) => setFormConfig({...formConfig, description: e.target.value})}
                   />
                   {formFields.length > 0 && (
-                    <div style={{ display: 'flex', marginTop: '16px' }}>
+                    <div style={{ display: 'flex', marginTop: '8px' }}>
                       <Button 
-                        className="btn-premium" 
+                        className="btn-premium btn-add-field-premium" 
                         onClick={() => setIsFieldSelectorOpen(true)}
-                        style={{ gap: '10px', padding: '12px 24px', borderRadius: '14px', fontSize: '14px', fontWeight: '800', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}
+                        style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '13px' }}
                       >
-                        <Plus size={20} /> Add New Field
+                        <Plus size={16} /> Add Field
                       </Button>
                     </div>
                   )}
@@ -1617,20 +1617,20 @@ function LocationDashboardContent() {
               <div className="builder-body-scrollable">
                 <div className="fields-stack">
                   {formFields.length === 0 ? (
-                    <div className="empty-builder-state fade-in" style={{ textAlign: 'center', padding: '80px 40px', background: 'white', borderRadius: '32px', border: '2px dashed var(--border-light)' }}>
+                    <div className="empty-builder-state fade-in">
                       <div className="empty-icon" style={{ width: '80px', height: '80px', background: 'var(--bg)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--blue)' }}>
                         <Layout size={40} />
                       </div>
-                      <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '12px' }}>Your form is empty</h3>
-                      <p style={{ color: 'var(--text-tertiary)', fontSize: '15px', maxWidth: '300px', margin: '0 auto 24px' }}>
-                        Start by adding your first field below to begin building your custom form.
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '8px' }}>Your form is empty</h3>
+                      <p style={{ color: 'var(--text-tertiary)', fontSize: '13px', maxWidth: '280px', margin: '0 auto 16px' }}>
+                        Start by adding your first field below.
                       </p>
                       <Button 
-                        className="btn-premium" 
+                        className="btn-premium btn-add-field-premium first-field" 
                         onClick={() => setIsFieldSelectorOpen(true)}
-                        style={{ gap: '10px', padding: '14px 32px', borderRadius: '16px', fontSize: '15px', fontWeight: '800', boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
+                        style={{ gap: '8px', padding: '10px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: '800' }}
                       >
-                        <Plus size={22} /> Add Your First Field
+                        <Plus size={18} /> Add Your First Field
                       </Button>
                     </div>
                   ) : (

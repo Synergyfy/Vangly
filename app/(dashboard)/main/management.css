@@ -454,6 +454,13 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
+@media (max-width: 640px) {
+  .builder-header-sticky {
+    position: relative !important; /* Remove sticky on mobile to allow more space */
+    padding: 12px 16px !important;
+  }
+}
+
 .header-main-info {
   display: flex;
   justify-content: space-between;
@@ -1174,7 +1181,104 @@
   }
   
   .builder-header-sticky {
-    padding: 16px 20px;
+    padding: 8px 12px !important;
+    position: relative !important;
+    box-shadow: none !important;
+  }
+
+  .header-main-info {
+    margin-bottom: 8px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .title-area {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px;
+  }
+
+  .form-title-input-ghost {
+    font-size: 18px !important;
+    letter-spacing: -0.02em !important;
+    flex: 1;
+  }
+
+  .save-status {
+    margin-top: 0 !important;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 40px !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 100% !important;
+    height: 36px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+  }
+
+  .form-desc-input-ghost {
+    font-size: 12px !important;
+    min-height: 24px !important;
+    margin-top: 4px !important;
+  }
+  
+  .builder-body-scrollable {
+    padding: 12px 0 60px 0 !important;
+  }
+
+  .fields-stack {
+    gap: 16px !important;
+    padding: 0 12px !important;
+  }
+
+  .field-card-premium {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .field-card-header {
+    margin-bottom: 16px !important;
+  }
+
+  .empty-builder-state {
+    padding: 40px 20px !important;
+    border-radius: 24px !important;
+    margin: 0 12px !important;
+  }
+
+  .empty-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .empty-icon svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .empty-builder-state h3 {
+    font-size: 18px !important;
+  }
+
+  .empty-builder-state p {
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .btn-add-field-premium.first-field {
+    padding: 12px 24px !important;
+    font-size: 14px !important;
   }
   
   .mode-mobile .preview-frame {
