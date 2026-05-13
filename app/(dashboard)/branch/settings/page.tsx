@@ -42,12 +42,14 @@ export default function BranchSettingsPage() {
   };
 
   return (
-    <div className="hq-dashboard-premium">
+    <div className="hq-dashboard-premium animate-premium">
       <header className="dashboard-header-premium">
         <div className="header-left">
-          <div className="header-badge">Location Config</div>
-          <h1>Settings & Profile</h1>
-          <p>Manage your administrative identity and location preferences.</p>
+          <div>
+            <div className="admin-badge-premium">Location Config</div>
+            <h1>Settings & Profile</h1>
+            <p style={{ color: 'var(--text-tertiary)' }}>Manage your administrative identity and location preferences.</p>
+          </div>
         </div>
         <div className="header-actions">
            <Button className="btn-premium" size="lg" onClick={handleSave} disabled={isSaving}>

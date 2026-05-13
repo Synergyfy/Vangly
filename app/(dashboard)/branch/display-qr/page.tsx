@@ -10,7 +10,8 @@ import {
   Smartphone,
   ChevronRight,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Card } from '@/components/ui/Card';
@@ -78,19 +79,25 @@ export default function DisplayQRPage() {
   }
 
   return (
-    <div className="display-qr-page">
-      <div className="dashboard-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div className="hq-dashboard-premium animate-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+           <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
+            <ArrowLeft size={16} /> Back
+          </Button>
           <div>
-            <h1>Display QR Gateway</h1>
-            <p>Ready-to-use display formats for your organization screens and posters.</p>
+            <div className="admin-badge-premium">QR Gateway</div>
+            <h1>Display QR Code</h1>
+            <p style={{ color: 'var(--text-tertiary)' }}>Ready-to-use display formats for your organization screens and posters.</p>
           </div>
+        </div>
+        <div className="header-actions">
           <Button className="btn-premium" style={{ gap: '0.5rem' }} onClick={() => setIsPresenting(true)}>
             <Maximize2 size={18} />
             Enter Presentation Mode
           </Button>
         </div>
-      </div>
+      </header>
 
       <div className="qr-display-container">
         <div className="main-preview-card">

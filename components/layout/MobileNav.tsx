@@ -35,8 +35,9 @@ export const MobileNav: React.FC = () => {
       case 'location_admin':
       case 'branch_admin':
         return [
-          { href: '/branch', label: 'Performance', icon: LayoutDashboard },
+          { href: '/branch', label: 'Home', icon: LayoutDashboard },
           { href: '/branch/teams', label: 'Teams', icon: Users },
+          { href: '/branch/forms', label: 'Forms', icon: FileText },
           { href: '/branch/messages', label: 'Messages', icon: MessageSquare },
         ];
       case 'worker':

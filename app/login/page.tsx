@@ -6,21 +6,20 @@ import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Building2, Users, User, ArrowLeft, Lock, Phone } from 'lucide-react';
+import { Building2, Users, User, ArrowLeft, Lock, Phone, ChevronDown } from 'lucide-react';
 import './login.css';
 
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [loginMode, setLoginMode] = useState<'select-role' | 'input-credentials'>('select-role');
+  const [showDemos, setShowDemos] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRole) return;
     
     setIsLoading(true);
 
@@ -28,8 +27,8 @@ export default function LoginPage() {
     setTimeout(() => {
       login({
         id: Math.random().toString(36).substring(7),
-        name: `Demo ${selectedRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
-        role: selectedRole,
+        name: selectedRole ? `Demo ${selectedRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'User',
+        role: selectedRole || 'worker',
         organization_id: 'org_123',
         branch_id: selectedRole !== 'super_admin' ? 'branch_456' : undefined,
         credits: 500
@@ -54,10 +53,13 @@ export default function LoginPage() {
 
   const handleRoleSelect = (roleId: string) => {
     setSelectedRole(roleId as UserRole);
-    setLoginMode('input-credentials');
     // Pre-fill demo credentials
     setPhoneNumber('08012345678');
     setPassword('123456');
+    // Auto-login for demo
+    setTimeout(() => {
+       document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }, 100);
   };
 
   return (
@@ -76,95 +78,94 @@ export default function LoginPage() {
         </div>
 
         <div className="login-container-premium fade-in">
-          {loginMode === 'select-role' ? (
-            <div className="role-selection-view">
-              <h2 className="login-title">Explore Demo Dashboards</h2>
-              <p className="login-subtitle">Choose a role to experience the platform</p>
-              
-              <div className="demo-roles-grid">
-                {demoRoles.map((role) => (
-                  <Card 
-                    key={role.id} 
-                    className="role-demo-card"
-                    onClick={() => handleRoleSelect(role.id)}
-                  >
-                    <div className="role-icon-box" style={{ background: `${role.color}10`, color: role.color }}>
-                      <role.icon size={24} />
-                    </div>
-                    <div className="role-text">
-                      <h3>{role.label}</h3>
-                      <p>{role.desc}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+          <div className="credentials-view">
+            <h2 className="login-title">Sign in to your account</h2>
+            <p className="login-subtitle">Enter your details to access your dashboard</p>
 
-              <div className="main-login-divider">
-                <span>OR</span>
-              </div>
+            <form onSubmit={handleLogin} className="login-form">
+              <Input 
+                label="Phone Number" 
+                placeholder="080..." 
+                icon={<Phone size={16} />}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+              />
               
-              <Button 
-                variant="ghost" 
-                fullWidth 
-                className="btn-main-login"
-                onClick={() => setLoginMode('input-credentials')}
-              >
-                Sign in to your account
-              </Button>
-            </div>
-          ) : (
-            <div className="credentials-view fade-in">
-              <div className="view-header">
-                <Button variant="ghost" size="sm" onClick={() => setLoginMode('select-role')}>
-                  <ArrowLeft size={18} />
+              <Input 
+                label="Pin" 
+                type="password" 
+                placeholder="••••••" 
+                icon={<Lock size={16} />}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <div className="login-submit" style={{ marginTop: '24px' }}>
+                <Button type="submit" fullWidth size="lg" disabled={isLoading}>
+                  {isLoading ? 'Authenticating...' : 'Sign In'}
                 </Button>
-                <div>
-                  <h2 className="login-title">Sign In</h2>
-                  <p className="login-subtitle">
-                    {selectedRole ? `Logging in as ${demoRoles.find(r => r.id === selectedRole)?.label}` : 'Access your dashboard'}
-                  </p>
-                </div>
               </div>
+            </form>
 
-              <form onSubmit={handleLogin} className="login-form">
-                <Input 
-                  label="Phone Number" 
-                  placeholder="080..." 
-                  icon={<Phone size={16} />}
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  required
-                />
-                
-                <Input 
-                  label="Password" 
-                  type="password" 
-                  placeholder="••••••" 
-                  icon={<Lock size={16} />}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+            <p className="login-footer" style={{ marginTop: '24px', textAlign: 'center' }}>
+              New here? <a href="/onboarding" style={{ color: 'var(--blue)', fontWeight: '700' }}>Create an account</a>
+            </p>
 
-                <div className="demo-hint-box">
-                  <p>Demo Credentials:</p>
-                  <code>Phone: 08012345678</code>
-                  <code>Password: 123456</code>
+            <div className="demo-dropdown-section" style={{ marginTop: '40px', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
+              <button 
+                className="demo-toggle-btn" 
+                onClick={() => setShowDemos(!showDemos)}
+                style={{ 
+                  width: '100%', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Explore Demo Dashboards
+                <ChevronDown size={18} style={{ transform: showDemos ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+
+              {showDemos && (
+                <div className="demo-roles-grid fade-in" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {demoRoles.map((role) => (
+                    <div 
+                      key={role.id} 
+                      className="role-demo-card-compact"
+                      onClick={() => handleRoleSelect(role.id)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px', 
+                        padding: '12px', 
+                        borderRadius: '12px', 
+                        border: '1px solid #f1f5f9',
+                        cursor: 'pointer',
+                        background: 'white'
+                      }}
+                    >
+                      <div className="role-icon-box" style={{ background: `${role.color}10`, color: role.color, padding: '8px', borderRadius: '8px' }}>
+                        <role.icon size={18} />
+                      </div>
+                      <div className="role-text">
+                        <h3 style={{ fontSize: '14px', fontWeight: '800', margin: 0 }}>{role.label}</h3>
+                        <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>{role.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="login-submit">
-                  <Button type="submit" fullWidth size="lg" disabled={isLoading}>
-                    {isLoading ? 'Authenticating...' : 'Enter Dashboard'}
-                  </Button>
-                </div>
-              </form>
+              )}
             </div>
-          )}
+          </div>
         </div>
-
-        <p className="login-footer">
-          New here? <a href="/onboarding">Create an account</a>
-        </p>
       </div>
     </div>
   );
