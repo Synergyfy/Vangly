@@ -59,26 +59,25 @@ export default function MonitorUsersPage() {
   };
 
   return (
-    <div className="monitor-users-page">
-      <div className="dashboard-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill">
-              <ArrowLeft size={16} /> Back
-            </Button>
-            <div>
-              <h1>Monitor Users</h1>
-              <p>Track performance and engagement across all location roles.</p>
-            </div>
-          </div>
-          <div className="activity-summary" style={{ display: 'flex', gap: '1rem' }}>
-            <Card style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div className="activity-indicator active" />
-              <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>12 Online Now</div>
-            </Card>
+    <div className="hq-dashboard-premium animate-premium">
+      <header className="dashboard-header-premium">
+        <div className="header-left">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
+            <ArrowLeft size={16} /> Back
+          </Button>
+          <div>
+            <div className="admin-badge-premium">User Intelligence</div>
+            <h1>Monitor Users</h1>
+            <p style={{ color: 'var(--text-tertiary)' }}>Track performance and engagement across all location roles.</p>
           </div>
         </div>
-      </div>
+        <div className="header-actions">
+           <Card style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '16px' }}>
+              <div className="activity-indicator active" style={{ width: '8px', height: '8px', background: 'var(--green)', borderRadius: '50%', boxShadow: '0 0 10px var(--green)' }} />
+              <div style={{ fontSize: '13px', fontWeight: 800 }}>12 Online Now</div>
+           </Card>
+        </div>
+      </header>
 
       <div className="performance-overview" style={{ marginTop: '2rem' }}>
         <Card style={{ padding: '1.5rem' }}>
