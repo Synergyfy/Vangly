@@ -60,16 +60,16 @@ export default function BranchWalletPage() {
   };
 
   return (
-    <div className="hq-dashboard-premium">
+    <div className="hq-dashboard-premium animate-premium">
       <header className="dashboard-header-premium">
         <div className="header-left">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
             <ArrowLeft size={16} /> Back
           </Button>
-          <div style={{ marginTop: '12px' }}>
-            <div className="header-badge">Location Credits</div>
+          <div>
+            <div className="admin-badge-premium">Wallet & Credits</div>
             <h1>Manage Wallet</h1>
-            <p>Control your location's outreach power and resource allocation.</p>
+            <p style={{ color: 'var(--text-tertiary)' }}>Control your location's outreach power and resource allocation.</p>
           </div>
         </div>
         <div className="header-actions">

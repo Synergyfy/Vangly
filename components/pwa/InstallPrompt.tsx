@@ -39,7 +39,7 @@ export default function InstallPrompt() {
       return () => clearTimeout(timer);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // For iOS, show guide after delay
     if (isIOSDevice) {
@@ -50,9 +50,10 @@ export default function InstallPrompt() {
       return () => clearTimeout(timer);
     }
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      };
+    }
   }, []);
 
   const handleInstallClick = async () => {

@@ -19,9 +19,9 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import './share-links.css';
+import './invitees.css';
 
-export default function ShareLinksPage() {
+export default function BranchInviteesPage() {
   const router = useRouter();
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);

@@ -1,0 +1,333 @@
+.brand-modern-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+    margin-top: 32px;
+}
+
+.brand-config-card-premium {
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 32px !important;
+    background: white;
+    border: 1px solid var(--border-light) !important;
+}
+
+.config-section {
+    padding: 32px;
+}
+
+.config-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 32px;
+}
+
+.logo-upload-premium {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.logo-preview-box-large {
+    width: 120px;
+    height: 120px;
+    background: var(--bg);
+    border: 2px dashed var(--border-light);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.logo-preview-box-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 12px;
+}
+
+.upload-controls-premium {
+    flex: 1;
+}
+
+.color-inputs-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.color-field-premium label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.color-picker-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg);
+    padding: 8px;
+    border-radius: 14px;
+    border: 1px solid var(--border-light);
+}
+
+.color-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
+    cursor: pointer;
+}
+
+.color-swatch input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.hex-input {
+    background: transparent;
+    border: none;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    width: 100px;
+    outline: none;
+}
+
+.config-footer-premium {
+    padding: 24px 32px;
+    background: #f8fafc;
+}
+
+/* ── iPhone Preview ── */
+.preview-sticky-wrap {
+    position: sticky;
+    top: 100px;
+}
+
+.preview-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.iphone-frame-premium {
+    width: 300px;
+    height: 600px;
+    background: #111;
+    border-radius: 50px;
+    padding: 12px;
+    margin: 0 auto;
+    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.3);
+    border: 4px solid #222;
+    position: relative;
+}
+
+.iphone-frame-premium::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 30px;
+    background: #111;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    z-index: 10;
+}
+
+.iphone-screen-premium {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+}
+
+.app-mockup {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.mock-header {
+    padding: 40px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mock-logo-box {
+    width: 32px;
+    height: 32px;
+    background: var(--brand-p);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 900;
+    font-size: 14px;
+    overflow: hidden;
+}
+
+.mock-logo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mock-org-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.mock-body {
+    flex: 1;
+    padding: 20px;
+    background: #f8fafc;
+}
+
+.mock-card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.mock-stat-flex {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.mock-stat-item {
+    flex: 1;
+    background: color-mix(in srgb, var(--brand-p), transparent 90%);
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.mock-stat-item.accent {
+    background: color-mix(in srgb, var(--brand-a), transparent 90%);
+}
+
+.m-val {
+    display: block;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--brand-p);
+}
+
+.accent .m-val {
+    color: var(--brand-a);
+}
+
+.m-lab {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.mock-btn-primary {
+    background: var(--brand-p);
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.mock-qr-preview {
+    text-align: center;
+}
+
+.mock-qr-inner {
+    width: 140px;
+    height: 140px;
+    background: white;
+    margin: 0 auto 12px;
+    border-radius: 20px;
+    padding: 16px;
+    position: relative;
+    border: 1px solid #e2e8f0;
+}
+
+.m-qr-pattern {
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+    background-size: 8px 8px;
+}
+
+.m-qr-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+    background: white;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: var(--brand-p);
+}
+
+.m-qr-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mock-qr-preview p {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+@media (max-width: 1024px) {
+    .brand-modern-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .brand-preview-side {
+        display: none;
+    }
+    
+    .brand-preview-side.active {
+        display: block;
+    }
+}
