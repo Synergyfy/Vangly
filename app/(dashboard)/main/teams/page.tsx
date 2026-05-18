@@ -20,6 +20,7 @@ import {
   Users2
 } from 'lucide-react';
 import '../main.css';
+import './teams.css';
 
 export default function TeamsPage() {
   const router = useRouter();
@@ -64,7 +65,7 @@ export default function TeamsPage() {
         </Button>
       </div>
 
-      <Card className="filter-card" style={{ marginBottom: '24px', padding: '24px' }}>
+      <Card className="filter-card">
         <div className="filter-grid-premium">
           <div className="premium-search-bar" style={{ flex: 2 }}>
             <Search size={18} />
@@ -82,6 +83,9 @@ export default function TeamsPage() {
                 <option value="all">All Locations</option>
                 {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
               </select>
+              <div className="select-arrow-premium">
+                 <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} />
+              </div>
             </div>
             <div className="select-wrapper-premium">
               <Users2 size={16} className="select-icon" />
@@ -89,6 +93,9 @@ export default function TeamsPage() {
                 <option value="all">All Teams</option>
                 {teams.map(team => <option key={team} value={team}>{team}</option>)}
               </select>
+              <div className="select-arrow-premium">
+                 <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} />
+              </div>
             </div>
           </div>
         </div>
