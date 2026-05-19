@@ -17,9 +17,12 @@ export default function InstallPrompt() {
       return;
     }
 
-    // Check if we've already shown the prompt in this session
-    const hasBeenShown = typeof window !== 'undefined' && sessionStorage.getItem('pwa-prompt-shown');
+    // Check if we've already shown the prompt or if user dismissed it
+    const hasBeenShown = typeof window !== 'undefined' && (localStorage.getItem('pwa-prompt-shown') || localStorage.getItem('pwa-prompt-dismissed'));
     if (hasBeenShown) return;
+
+    // Set shown flag immediately so it doesn't appear on every navigation
+    localStorage.setItem('pwa-prompt-shown', 'true');
 
     // Check if iOS
     const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -31,29 +34,26 @@ export default function InstallPrompt() {
       setDeferredPrompt(e);
       
       // Show prompt after a delay to be non-intrusive
-      const timer = setTimeout(() => {
+      androidTimer = setTimeout(() => {
         setShowPrompt(true);
-        sessionStorage.setItem('pwa-prompt-shown', 'true');
       }, 3000);
-      
-      return () => clearTimeout(timer);
     };
 
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    let androidTimer: NodeJS.Timeout | null = null;
+    let iosTimer: NodeJS.Timeout | null = null;
 
-    // For iOS, show guide after delay
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     if (isIOSDevice) {
-      const timer = setTimeout(() => {
+      iosTimer = setTimeout(() => {
         setShowPrompt(true);
-        sessionStorage.setItem('pwa-prompt-shown', 'true');
       }, 5000);
-      return () => clearTimeout(timer);
     }
 
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      };
-    }
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      if (androidTimer) clearTimeout(androidTimer);
+      if (iosTimer) clearTimeout(iosTimer);
+    };
   }, []);
 
   const handleInstallClick = async () => {
@@ -68,8 +68,8 @@ export default function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    // Also set the flag here just in case, though it's already set when shown
-    sessionStorage.setItem('pwa-prompt-shown', 'true');
+    // Persist dismissal so it doesn't show up again
+    localStorage.setItem('pwa-prompt-dismissed', 'true');
   };
 
   if (isStandalone || !showPrompt) return null;

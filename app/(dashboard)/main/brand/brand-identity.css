@@ -1,0 +1,366 @@
+/* ── Brand Identity Page - Scoped Styling ── */
+
+.brand-page-container {
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.brand-modern-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+    margin-top: 32px;
+}
+
+@media (min-width: 1024px) {
+    .brand-modern-layout {
+        grid-template-columns: 1.2fr 1fr;
+    }
+}
+
+/* Config Side */
+.brand-config-card-premium {
+    padding: 0;
+    overflow: hidden;
+    background: white;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.config-section {
+    padding: 40px;
+}
+
+.config-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 0 40px;
+}
+
+.logo-upload-premium {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.logo-preview-box-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.logo-preview-box-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.upload-controls-premium {
+    flex: 1;
+}
+
+.color-inputs-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 640px) {
+    .color-inputs-stack {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.color-field-premium label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.color-picker-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    position: relative;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.color-swatch input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.hex-input {
+    background: transparent;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    width: 100%;
+    text-transform: uppercase;
+    outline: none;
+}
+
+.config-footer-premium {
+    padding: 32px 40px;
+    background: #f8fafc;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Preview Side */
+.preview-sticky-wrap {
+    position: sticky;
+    top: 100px;
+}
+
+.preview-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.iphone-preview-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.iphone-frame-premium {
+    width: 320px;
+    height: 640px;
+    background: #000;
+    border-radius: 54px;
+    padding: 12px;
+    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.25), 0 30px 60px -30px rgba(0,0,0,0.3);
+    position: relative;
+    border: 1px solid #333;
+}
+
+.iphone-frame-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 30px;
+    background: #000;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    z-index: 10;
+}
+
+.iphone-screen-premium {
+    width: 100%;
+    height: 100%;
+    background: #f1f5f9;
+    border-radius: 42px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* App Mockup Styles */
+.app-mockup {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.mock-header {
+    background: white;
+    padding: 48px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.mock-logo-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--brand-p);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    overflow: hidden;
+}
+
+.mock-logo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mock-org-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.mock-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.mock-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+}
+
+.mock-stat-flex {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.mock-stat-item {
+    background: color-mix(in srgb, var(--brand-p), transparent 90%);
+    padding: 16px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.mock-stat-item.accent {
+    background: color-mix(in srgb, var(--brand-a), transparent 90%);
+}
+
+.mock-stat-item .m-val {
+    display: block;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--brand-p);
+}
+
+.mock-stat-item.accent .m-val {
+    color: var(--brand-a);
+}
+
+.mock-stat-item .m-lab {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+}
+
+.mock-btn-primary {
+    background: var(--brand-p);
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.mock-qr-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+}
+
+.mock-qr-inner {
+    width: 140px;
+    height: 140px;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    padding: 12px;
+}
+
+.m-qr-pattern {
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#334155 2px, transparent 2px);
+    background-size: 8px 8px;
+    opacity: 0.1;
+}
+
+.m-qr-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: var(--brand-p);
+}
+
+.m-qr-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mock-qr-preview p {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+}
+
+/* Tablet / Mobile Adjustments */
+@media (max-width: 1023px) {
+    .preview-sticky-wrap {
+        position: static;
+    }
+    
+    .iphone-frame-premium {
+        width: 280px;
+        height: 560px;
+    }
+}

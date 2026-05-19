@@ -13,7 +13,7 @@ import {
   Image as ImageIcon,
   ChevronRight,
 } from "lucide-react";
-import "./brand.css";
+import "./brand-identity.css";
 
 export default function BrandIdentityPage() {
   const { settings, updateSettings } = useBrand();
@@ -47,7 +47,7 @@ export default function BrandIdentityPage() {
   };
 
   return (
-    <div className="hq-dashboard-premium">
+    <div className="brand-page-container hq-dashboard-premium">
       <header className="dashboard-header-premium">
         <div className="header-left">
           <div className="header-badge">Visual Identity</div>

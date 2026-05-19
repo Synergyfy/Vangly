@@ -1,0 +1,123 @@
+/* Premium Select Styles for Teams Page */
+
+.filter-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-card);
+}
+
+.filter-grid-premium {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.premium-search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0 16px;
+    height: 48px;
+    transition: all 0.2s var(--ease);
+}
+
+.premium-search-bar:focus-within {
+    background: white;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px var(--blue-subtle);
+}
+
+.premium-search-bar svg {
+    color: var(--text-placeholder);
+    margin-right: 12px;
+}
+
+.premium-search-bar input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.filter-select-group {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+}
+
+.select-wrapper-premium {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    height: 48px;
+    padding: 0 12px;
+    flex: 1;
+    min-width: 160px;
+    transition: all 0.2s var(--ease);
+}
+
+.select-wrapper-premium:hover {
+    border-color: var(--border);
+}
+
+.select-wrapper-premium:focus-within {
+    background: white;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px var(--blue-subtle);
+}
+
+.select-icon {
+    color: var(--text-secondary);
+    margin-right: 10px;
+    pointer-events: none;
+}
+
+.select-wrapper-premium select {
+    appearance: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    cursor: pointer;
+    padding-right: 24px;
+    z-index: 2;
+}
+
+.select-arrow-premium {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-placeholder);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .filter-grid-premium {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-select-group {
+        flex-direction: column;
+    }
+}
