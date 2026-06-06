@@ -1,0 +1,302 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id            String         @id
+  name          String
+  subdomain     String         @unique
+  primary_color String?
+  logo_url      String?
+  createdAt     DateTime       @default(now())
+  locations     Location[]
+  users         User[]
+  teams         Team[]
+  forms         Form[]
+  formResponses FormResponse[]
+  orgAuditLogs  OrgAuditLog[]
+  smsAuditLogs  SmsAuditLog[]
+  jobs          Job[]
+}
+
+model Location {
+  id              String         @id
+  organization_id String
+  organization    Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  name            String
+  address         String
+  city            String
+  state           String
+  country         String
+  is_hq           Boolean
+  description     String?
+  photo_url       String?
+  status          String         @default("active")
+  sms_credits     Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  users           User[]
+  teams           Team[]
+  forms           Form[]
+  formResponses   FormResponse[]
+  orgAuditLogs    OrgAuditLog[]
+  smsAuditLogs    SmsAuditLog[]
+  jobs            Job[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id])
+  @@index([organization_id, status])
+}
+
+model User {
+  id              String               @id
+  name            String
+  phone           String               @unique
+  email           String?
+  pin_hash        String
+  pin_history     String[]
+  role            String
+  organization_id String?
+  organization    Organization?        @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  branch_id       String?
+  branch          Location?            @relation(fields: [branch_id], references: [id], onDelete: SetNull)
+  credits         Int                  @default(500)
+  failed_attempts Int                  @default(0)
+  locked_until    DateTime?
+  suspended       Boolean              @default(false)
+  status          String               @default("active")
+  invites_count   Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updated_at      DateTime             @default(now()) @updatedAt
+  refreshTokens   RefreshTokenFamily[]
+  auditLogs       AuditLog[]
+  teamMemberships TeamMembership[]
+  createdForms    Form[]               @relation("FormCreatedBy")
+  formResponses   FormResponse[]
+
+  @@index([organization_id])
+  @@index([branch_id])
+  @@index([organization_id, status])
+  @@index([email])
+}
+
+model OnboardingSession {
+  id                          String    @id
+  phone                       String
+  otp                         String?
+  otp_expires_at              DateTime?
+  verified                    Boolean   @default(false)
+  onboarding_token            String?   @unique
+  onboarding_token_expires_at DateTime?
+  step                        String
+  organization_name           String?
+  admin_name                  String?
+  pin                         String?
+  subdomain                   String?
+  primary_color               String?
+  logo_url                    String?
+  location_name               String?
+  address                     String?
+  city                        String?
+  state                       String?
+  country                     String?
+  createdAt                   DateTime  @default(now())
+}
+
+model RefreshTokenFamily {
+  id         String   @id
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  family_id  String
+  token_hash String
+  is_revoked Boolean  @default(false)
+  expires_at DateTime
+
+  @@index([user_id])
+  @@index([family_id])
+}
+
+model AuditLog {
+  id        String   @id
+  user_id   String?
+  user      User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  ip        String
+  ua        String
+  event     String
+  metadata  Json
+  createdAt DateTime @default(now())
+
+  @@index([user_id])
+}
+
+model Team {
+  id                 String           @id
+  organization_id    String
+  organization       Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id        String
+  location           Location         @relation(fields: [location_id], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  kind               String           @default("custom")
+  is_public_joinable Boolean          @default(false)
+  allow_member_pin   Boolean          @default(false)
+  sms_otp_required   Boolean          @default(false)
+  is_system          Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  memberships        TeamMembership[]
+  forms              Form[]
+
+  @@unique([location_id, name])
+  @@index([organization_id])
+  @@index([location_id])
+  @@index([organization_id, location_id, kind])
+}
+
+model TeamMembership {
+  id            String   @id
+  team_id       String
+  team          Team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  is_team_admin Boolean  @default(false)
+  joined_at     DateTime @default(now())
+
+  @@unique([team_id, user_id])
+  @@index([user_id])
+  @@index([team_id, is_team_admin])
+}
+
+model Form {
+  id                    String         @id
+  public_id             String         @unique
+  organization_id       String
+  organization          Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id           String
+  location              Location       @relation(fields: [location_id], references: [id], onDelete: Cascade)
+  team_id               String
+  team                  Team           @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  title                 String
+  description           String?
+  status                String         @default("draft")
+  fields                Json
+  distribution          Json
+  analytics_scans       Int            @default(0)
+  analytics_submissions Int            @default(0)
+  schema_version        Int            @default(1)
+  created_by            String
+  createdByUser         User           @relation("FormCreatedBy", fields: [created_by], references: [id], onDelete: Cascade)
+  createdAt             DateTime       @default(now())
+  updated_at            DateTime       @updatedAt
+  published_at          DateTime?
+  archived_at           DateTime?
+  responses             FormResponse[]
+  versions              FormVersion[]
+
+  @@index([organization_id])
+  @@index([location_id])
+  @@index([team_id])
+  @@index([status])
+  @@index([organization_id, status, updated_at])
+}
+
+model FormVersion {
+  id             String   @id
+  form_id        String
+  form           Form     @relation(fields: [form_id], references: [id], onDelete: Cascade)
+  schema_version Int
+  fields         Json
+  distribution   Json
+  archived_at    DateTime @default(now())
+
+  @@unique([form_id, schema_version])
+  @@index([form_id])
+}
+
+model FormResponse {
+  id                  String       @id
+  form_id             String
+  form                Form         @relation(fields: [form_id], references: [id], onDelete: Cascade)
+  organization_id     String
+  organization        Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id         String
+  location            Location     @relation(fields: [location_id], references: [id], onDelete: Cascade)
+  form_schema_version Int
+  submitted_by        String?
+  submittedByUser     User?        @relation(fields: [submitted_by], references: [id], onDelete: SetNull)
+  answers             Json
+  ip                  String?
+  ua                  String?
+  submitted_at        DateTime     @default(now())
+
+  @@index([form_id, submitted_at])
+  @@index([organization_id, submitted_at])
+  @@index([location_id, submitted_at])
+}
+
+model OrgAuditLog {
+  id              String       @id
+  actor_id        String?
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id     String?
+  location        Location?    @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  entity          String
+  entity_id       String
+  action          String
+  diff            Json
+  ip              String
+  ua              String
+  at              DateTime     @default(now())
+
+  @@index([organization_id, at])
+  @@index([entity, entity_id])
+  @@index([actor_id, at])
+}
+
+model SmsAuditLog {
+  id              String       @id
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id     String?
+  location        Location?    @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  to_phone        String
+  template        String
+  body_preview    String
+  status          String
+  credits_after   Int
+  at              DateTime     @default(now())
+
+  @@index([organization_id, at])
+  @@index([location_id, at])
+}
+
+model Job {
+  id              String       @id
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id     String?
+  location        Location?    @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  kind            String
+  status          String       @default("queued")
+  total           Int          @default(0)
+  processed       Int          @default(0)
+  succeeded       Int          @default(0)
+  failed          Int          @default(0)
+  errors          Json?
+  payload         Json?
+  started_at      DateTime?
+  finished_at     DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@index([organization_id, createdAt])
+  @@index([status])
+}

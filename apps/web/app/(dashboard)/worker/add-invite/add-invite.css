@@ -1,0 +1,58 @@
+@import '../../main/main.css';
+
+.add-invite-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.form-container {
+  max-width: 560px;
+}
+
+.form-card {
+  padding: 28px;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* More significant spacing between input groups */
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ── Success State ── */
+.success-card {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.success-card h2 {
+  font-size: 20px;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.success-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.redirect-text {
+  font-size: 13px;
+  color: var(--text-tertiary) !important;
+  margin-top: 8px;
+}

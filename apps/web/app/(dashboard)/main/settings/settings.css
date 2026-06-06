@@ -1,0 +1,166 @@
+/* ── Premium Settings Grid ── */
+
+.settings-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.settings-card-premium {
+    padding: 32px !important;
+    border-radius: 32px !important;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 280px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.settings-card-premium:hover {
+    transform: translateY(-6px);
+    border-color: var(--blue-soft);
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,0.1);
+}
+
+.settings-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.settings-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-badge-mini {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+}
+
+.settings-card-body h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.settings-card-body p {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    line-height: 1.6;
+}
+
+.settings-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--blue);
+}
+
+/* ── System Status Banner ── */
+
+.settings-system-status {
+    margin-top: 48px;
+}
+
+.status-banner-premium {
+    padding: 32px !important;
+    border-radius: 32px !important;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    background: linear-gradient(to right, #f8fafc, #ffffff);
+    border: 1px solid var(--border-light);
+}
+
+@media (max-width: 768px) {
+    .status-banner-premium {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+    }
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #f0fdf4;
+    border-radius: 20px;
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #16a34a;
+    border-radius: 50%;
+    animation: pulseStatus 2s infinite;
+}
+
+@keyframes pulseStatus {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.status-content {
+    flex: 1;
+}
+
+.status-content h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.status-content p {
+    font-size: 14px;
+    color: var(--text-tertiary);
+}
+
+.btn-status {
+    border-radius: 14px !important;
+    font-weight: 800 !important;
+}
+
+/* ── Custom Domain Flow (Modernized) ── */
+
+.domain-flow-container {
+    max-width: 700px;
+    margin: 40px auto;
+}
+
+.domain-card-premium {
+    padding: 48px !important;
+    border-radius: 40px !important;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .domain-card-premium {
+        padding: 24px !important;
+    }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    ".agent/README.md",
+    ".agent/folder-structure.md",
+    ".agent/api-integration.md",
+    ".agent/custom-hooks.md",
+    ".agent/typescript.md",
+    ".agent/code-quality.md"
+  ]
+}

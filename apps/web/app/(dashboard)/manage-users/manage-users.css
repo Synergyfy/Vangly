@@ -1,0 +1,63 @@
+.manage-users-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.add-user-card {
+  padding: var(--spacing-xl);
+}
+
+.add-user-card h2 {
+  font-size: 1.25rem;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-lg);
+}
+
+.add-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-sm);
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.role-worker {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.role-branch_admin {
+  background-color: #f3e8ff; /* purple-100 */
+  color: #7e22ce; /* purple-700 */
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

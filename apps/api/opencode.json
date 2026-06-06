@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".agent/README.md",
+    ".agent/prisma-migrations.md",
+    ".agent/dto-class-validator.md",
+    ".agent/swagger-docs.md",
+    ".agent/security.md",
+    ".agent/prisma-no-n-plus-1.md",
+    ".agent/redis.md",
+    ".agent/performance-optimization.md"
+  ]
+}

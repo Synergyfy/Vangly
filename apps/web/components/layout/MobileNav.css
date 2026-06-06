@@ -1,0 +1,61 @@
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: all var(--duration) var(--ease);
+}
+
+.mobile-nav-item.active {
+  color: var(--blue);
+}
+
+.mobile-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Ensure bottom nav is ONLY visible on screens smaller than 768px */
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex;
+  }
+  
+  /* Add padding to the body ONLY when mobile nav is visible */
+  body {
+    padding-bottom: 64px;
+  }
+}
+
+/* Explicitly hide on desktop to be safe */
+@media (min-width: 769px) {
+  .mobile-nav {
+    display: none !important;
+  }
+}
