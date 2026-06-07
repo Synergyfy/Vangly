@@ -11,12 +11,14 @@ datasource db {
 }
 
 model Organization {
-  id            String         @id
+  id            String              @id
   name          String
-  subdomain     String         @unique
+  subdomain     String              @unique
   primary_color String?
   logo_url      String?
-  createdAt     DateTime       @default(now())
+  settings      Json?
+  brand         Json?
+  createdAt     DateTime            @default(now())
   locations     Location[]
   users         User[]
   teams         Team[]
@@ -25,12 +27,17 @@ model Organization {
   orgAuditLogs  OrgAuditLog[]
   smsAuditLogs  SmsAuditLog[]
   jobs          Job[]
+  templates     MessageTemplate[]
+  contacts      Contact[]
+  walletTxns    WalletTransaction[]
+  domains       CustomDomain[]
+  invites       InviteLink[]
 }
 
 model Location {
-  id              String         @id
+  id              String              @id
   organization_id String
-  organization    Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  organization    Organization        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   name            String
   address         String
   city            String
@@ -39,10 +46,11 @@ model Location {
   is_hq           Boolean
   description     String?
   photo_url       String?
-  status          String         @default("active")
-  sms_credits     Int            @default(0)
-  createdAt       DateTime       @default(now())
-  updated_at      DateTime       @updatedAt
+  status          String              @default("active")
+  sms_credits     Int                 @default(0)
+  brand           Json?
+  createdAt       DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
   users           User[]
   teams           Team[]
   forms           Form[]
@@ -50,6 +58,11 @@ model Location {
   orgAuditLogs    OrgAuditLog[]
   smsAuditLogs    SmsAuditLog[]
   jobs            Job[]
+  contacts        Contact[]
+  templates       MessageTemplate[]
+  walletTxnsOwned WalletTransaction[] @relation("WalletTransactionOwnerLocation")
+  walletTxnsAt    WalletTransaction[] @relation("WalletTransactionLocation")
+  invites         InviteLink[]
 
   @@unique([organization_id, name])
   @@index([organization_id])
@@ -81,6 +94,10 @@ model User {
   teamMemberships TeamMembership[]
   createdForms    Form[]               @relation("FormCreatedBy")
   formResponses   FormResponse[]
+  ownedContacts   Contact[]            @relation("ContactOwner")
+  sourcedContacts Contact[]            @relation("ContactSource")
+  ownedInvites    InviteLink[]         @relation("InviteOwner")
+  walletTxns      WalletTransaction[]
 
   @@index([organization_id])
   @@index([branch_id])
@@ -298,5 +315,117 @@ model Job {
   createdAt       DateTime     @default(now())
 
   @@index([organization_id, createdAt])
+  @@index([status])
+}
+
+model MessageTemplate {
+  id              String       @id
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  scope           String       @default("organization")
+  location_id     String?
+  location        Location?    @relation(fields: [location_id], references: [id], onDelete: Cascade)
+  name            String
+  channel         String       @default("sms")
+  body            String
+  variables       Json?
+  mode            String       @default("flexible")
+  created_by      String
+  createdAt       DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  @@index([organization_id, scope])
+  @@index([location_id])
+  @@index([organization_id, name])
+}
+
+model Contact {
+  id               String       @id
+  organization_id  String
+  organization     Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id      String?
+  location         Location?    @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  owner_user_id    String?
+  owner            User?        @relation("ContactOwner", fields: [owner_user_id], references: [id], onDelete: SetNull)
+  source_user_id   String?
+  source           User?        @relation("ContactSource", fields: [source_user_id], references: [id], onDelete: SetNull)
+  name             String
+  phone            String
+  email            String?
+  note             String?
+  status           String       @default("invited")
+  source_kind      String       @default("worker")
+  last_messaged_at DateTime?
+  createdAt        DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  @@unique([organization_id, phone])
+  @@index([organization_id, status])
+  @@index([location_id])
+  @@index([owner_user_id])
+  @@index([organization_id, createdAt])
+}
+
+model InviteLink {
+  id              String       @id
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  location_id     String?
+  location        Location?    @relation(fields: [location_id], references: [id], onDelete: Cascade)
+  team_id         String?
+  owner_user_id   String
+  owner           User         @relation("InviteOwner", fields: [owner_user_id], references: [id], onDelete: Cascade)
+  form_id         String?
+  code            String       @unique
+  expires_at      DateTime?
+  max_uses        Int          @default(0)
+  uses            Int          @default(0)
+  status          String       @default("active")
+  createdAt       DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  @@index([organization_id, status])
+  @@index([owner_user_id])
+  @@index([location_id])
+}
+
+model WalletTransaction {
+  id                String       @id
+  organization_id   String
+  organization      Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  owner_type        String
+  owner_user_id     String?
+  owner             User?        @relation(fields: [owner_user_id], references: [id], onDelete: SetNull)
+  owner_location_id String?
+  owner_location    Location?    @relation("WalletTransactionOwnerLocation", fields: [owner_location_id], references: [id], onDelete: SetNull)
+  delta             Int
+  balance_after     Int
+  kind              String
+  ref_id            String?
+  location_id       String?
+  location          Location?    @relation("WalletTransactionLocation", fields: [location_id], references: [id], onDelete: SetNull)
+  actor_user_id     String?
+  description       String?
+  createdAt         DateTime     @default(now())
+
+  @@index([organization_id, owner_type, owner_user_id, createdAt])
+  @@index([organization_id, owner_type, owner_location_id, createdAt])
+  @@index([location_id])
+}
+
+model CustomDomain {
+  id                 String       @id
+  organization_id    String
+  organization       Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  domain             String       @unique
+  status             String       @default("pending")
+  verification_token String
+  verified_at        DateTime?
+  ssl_status         String       @default("none")
+  dns_instructions   Json?
+  createdAt          DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+
+  @@index([organization_id])
   @@index([status])
 }

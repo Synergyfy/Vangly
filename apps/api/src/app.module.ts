@@ -23,6 +23,14 @@ import { MembersModule } from './modules/members/members.module';
 import { FormsModule } from './modules/forms/forms.module';
 import { PublicFormsModule } from './modules/public-forms/public-forms.module';
 import { JobsModule as JobsControllerModule } from './modules/jobs/jobs.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { DomainsModule } from './modules/domains/domains.module';
+import { UsersModule } from './modules/users/users.module';
+import { InvitesModule } from './modules/invites/invites.module';
 
 @Module({
   imports: [
@@ -49,6 +57,14 @@ import { JobsModule as JobsControllerModule } from './modules/jobs/jobs.module';
     FormsModule,
     PublicFormsModule,
     JobsControllerModule,
+    OrganizationsModule,
+    ContactsModule,
+    MessagesModule,
+    WalletModule,
+    AnalyticsModule,
+    DomainsModule,
+    UsersModule,
+    InvitesModule,
   ],
   controllers: [AppController],
   providers: [

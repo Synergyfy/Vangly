@@ -41,7 +41,8 @@ export class FormsService {
   async list(
     organizationId: string,
     locationId: string | null,
-    query: FindFormsQueryDto,
+    query: FindFormsQueryDto & { scope?: 'org' | 'location' | 'me' },
+    actor?: AuthUser,
   ): Promise<{
     data: unknown[];
     meta: { page: number; per_page: number; total: number };
@@ -65,6 +66,9 @@ export class FormsService {
           }
         : {}),
     };
+    if (query.scope === 'me' && actor?.sub) {
+      where.created_by = actor.sub;
+    }
 
     const [rows, total] = await Promise.all([
       this.db.form.findMany({
@@ -741,6 +745,144 @@ export class FormsService {
       updated_at: row.updated_at.toISOString(),
       public_url: `https://vangly.app/f/${row.public_id}`,
       qr_payload: `https://vangly.app/f/${row.public_id}`,
+    };
+  }
+
+  async ensureFirstTimerForm(input: {
+    organizationId: string;
+    ownerUserId: string;
+    name: string;
+  }): Promise<{ id: string; public_id: string; public_url: string }> {
+    const existing = await this.db.form.findFirst({
+      where: {
+        organization_id: input.organizationId,
+        created_by: input.ownerUserId,
+        title: { contains: 'Invite' },
+      },
+    });
+    if (existing) {
+      return this.decorateForm(existing) as {
+        id: string;
+        public_id: string;
+        public_url: string;
+      };
+    }
+
+    const user = await this.db.user.findUnique({
+      where: { id: input.ownerUserId },
+      select: { branch_id: true, organization_id: true },
+    });
+    if (!user?.branch_id) {
+      throw new Error(
+        'Worker has no branch assigned; cannot create first-timer form.',
+      );
+    }
+
+    const membership = await this.db.teamMembership.findFirst({
+      where: { user_id: input.ownerUserId },
+      include: { team: true },
+      orderBy: { joined_at: 'desc' },
+    });
+    let team: Awaited<
+      ReturnType<DatabaseService['team']['findFirstOrThrow']>
+    > | null = membership?.team ?? null;
+
+    if (!team) {
+      const found = await this.db.team.findFirst({
+        where: {
+          organization_id: input.organizationId,
+          location_id: user.branch_id,
+          name: 'General',
+        },
+      });
+      team = found ?? null;
+    }
+    if (!team) {
+      const teamId = newId('team');
+      team = await this.db.team.create({
+        data: {
+          id: teamId,
+          organization_id: input.organizationId,
+          location_id: user.branch_id,
+          name: 'General',
+          description: 'Default team for first-timer forms',
+          kind: 'general',
+          is_system: true,
+          is_public_joinable: true,
+          allow_member_pin: false,
+          sms_otp_required: false,
+          createdAt: new Date(),
+          updated_at: new Date(),
+        },
+      });
+      await this.db.teamMembership.create({
+        data: {
+          id: newId('tm'),
+          team_id: teamId,
+          user_id: input.ownerUserId,
+          is_team_admin: true,
+          joined_at: new Date(),
+        },
+      });
+    }
+
+    const id = newId('frm');
+    const publicId = await this.uniquePublicId();
+    const created = await this.db.form.create({
+      data: {
+        id,
+        public_id: publicId,
+        organization_id: input.organizationId,
+        location_id: user.branch_id,
+        team_id: team.id,
+        title: `${input.name} Invite`,
+        description:
+          'You are warmly invited! Please fill in your details below.',
+        status: 'published',
+        fields: [
+          { key: 'name', label: 'Full name', type: 'text', required: true },
+          {
+            key: 'phone',
+            label: 'Phone number',
+            type: 'phone',
+            required: true,
+          },
+          {
+            key: 'email',
+            label: 'Email (optional)',
+            type: 'email',
+            required: false,
+          },
+          {
+            key: 'address',
+            label: 'Home address',
+            type: 'address',
+            required: false,
+          },
+        ],
+        distribution: { mode: 'public' },
+        schema_version: 1,
+        created_by: input.ownerUserId,
+        createdAt: new Date(),
+        updated_at: new Date(),
+        published_at: new Date(),
+      },
+    });
+    await this.audit.log({
+      actorId: input.ownerUserId,
+      organizationId: input.organizationId,
+      locationId: user.branch_id,
+      entity: 'form',
+      entityId: id,
+      action: 'form.auto_create',
+      diff: { owner: input.ownerUserId, public_id: publicId },
+      ip: '',
+      ua: '',
+    });
+    return this.decorateForm(created) as {
+      id: string;
+      public_id: string;
+      public_url: string;
     };
   }
 

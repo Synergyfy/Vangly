@@ -98,6 +98,17 @@ export class AuthMiddleware implements NestMiddleware {
     if (method === 'GET' && path === '/api/health') {
       return true;
     }
+    // Swagger UI + raw OpenAPI JSON (dev only; gated by SWAGGER_ENABLED in main.ts)
+    if (
+      path === '/api/docs' ||
+      path === '/api/docs/' ||
+      path === '/api/docs-json' ||
+      path.startsWith('/api/docs-json/') ||
+      path === '/api/docs-yaml' ||
+      path.startsWith('/api/docs-yaml/')
+    ) {
+      return true;
+    }
     // Public form surface: GET, POST submit, POST track-scan all bypass auth
     if (path.startsWith('/f/')) {
       return true;

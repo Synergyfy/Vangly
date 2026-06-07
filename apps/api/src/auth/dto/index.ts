@@ -8,3 +8,4 @@ export * from './refresh.dto';
 export * from './logout.dto';
 export * from './forgot-pin.dto';
 export * from './reset-pin.dto';
+export * from './me.dto';

@@ -4,10 +4,12 @@ import { newId } from '../../common/utils/hash';
 
 export interface SendSmsInput {
   to: string;
-  template: string;
-  vars: Record<string, string | number>;
+  template?: string;
+  templateId?: string | null;
+  vars?: Record<string, string | number>;
   organizationId: string;
   locationId?: string | null;
+  actorUserId?: string;
   body: string;
 }
 
@@ -15,6 +17,7 @@ export interface SendSmsResult {
   ok: boolean;
   reason?: 'INSUFFICIENT_CREDITS';
   status: 'sent' | 'failed' | 'insufficient_credits';
+  logId?: string;
 }
 
 @Injectable()
@@ -53,30 +56,32 @@ export class SmsService {
       creditsAfter = current - 1;
     }
 
-    await this.audit(input, 'sent', creditsAfter);
+    const logId = await this.audit(input, 'sent', creditsAfter);
     this.logger.log(
-      `[sms:mock] -> ${input.to} | ${input.template} | ${input.body}`,
+      `[sms:mock] -> ${input.to} | ${input.template ?? input.templateId ?? 'ad-hoc'} | ${input.body}`,
     );
-    return { ok: true, status: 'sent' };
+    return { ok: true, status: 'sent', logId };
   }
 
   private async audit(
     input: SendSmsInput,
     status: 'sent' | 'failed' | 'insufficient_credits',
     creditsAfter: number,
-  ): Promise<void> {
+  ): Promise<string> {
+    const id = newId('sms');
     await this.db.smsAuditLog.create({
       data: {
-        id: newId('sms'),
+        id,
         organization_id: input.organizationId,
         location_id: input.locationId ?? null,
         to_phone: input.to,
-        template: input.template,
+        template: input.template ?? input.templateId ?? 'ad-hoc',
         body_preview: input.body.slice(0, 280),
         status,
         credits_after: creditsAfter,
         at: new Date(),
       },
     });
+    return id;
   }
 }

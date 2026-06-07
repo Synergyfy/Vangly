@@ -4,6 +4,7 @@ import {
   Get,
   Body,
   Req,
+  Patch,
   UseInterceptors,
   UploadedFile,
   HttpCode,
@@ -26,9 +27,14 @@ import {
   LogoutDto,
   ForgotPinDto,
   ResetPinDto,
+  SetupPinDto,
+  UpdateMeDto,
 } from './dto';
 import { UserEntity } from './entities/user.entity';
 import { AuthUser } from '../common/decorators/current-user.decorator';
+import { UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { RolesGuard } from './roles.guard';
 
 interface MulterFile {
   mimetype: string;
@@ -261,5 +267,60 @@ export class AuthController {
   async resetPin(@Body() body: ResetPinDto, @Req() req: express.Request) {
     const { ip, ua } = this.getIpAndUa(req);
     return this.authService.resetPin(body.onboarding_token, body.pin, ip, ua);
+  }
+
+  // --- Authenticated Profile Endpoints ---
+
+  @Post('setup-pin')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Set or change the caller\u2019s PIN' })
+  @UseGuards(RolesGuard)
+  async setupPin(@Body() body: SetupPinDto, @Req() req: express.Request) {
+    const authReq = req as AuthenticatedRequest;
+    const userPayload = authReq.user;
+    if (!userPayload) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'UNAUTHENTICATED',
+            message: 'Authentication required.',
+          },
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    const { ip, ua } = this.getIpAndUa(req);
+    return this.authService.setupPin(
+      userPayload.sub,
+      body.new_pin,
+      body.current_pin,
+      ip,
+      ua,
+    );
+  }
+
+  @Patch('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update the caller\u2019s profile' })
+  @ApiOkResponse({ type: UserEntity })
+  @UseGuards(RolesGuard)
+  async updateMe(@Body() body: UpdateMeDto, @Req() req: express.Request) {
+    const authReq = req as AuthenticatedRequest;
+    const userPayload = authReq.user;
+    if (!userPayload) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'UNAUTHENTICATED',
+            message: 'Authentication required.',
+          },
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    const { ip, ua } = this.getIpAndUa(req);
+    return this.authService.updateMe(userPayload.sub, body, ip, ua);
   }
 }

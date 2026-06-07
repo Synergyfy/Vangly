@@ -11,8 +11,8 @@ export interface OrgAuditInput {
   entityId: string;
   action: string;
   diff?: Record<string, unknown>;
-  ip: string;
-  ua: string;
+  ip?: string;
+  ua?: string | null;
 }
 
 @Injectable()
@@ -30,8 +30,8 @@ export class OrgAuditService {
         entity_id: input.entityId,
         action: input.action,
         diff: (input.diff ?? {}) as Prisma.InputJsonValue,
-        ip: input.ip,
-        ua: input.ua,
+        ip: input.ip ?? 'unknown',
+        ua: input.ua ?? 'unknown',
         at: new Date(),
       },
     });

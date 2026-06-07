@@ -4,12 +4,14 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
 import { DatabaseService } from '../../database/database.service';
 import { FormsService } from '../forms/forms.service';
 import { SmsService } from '../../infra/sms/sms.service';
+import { ContactMatchService } from '../contacts/contact-match.service';
 import { newId } from '../../common/utils/hash';
 
 const SCAN_TOKENS = new Map<string, { publicId: string; expiresAt: Date }>();
@@ -23,6 +25,7 @@ export class PublicFormsService {
     private readonly db: DatabaseService,
     private readonly forms: FormsService,
     private readonly sms: SmsService,
+    @Optional() private readonly contactMatcher?: ContactMatchService,
   ) {}
 
   async getForm(
@@ -225,6 +228,32 @@ export class PublicFormsService {
         this.logger.warn(
           `SMS invite failed for form ${form.id}: ${(err as Error).message}`,
         );
+      }
+    }
+
+    if (this.contactMatcher) {
+      const phone = (answers['phone'] ??
+        answers['Phone'] ??
+        answers['mobile']) as string | undefined;
+      if (typeof phone === 'string' && phone.trim().length > 0) {
+        const name = (answers['name'] ??
+          answers['Name'] ??
+          answers['full_name']) as string | undefined;
+        try {
+          await this.contactMatcher.matchOrCreate({
+            organizationId: form.organization_id,
+            phone,
+            name: typeof name === 'string' ? name : undefined,
+            locationId: form.location_id,
+            ownerUserId: form.created_by,
+            sourceUserId: meta.userId ?? form.created_by,
+            sourceKind: 'public',
+          });
+        } catch (err) {
+          this.logger.warn(
+            `Contact match failed for form ${form.id}: ${(err as Error).message}`,
+          );
+        }
       }
     }
 

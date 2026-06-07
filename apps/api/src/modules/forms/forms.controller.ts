@@ -98,12 +98,41 @@ export class TeamFormsController {
 export class FormsController {
   constructor(private readonly service: FormsService) {}
 
+  @Get()
+  @ApiOperation({
+    summary:
+      'List forms for the caller. Use ?scope=org|location|me (default: scope=me for workers, org otherwise).',
+  })
+  @ApiOkResponse({ description: 'Paginated forms.' })
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
+  async listAll(
+    @CurrentUser() user: AuthUser,
+    @Query() query: FindFormsQueryDto & { scope?: 'org' | 'location' | 'me' },
+  ) {
+    const scope = query.scope
+      ? query.scope
+      : user.role === 'worker'
+        ? 'me'
+        : user.role === 'location_admin' || user.role === 'branch_admin'
+          ? 'location'
+          : 'org';
+    return this.service.list(
+      user.organization_id!,
+      user.branch_id ?? null,
+      {
+        ...query,
+        scope,
+      },
+      user,
+    );
+  }
+
   @Get(':formId')
   @ApiOperation({ summary: 'Get a form by id' })
   @ApiParam({ name: 'formId' })
   @ApiOkResponse({ type: FormEntity })
   @ApiNotFoundResponse()
-  @Roles('organization_admin', 'super_admin', 'location_admin')
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
   async getOne(@CurrentUser() user: AuthUser, @Param('formId') formId: string) {
     return this.service.getById(user.organization_id!, formId, {
       isSuper: user.role === 'super_admin',

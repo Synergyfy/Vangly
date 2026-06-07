@@ -3,7 +3,10 @@ import { Prisma } from '@prisma/client';
 import { DatabaseService } from '../../database/database.service';
 import { newId } from '../../common/utils/hash';
 
-export type JobKind = 'members_bulk_import';
+export type JobKind =
+  | 'members_bulk_import'
+  | 'wallet.sms_purchase'
+  | 'contacts.bulk_import';
 
 export type JobStatus = 'queued' | 'running' | 'done' | 'failed';
 

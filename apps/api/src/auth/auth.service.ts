@@ -886,4 +886,117 @@ export class AuthService {
       return null;
     }
   }
+
+  async setupPin(
+    userId: string,
+    newPin: string,
+    currentPin: string | undefined,
+    ip: string,
+    ua: string,
+  ) {
+    if (!isValidPinFormat(newPin)) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'PIN must be 4 to 6 digits.',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const user = await this.db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new HttpException(
+        {
+          error: { code: 'NOT_FOUND', message: 'User not found.' },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (currentPin !== undefined) {
+      const currentHash = this.hash(currentPin);
+      if (currentHash !== user.pin_hash) {
+        throw new HttpException(
+          {
+            error: {
+              code: 'UNAUTHENTICATED',
+              message: 'Current PIN is incorrect.',
+            },
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+    }
+    const newHash = this.hash(newPin);
+    if (user.pin_history?.includes(newHash)) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'New PIN must be different from your last PINs.',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const newHistory = [newHash, ...(user.pin_history ?? [])].slice(0, 5);
+    await this.db.user.update({
+      where: { id: userId },
+      data: {
+        pin_hash: newHash,
+        pin_history: newHistory,
+        failed_attempts: 0,
+        locked_until: null,
+      },
+    });
+    await this.audit(userId, ip, ua, 'PIN_SETUP', {});
+    return { success: true };
+  }
+
+  async updateMe(
+    userId: string,
+    patch: { name?: string; email?: string },
+    ip: string,
+    ua: string,
+  ) {
+    const user = await this.db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new HttpException(
+        {
+          error: { code: 'NOT_FOUND', message: 'User not found.' },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (patch.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(patch.email)) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid email address.',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const updated = await this.db.user.update({
+      where: { id: userId },
+      data: {
+        name: patch.name ?? undefined,
+        email: patch.email ?? undefined,
+      },
+    });
+    await this.audit(userId, ip, ua, 'PROFILE_UPDATE', { patch });
+    return {
+      id: updated.id,
+      name: updated.name,
+      phone: updated.phone,
+      email: updated.email,
+      role: updated.role,
+      organization_id: updated.organization_id,
+      branch_id: updated.branch_id,
+      credits: updated.credits,
+    };
+  }
 }

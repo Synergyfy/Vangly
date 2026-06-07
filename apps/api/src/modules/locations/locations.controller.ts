@@ -32,6 +32,7 @@ import {
   FindLocationsQueryDto,
   LocationDashboardQueryDto,
   LocationPhotoDto,
+  UpdateLocationBrandDto,
 } from './dto';
 import { Roles, RolesGuard } from '../../auth/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -197,6 +198,79 @@ export class LocationsController {
       query,
       user.role ?? 'worker',
       user.branch_id,
+    );
+  }
+
+  @Get(':id/brand')
+  @ApiOperation({ summary: 'Get location brand override' })
+  @ApiParam({ name: 'id' })
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
+  async getBrand(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.getBrand(user.organization_id!, id);
+  }
+
+  @Patch(':id/brand')
+  @ApiOperation({ summary: 'Update location brand override' })
+  @ApiParam({ name: 'id' })
+  @Roles('organization_admin', 'super_admin', 'location_admin')
+  async updateBrand(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateLocationBrandDto,
+    @Req() req: Request,
+  ) {
+    const { ip, ua } = getIpAndUa(req);
+    return this.service.updateBrand(user.organization_id!, id, dto, {
+      id: user.sub,
+      ip,
+      ua,
+    });
+  }
+
+  @Get(':id/qr-code')
+  @ApiOperation({
+    summary: 'Get location QR code (links to public form route)',
+  })
+  @ApiParam({ name: 'id' })
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
+  async getQrCode(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.getQrCode(user.organization_id!, id);
+  }
+
+  @Get(':id/forms')
+  @ApiOperation({ summary: 'List forms belonging to a location' })
+  @ApiParam({ name: 'id' })
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
+  async listForms(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Query()
+    query: { page?: number; per_page?: number; status?: string; q?: string },
+  ) {
+    return this.service.listForms(
+      user.organization_id!,
+      id,
+      user.role ?? 'worker',
+      user.branch_id,
+      query,
+    );
+  }
+
+  @Get(':id/teams')
+  @ApiOperation({ summary: 'List teams belonging to a location' })
+  @ApiParam({ name: 'id' })
+  @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
+  async listTeams(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Query() query: { page?: number; per_page?: number; q?: string },
+  ) {
+    return this.service.listTeams(
+      user.organization_id!,
+      id,
+      user.role ?? 'worker',
+      user.branch_id,
+      query,
     );
   }
 }

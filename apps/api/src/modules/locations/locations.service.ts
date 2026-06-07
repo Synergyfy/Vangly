@@ -12,6 +12,7 @@ import { DatabaseService } from '../../database/database.service';
 import { CreateLocationDto, UpdateLocationDto } from './dto/write-location.dto';
 import { FindLocationsQueryDto } from './dto/find-locations-query.dto';
 import { LocationDashboardQueryDto } from './dto/location-dashboard-query.dto';
+import { UpdateLocationBrandDto } from './dto/location-brand.dto';
 import {
   LocationDashboardEntity,
   DashboardStatEntity,
@@ -757,5 +758,204 @@ export class LocationsService {
       created_at: (row.createdAt as Date).toISOString(),
       updated_at: (row.updated_at as Date).toISOString(),
     };
+  }
+
+  async getBrand(organizationId: string, id: string) {
+    const loc = await this.db.location.findFirst({
+      where: { id, organization_id: organizationId },
+      select: { id: true, brand: true },
+    });
+    if (!loc) {
+      throw new HttpException(
+        { error: { code: 'NOT_FOUND', message: 'Location not found' } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return {
+      id: loc.id,
+      brand: (loc.brand as Record<string, unknown> | null) ?? {},
+    };
+  }
+
+  async updateBrand(
+    organizationId: string,
+    id: string,
+    dto: UpdateLocationBrandDto,
+    actor: { id: string; ip: string; ua: string },
+  ) {
+    const loc = await this.db.location.findFirst({
+      where: { id, organization_id: organizationId },
+    });
+    if (!loc) {
+      throw new HttpException(
+        { error: { code: 'NOT_FOUND', message: 'Location not found' } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const updated = await this.db.location.update({
+      where: { id },
+      data: { brand: (dto.brand ?? {}) as Prisma.InputJsonValue },
+      select: { id: true, brand: true },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      organizationId,
+      locationId: id,
+      entity: 'Location',
+      entityId: id,
+      action: 'brand.update',
+      diff: { after: dto.brand ?? {} },
+      ip: actor.ip,
+      ua: actor.ua,
+    });
+    return {
+      id: updated.id,
+      brand: (updated.brand as Record<string, unknown>) ?? {},
+    };
+  }
+
+  async getQrCode(organizationId: string, id: string) {
+    const loc = await this.db.location.findFirst({
+      where: { id, organization_id: organizationId },
+      select: { id: true, name: true },
+    });
+    if (!loc) {
+      throw new HttpException(
+        { error: { code: 'NOT_FOUND', message: 'Location not found' } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const payload = `https://vangly.app/loc/${id}`;
+    return {
+      location_id: id,
+      name: loc.name,
+      payload,
+      url: payload,
+      qr_payload: payload,
+    };
+  }
+
+  async listForms(
+    organizationId: string,
+    id: string,
+    role: string,
+    branchId: string | null,
+    query: { page?: number; per_page?: number; status?: string; q?: string },
+  ) {
+    if (role === 'location_admin' && branchId !== id) {
+      throw new ForbiddenException({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You can only view your own location forms.',
+        },
+      });
+    }
+    const { page, perPage, offset, limit } = paginationFromQuery(
+      query.page,
+      query.per_page,
+      { maxPerPage: 100 },
+    );
+    const where: Prisma.FormWhereInput = {
+      organization_id: organizationId,
+      location_id: id,
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              { title: { contains: query.q, mode: 'insensitive' } },
+              { description: { contains: query.q, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+    const [rows, total] = await Promise.all([
+      this.db.form.findMany({
+        where,
+        orderBy: { updated_at: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.db.form.count({ where }),
+    ]);
+    return buildPaginatedResponse(
+      rows.map((r) => ({
+        id: r.id,
+        public_id: r.public_id,
+        title: r.title,
+        description: r.description,
+        status: r.status,
+        team_id: r.team_id,
+        location_id: r.location_id,
+        schema_version: r.schema_version,
+        analytics_scans: r.analytics_scans,
+        analytics_submissions: r.analytics_submissions,
+        public_url: `https://vangly.app/f/${r.public_id}`,
+        qr_payload: `https://vangly.app/f/${r.public_id}`,
+        created_at: r.createdAt.toISOString(),
+        published_at: r.published_at?.toISOString(),
+        updated_at: r.updated_at.toISOString(),
+      })),
+      total,
+      page,
+      perPage,
+    );
+  }
+
+  async listTeams(
+    organizationId: string,
+    id: string,
+    role: string,
+    branchId: string | null,
+    query: { page?: number; per_page?: number; q?: string },
+  ) {
+    if (role === 'location_admin' && branchId !== id) {
+      throw new ForbiddenException({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You can only view your own location teams.',
+        },
+      });
+    }
+    const { page, perPage, offset, limit } = paginationFromQuery(
+      query.page,
+      query.per_page,
+      { maxPerPage: 100 },
+    );
+    const where: Prisma.TeamWhereInput = {
+      organization_id: organizationId,
+      location_id: id,
+      ...(query.q
+        ? {
+            OR: [
+              { name: { contains: query.q, mode: 'insensitive' } },
+              { description: { contains: query.q, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+    const [rows, total] = await Promise.all([
+      this.db.team.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+        include: { _count: { select: { memberships: true, forms: true } } },
+      }),
+      this.db.team.count({ where }),
+    ]);
+    const data = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      kind: r.kind,
+      is_system: r.is_system,
+      is_public_joinable: r.is_public_joinable,
+      members_count: r._count.memberships,
+      forms_count: r._count.forms,
+      location_id: r.location_id,
+      created_at: r.createdAt.toISOString(),
+      updated_at: r.updated_at.toISOString(),
+    }));
+    return buildPaginatedResponse(data, total, page, perPage);
   }
 }
