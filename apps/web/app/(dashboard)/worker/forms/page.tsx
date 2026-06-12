@@ -1,110 +1,115 @@
 "use client";
 
-import React from 'react';
-import { 
-  FileText, 
-  Users, 
-  UserPlus, 
-  Clock, 
-  ChevronRight, 
+import React from "react";
+import {
+  FileText,
+  UserPlus,
+  Clock,
+  ChevronRight,
   ArrowLeft,
-  Sparkles,
   ClipboardList,
-  Target
-} from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { useRouter } from 'next/navigation';
-import './worker-forms.css';
+  Target,
+} from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
+import "./worker-forms.css";
+
+const QUICK_ACTIONS = [
+  {
+    id: "1",
+    title: "Create New Invite",
+    description: "Generate a new invite link to share with newcomers.",
+    icon: <UserPlus size={24} />,
+    color: "var(--blue)",
+    href: "/worker/add-invite",
+    usage: "High",
+    estimatedTime: "1 min",
+  },
+  {
+    id: "2",
+    title: "My Invite Links",
+    description: "View and manage the invite links you have created.",
+    icon: <ClipboardList size={24} />,
+    color: "var(--purple)",
+    href: "/worker/invites",
+    usage: "Daily",
+    estimatedTime: "2 mins",
+  },
+  {
+    id: "3",
+    title: "Browse Public Forms",
+    description: "Fill out a form shared with you via a link or QR code.",
+    icon: <Target size={24} />,
+    color: "var(--orange)",
+    href: "/f/demo",
+    usage: "Medium",
+    estimatedTime: "2 mins",
+  },
+];
 
 export default function WorkerFormsPage() {
   const router = useRouter();
 
-  const forms = [
-    {
-      href: '/worker/add-invite',
-      usage: 'High',
-      estimatedTime: '2 mins'
-    },
-    {
-      id: '2',
-      title: 'Follow-up Report',
-      description: 'Record the outcome of a phone call or visit to a contact.',
-      icon: <ClipboardList size={24} />,
-      color: 'var(--purple)',
-      href: '/worker/invites',
-      usage: 'Daily',
-      estimatedTime: '3 mins'
-    },
-    {
-      id: '3',
-      title: 'Event Interest Form',
-      description: 'Track people interested in upcoming organization programs.',
-      icon: <Target size={24} />,
-      color: 'var(--orange)',
-      href: '/worker/add-invite', // Defaulting to add-invite for now
-      usage: 'Medium',
-      estimatedTime: '1 min'
-    }
-  ];
-
   return (
     <div className="worker-forms-page">
       <div className="dashboard-header">
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            style={{ padding: '0.5rem', borderRadius: '50%' }}
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ padding: "0.5rem", borderRadius: "50%" }}
             onClick={() => router.back()}
+            aria-label="Back"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1>Available Forms</h1>
-            <p>Select a tool to begin collecting data and recording impact.</p>
+            <h1>Forms & Quick Actions</h1>
+            <p
+              style={{
+                color: "var(--text-tertiary)",
+                fontSize: "14px",
+                margin: 0,
+              }}
+            >
+              Create invites, view your links, or fill out a public form.
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="forms-grid">
-        {forms.map(form => (
-          <Card key={form.id} className="form-tool-card" onClick={() => router.push(form.href)}>
-            <div className="form-tool-icon" style={{ backgroundColor: `${form.color}15`, color: form.color }}>
+      <div className="forms-list">
+        {QUICK_ACTIONS.map((form) => (
+          <Card
+            key={form.id}
+            className="form-card"
+            onClick={() => router.push(form.href)}
+          >
+            <div
+              className="form-icon"
+              style={{
+                background: `${form.color}15`,
+                color: form.color,
+              }}
+            >
               {form.icon}
             </div>
-            <div className="form-tool-content">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <h3>{form.title}</h3>
-                <div className="form-usage-pill">{form.usage} Usage</div>
-              </div>
+            <div className="form-info">
+              <h3>{form.title}</h3>
               <p>{form.description}</p>
-              
-              <div className="form-tool-footer">
-                <div className="footer-item">
-                  <Clock size={14} />
-                  <span>{form.estimatedTime}</span>
-                </div>
-                <div className="footer-item" style={{ marginLeft: 'auto' }}>
-                  <span style={{ fontWeight: 700, color: 'var(--blue)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Launch Form</span>
-                  <ChevronRight size={16} style={{ color: 'var(--blue)' }} />
-                </div>
+              <div className="form-meta">
+                <span className="meta-pill">
+                  <FileText size={12} /> {form.usage} usage
+                </span>
+                <span className="meta-pill">
+                  <Clock size={12} /> {form.estimatedTime}
+                </span>
               </div>
             </div>
+            <ChevronRight size={20} className="text-tertiary" />
           </Card>
         ))}
-      </div>
-
-      <div className="forms-info-section">
-        <Card className="impact-tip-card">
-          <div className="tip-icon">
-            <Sparkles size={20} />
-          </div>
-          <div>
-            <h4>Pro Tip: Real-time Entry</h4>
-            <p>Filling out forms while talking to guests ensures higher accuracy and faster follow-up response times.</p>
-          </div>
-        </Card>
       </div>
     </div>
   );

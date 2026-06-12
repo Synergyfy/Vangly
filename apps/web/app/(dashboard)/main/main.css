@@ -4201,6 +4201,50 @@
     .desktop-only {
         display: none;
     }
+
+    .mobile-list-view .location-card-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .header-actions-mobile-hidden {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-actions-grid-mobile {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .hq-dashboard-premium {
+        padding: 0.75rem;
+    }
+
+    .dashboard-main-content > section {
+        margin-bottom: 24px !important;
+    }
+
+    .mobile-list-view {
+        gap: 8px;
+        padding: 2px;
+    }
+
+    .location-performance-card {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .dashboard-header-premium h1 {
+        font-size: 20px;
+    }
+
+    .dashboard-header-premium p {
+        font-size: 13px;
+    }
+
+    .section-title {
+        font-size: 15px;
+    }
 }
 
 /* -- All Invites Mobile Optimization -- */

@@ -79,7 +79,9 @@ export class TeamFormsController {
   ) {
     dto.team_id = teamId;
     const locationId = user.branch_id;
-    if (!locationId) {
+    const isLocationRestricted =
+      user.role === 'location_admin' || user.role === 'branch_admin';
+    if (isLocationRestricted && !locationId) {
       throw new (await import('@nestjs/common')).BadRequestException({
         error: {
           code: 'VALIDATION_ERROR',
@@ -87,7 +89,12 @@ export class TeamFormsController {
         },
       });
     }
-    return this.service.create(user.organization_id!, locationId, dto, user);
+    return this.service.create(
+      user.organization_id!,
+      isLocationRestricted ? locationId : undefined,
+      dto,
+      user,
+    );
   }
 }
 

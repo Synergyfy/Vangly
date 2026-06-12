@@ -1,231 +1,427 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Copy, 
-  Download, 
-  Share2, 
-  UserPlus, 
-  Users, 
-  Check, 
-  Plus, 
-  ExternalLink,
-  QrCode,
-  ArrowLeft
-} from 'lucide-react';
-import { QRCodeCanvas } from 'qrcode.react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
-import './invitees.css';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Copy,
+  Share2,
+  UserPlus,
+  ArrowLeft,
+  Loader2,
+  Trash2,
+  Power,
+  Link as LinkIcon,
+  X,
+} from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
+import { useFieldErrors } from "@/lib/forms/use-field-errors";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
+import { toast } from "sonner";
+import {
+  useCreateInvite,
+  useDeleteInvite,
+  useInvitesList,
+  useShareInvite,
+  useUpdateInvite,
+} from "@/services/invites";
+import { useAuth } from "@/services/auth";
+import "./invitees.css";
 
 export default function BranchInviteesPage() {
   const router = useRouter();
-  const [copiedLink, setCopiedLink] = useState<string | null>(null);
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  const [selectedLink, setSelectedLink] = useState<any>(null);
+  const { user } = useAuth();
+  const branchId = user?.branch_id ?? undefined;
+  const invitesQuery = useInvitesList();
+  const createInvite = useCreateInvite();
+  const updateInvite = useUpdateInvite();
+  const deleteInvite = useDeleteInvite();
+  const shareInvite = useShareInvite();
 
-  const registrationLinks = [
-    {
-      id: 'workers',
-      title: 'Location Workers',
-      description: 'Registration for official location evangelism staff.',
-      url: 'https://vangly.app/join/downtown-workers',
-      type: 'workers',
-      icon: Users,
-      color: '#3b82f6'
-    },
-    {
-      id: 'volunteers',
-      title: 'Location Volunteers',
-      description: 'Registration for temporary or seasonal volunteers.',
-      url: 'https://vangly.app/join/downtown-volunteers',
-      type: 'volunteers',
-      icon: UserPlus,
-      color: '#8b5cf6'
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [shareFor, setShareFor] = useState<{
+    id: string;
+    code: string;
+  } | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newMaxUses, setNewMaxUses] = useState("100");
+  const [shareChannel, setShareChannel] = useState<"sms" | "email">("sms");
+  const [shareRecipient, setShareRecipient] = useState("");
+
+  const { errors, setError, clearAll } = useFieldErrors();
+  const isSaving = createInvite.isPending || shareInvite.isPending;
+
+  const invites = (invitesQuery.data ?? []).filter(
+    (i) => !branchId || i.location_id === branchId,
+  );
+
+  const handleCopy = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied.");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not copy link."));
     }
-  ];
-
-  const [customLinks] = useState([
-    { id: '1', name: 'Saturday Outreach Event', team: 'Evangelism Team', visits: 45, url: 'https://vangly.app/join/sat-outreach' },
-    { id: '2', name: 'Youth Camp 2026', team: 'Youth Workers', visits: 128, url: 'https://vangly.app/join/youth-camp' }
-  ]);
-
-  const handleCopy = (url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopiedLink(url);
-    setTimeout(() => setCopiedLink(null), 2000);
   };
 
-  const handleDownloadQR = (id: string) => {
-    const canvas = document.getElementById(`qr-${id}`) as HTMLCanvasElement;
-    if (canvas) {
-      const url = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `qr-code-${id}.png`;
-      link.href = url;
-      link.click();
+  const handleToggleStatus = async (id: string, current: string) => {
+    const next = current === "active" ? "revoked" : "active";
+    try {
+      await updateInvite.mutateAsync({ id, input: { status: next } });
+      toast.success(`Invite link ${next}.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not update invite link."));
+    }
+  };
+
+  const handleDelete = async (id: string, code: string) => {
+    if (!window.confirm(`Delete invite link "${code}"?`)) return;
+    try {
+      await deleteInvite.mutateAsync(id);
+      toast.success("Invite link deleted.");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not delete invite link."));
+    }
+  };
+
+  const resetForm = () => {
+    setNewName("");
+    setNewMaxUses("100");
+    clearAll();
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateModalOpen(false);
+    setTimeout(resetForm, 250);
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearAll();
+    if (!newName.trim()) {
+      setError("name", "Name is required.");
+      return;
+    }
+    const max = Number(newMaxUses);
+    if (!Number.isInteger(max) || max < 1) {
+      setError("maxUses", "Max uses must be a positive number.");
+      return;
+    }
+    try {
+      await createInvite.mutateAsync({ max_uses: max });
+      toast.success(`Invite link "${newName.trim()}" created.`);
+      setShowSuccess(true);
+      handleCloseCreate();
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not create invite link."));
+    }
+  };
+
+  const handleShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shareFor) return;
+    clearAll();
+    if (!shareRecipient.trim()) {
+      setError("recipient", "Recipient is required.");
+      return;
+    }
+    try {
+      await shareInvite.mutateAsync({
+        id: shareFor.id,
+        input: { channel: shareChannel, recipient: shareRecipient.trim() },
+      });
+      toast.success(`Invite shared via ${shareChannel}.`);
+      setShareFor(null);
+      setShareRecipient("");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not share invite link."));
     }
   };
 
   return (
-    <div className="hq-dashboard-premium">
-      <header className="dashboard-header-premium">
-        <div className="header-left">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill">
+    <div className="hq-dashboard-premium animate-premium">
+      <div className="page-header flex-between">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            style={{ marginBottom: "12px" }}
+          >
             <ArrowLeft size={16} /> Back
           </Button>
-          <div style={{ marginTop: '12px' }}>
-            <div className="header-badge">Growth Tools</div>
-            <h1>Registration Gateways</h1>
-            <p>Direct links and QR codes to bring new members into your location.</p>
-          </div>
+          <div className="header-badge">Invite Management</div>
+          <h1>Branch Invite Links</h1>
+          <p>Reusable invite links scoped to this branch.</p>
         </div>
-        <div className="header-actions">
-           <Button className="btn-premium" size="lg" onClick={() => setIsCustomModalOpen(true)}>
-             <Plus size={18} style={{ marginRight: '8px' }} /> Create Event Link
-           </Button>
-        </div>
-      </header>
-
-      <div className="gateways-grid-premium">
-        {registrationLinks.map((link) => (
-          <Card key={link.id} className="gateway-card-premium">
-            <div className="gateway-card-top">
-               <div className="gateway-icon-box" style={{ background: `${link.color}15`, color: link.color }}>
-                  <link.icon size={24} />
-               </div>
-               <div className="gateway-meta">
-                  <h3>{link.title}</h3>
-                  <p>{link.description}</p>
-               </div>
-            </div>
-            
-            <div className="gateway-qr-preview">
-               <div className="qr-wrap-premium">
-                  <QRCodeCanvas 
-                    id={`qr-${link.id}`}
-                    value={link.url} 
-                    size={160} 
-                    level="H"
-                    includeMargin={true}
-                  />
-               </div>
-               <div className="link-strip-premium" onClick={() => handleCopy(link.url)}>
-                  <span>{link.url}</span>
-                  {copiedLink === link.url ? <Check size={14} /> : <Copy size={14} />}
-               </div>
-            </div>
-
-            <div className="gateway-card-footer">
-               <Button variant="outline" fullWidth onClick={() => handleDownloadQR(link.id)}>
-                  <Download size={16} style={{ marginRight: '8px' }} /> Save QR
-               </Button>
-               <Button fullWidth onClick={() => handleCopy(link.url)}>
-                  {copiedLink === link.url ? 'Copied!' : 'Share Link'}
-               </Button>
-            </div>
-          </Card>
-        ))}
+        <Button
+          className="btn-premium"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          <UserPlus size={18} /> Create Invite Link
+        </Button>
       </div>
 
-      <div className="event-links-section-premium">
-         <div className="section-header">
-            <div>
-               <h2>Active Event Gateways</h2>
-               <p>Localized links for specific outreach activities.</p>
-            </div>
-         </div>
-
-         <div className="event-links-list-premium">
-            {customLinks.map((link) => (
-              <Card key={link.id} className="event-link-item-premium">
-                 <div className="eli-content">
-                    <div className="eli-main">
-                       <h4>{link.name}</h4>
-                       <div className="eli-badges">
-                          <span className="team-badge-mini">{link.team}</span>
-                          <span className="visit-count">{link.visits} Visits</span>
-                       </div>
+      <Card className="table-card">
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Uses</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invitesQuery.isLoading && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    style={{ textAlign: "center", padding: "32px" }}
+                  >
+                    <Loader2
+                      size={20}
+                      className="spinner"
+                      style={{ display: "inline", verticalAlign: "middle" }}
+                    />{" "}
+                    Loading invite links…
+                  </td>
+                </tr>
+              )}
+              {invitesQuery.isError && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    style={{
+                      textAlign: "center",
+                      padding: "32px",
+                      color: "var(--danger)",
+                    }}
+                  >
+                    Could not load invite links.
+                  </td>
+                </tr>
+              )}
+              {!invitesQuery.isLoading &&
+                !invitesQuery.isError &&
+                invites.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      style={{ textAlign: "center", padding: "32px" }}
+                    >
+                      No invite links for this branch yet.
+                    </td>
+                  </tr>
+                )}
+              {invites.map((inv) => (
+                <tr key={inv.id}>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <LinkIcon size={14} color="var(--text-tertiary)" />
+                      <code className="monospace">{inv.code}</code>
                     </div>
-                    <div className="eli-actions">
-                       <button className="icon-action-btn" onClick={() => handleCopy(link.url)}>
-                          {copiedLink === link.url ? <Check size={18} /> : <Copy size={18} />}
-                       </button>
-                       <button className="icon-action-btn" onClick={() => {
-                          setSelectedLink(link);
-                          setIsQRModalOpen(true);
-                       }}>
-                          <QrCode size={18} />
-                       </button>
-                       <a href={link.url} target="_blank" rel="noreferrer" className="icon-action-btn">
-                          <ExternalLink size={18} />
-                       </a>
+                  </td>
+                  <td>
+                    {inv.uses} / {inv.max_uses}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge status-${inv.status}`}
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td>{new Date(inv.created_at).toLocaleDateString()}</td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        justifyContent: "flex-end",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(inv.url)}
+                        title="Copy link"
+                        aria-label="Copy invite link"
+                      >
+                        <Copy size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setShareFor({ id: inv.id, code: inv.code })
+                        }
+                        title="Share"
+                        aria-label="Share invite link"
+                      >
+                        <Share2 size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStatus(inv.id, inv.status)}
+                        disabled={updateInvite.isPending}
+                        title={
+                          inv.status === "active" ? "Revoke" : "Activate"
+                        }
+                      >
+                        <Power size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(inv.id, inv.code)}
+                        disabled={deleteInvite.isPending}
+                        style={{ color: "var(--danger)" }}
+                        aria-label="Delete invite link"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
                     </div>
-                 </div>
-              </Card>
-            ))}
-         </div>
-      </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       <Modal
-        isOpen={isCustomModalOpen}
-        onClose={() => setIsCustomModalOpen(false)}
-        title="Create Event Gateway"
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreate}
+        title="Create Invite Link"
       >
-        <div className="form-stack-premium">
-          <Input label="Event Name" placeholder="e.g. Easter Special 2026" />
-          <div className="select-group-premium">
-            <label>Assign to Outreach Team</label>
-            <select>
-              <option>Evangelism Team</option>
-              <option>Youth Outreach</option>
-              <option>Community Care</option>
+        <form onSubmit={handleCreate} className="form-stack-premium">
+          <Input
+            label="Name (display only)"
+            placeholder="e.g. Workers Registration"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            error={errors.name}
+            required
+            autoFocus
+          />
+          <Input
+            label="Max Uses"
+            type="number"
+            placeholder="100"
+            value={newMaxUses}
+            onChange={(e) => setNewMaxUses(e.target.value)}
+            error={errors.maxUses}
+            required
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleCloseCreate}
+              disabled={isSaving}
+            >
+              <X size={16} style={{ marginRight: "6px" }} />
+              Cancel
+            </Button>
+            <Button type="submit" className="btn-premium" disabled={isSaving}>
+              {isSaving && (
+                <Loader2
+                  size={16}
+                  className="spinner"
+                  style={{ marginRight: "8px" }}
+                />
+              )}
+              {createInvite.isPending ? "Creating…" : "Create Link"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(shareFor)}
+        onClose={() => setShareFor(null)}
+        title={shareFor ? `Share "${shareFor.code}"` : ""}
+      >
+        <form onSubmit={handleShare} className="form-stack-premium">
+          <div className="input-wrapper input-full">
+            <label className="input-label">Channel</label>
+            <select
+              className="input-field select-field"
+              value={shareChannel}
+              onChange={(e) =>
+                setShareChannel(e.target.value as "sms" | "email")
+              }
+            >
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
             </select>
           </div>
-          <Button className="btn-premium" fullWidth size="lg">Generate Gateway</Button>
-        </div>
+          <Input
+            label={
+              shareChannel === "sms"
+                ? "Recipient phone (E.164)"
+                : "Recipient email"
+            }
+            placeholder={
+              shareChannel === "sms" ? "+12345678901" : "user@example.com"
+            }
+            value={shareRecipient}
+            onChange={(e) => setShareRecipient(e.target.value)}
+            error={errors.recipient}
+            required
+            autoFocus
+          />
+          <Button
+            type="submit"
+            className="btn-premium"
+            fullWidth
+            disabled={isSaving}
+          >
+            {isSaving && (
+              <Loader2
+                size={16}
+                className="spinner"
+                style={{ marginRight: "8px" }}
+              />
+            )}
+            Share Invite
+          </Button>
+        </form>
       </Modal>
 
-      <Modal
-        isOpen={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
-        title="QR Gateway Preview"
-      >
-        <div className="qr-preview-stack">
-          <div className="qr-preview-header">
-            <h3>{selectedLink?.name}</h3>
-            <span className="team-badge-mini">{selectedLink?.team}</span>
-          </div>
-
-          <div className="qr-modal-canvas-wrap">
-            <QRCodeCanvas 
-              id={`qr-modal-${selectedLink?.id}`}
-              value={selectedLink?.url || ''} 
-              size={240} 
-              level="H"
-              includeMargin={true}
-            />
-          </div>
-
-          <div className="qr-modal-url-box" onClick={() => handleCopy(selectedLink?.url)}>
-            <code>{selectedLink?.url}</code>
-            <Copy size={14} />
-          </div>
-
-          <div className="qr-modal-actions">
-            <Button variant="outline" fullWidth onClick={() => handleCopy(selectedLink?.url)}>
-              {copiedLink === selectedLink?.url ? 'Copied!' : 'Copy Link'}
-            </Button>
-            <Button fullWidth onClick={() => handleDownloadQR(`modal-${selectedLink?.id}`)}>
-              Download QR
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Invite link created"
+        description="Your reusable invite link is ready to share."
+        primaryAction={{
+          label: "Okay",
+          onClick: () => setShowSuccess(false),
+        }}
+        icon="shield"
+      />
     </div>
   );
 }

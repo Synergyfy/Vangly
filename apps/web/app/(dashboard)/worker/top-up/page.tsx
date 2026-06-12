@@ -3,54 +3,110 @@
 import React, { useState } from 'react';
 import {
   Wallet,
-  ChevronRight,
-  Check,
   CreditCard,
   ArrowLeft,
-  Sparkles,
   ShieldCheck,
   Zap,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { SuccessModal } from '@/components/ui/SuccessModal';
 import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useAuth } from '@/services/auth';
-import { authKeys } from '@/lib/api/queries/auth.keys';
+import {
+  useWalletBalance,
+  usePurchaseSms,
+  useTopupWallet,
+} from '@/services/wallet';
+import { useFieldErrors } from '@/lib/forms/use-field-errors';
+import { isValidAmount } from '@/lib/forms/validators';
+import { extractErrorMessage } from '@/lib/forms/extract-error-message';
+import { usePaystackPayment } from '@/lib/paystack';
 import '../worker.css';
+
+const RATE_PER_UNIT = 4;
 
 export default function TopUpPage() {
   const router = useRouter();
-  const qc = useQueryClient();
   const { user } = useAuth();
-  const [amount, setAmount] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState<'plans' | 'payment' | 'success'>('plans');
+  const balanceQuery = useWalletBalance();
+  const purchaseSms = usePurchaseSms();
+  const topupWallet = useTopupWallet();
+  const paystack = usePaystackPayment();
 
-  const RATE_PER_UNIT = 4; // 1 Unit = 4 Naira
-  const calculatedCredits = amount ? Math.floor(Number(amount) / RATE_PER_UNIT) : 0;
+  const [amount, setAmount] = useState<string>('');
+  const [step, setStep] = useState<'plans' | 'payment'>('plans');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [newBalance, setNewBalance] = useState<number | null>(null);
+
+  const { errors, setError, clearAll } = useFieldErrors();
+
+  const calculatedCredits = amount && !isNaN(Number(amount))
+    ? Math.floor(Number(amount) / RATE_PER_UNIT)
+    : 0;
+  const isProcessing = purchaseSms.isPending || topupWallet.isPending || paystack.isLoading;
+
+  const goToPayment = () => {
+    clearAll();
+    if (!isValidAmount(amount, { min: 100 })) {
+      setError('amount', 'Minimum purchase is ₦100.');
+      return;
+    }
+    if (calculatedCredits < 1) {
+      setError('amount', 'Increase the amount to receive at least 1 credit.');
+      return;
+    }
+    setStep('payment');
+  };
+
+  const handlePaystackSuccess = async (reference: string) => {
+    try {
+      await topupWallet.mutateAsync({
+        amount: calculatedCredits,
+        ref_id: reference,
+        owner_type: 'user',
+        location_id: user!.branch_id!,
+        description: `Worker top-up: ${calculatedCredits} credits`,
+      });
+      await purchaseSms.mutateAsync({
+        sms_count: calculatedCredits,
+        location_id: user!.branch_id!,
+        description: `Worker top-up: ${calculatedCredits} credits`,
+      });
+      const refetchResult = await balanceQuery.refetch();
+      setNewBalance(refetchResult.data?.balance ?? calculatedCredits);
+      setStep('plans');
+      setAmount('');
+      setShowSuccess(true);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, 'Top-up completed but credit sync failed. Please refresh.'));
+    }
+  };
 
   const handlePurchase = () => {
-    if (!amount || Number(amount) < 100) return;
-    setIsProcessing(true);
-
-    setTimeout(() => {
-      if (user) {
-        // Update cached user credits; the real backend will return the
-        // authoritative balance on the next /me fetch.
-        qc.setQueryData(authKeys.me(), {
-          ...user,
-          credits: user.credits + calculatedCredits,
-        });
-      }
-      setIsProcessing(false);
-      setStep('success');
-    }, 2000);
+    if (!user?.branch_id) {
+      toast.error('No branch is associated with your account yet.');
+      return;
+    }
+    const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@vangly.app`;
+    paystack.initializePayment({
+      email,
+      amount: Number(amount) * 100,
+      onSuccess: (response) => handlePaystackSuccess(response.reference),
+      onClose: () => toast.info('Payment cancelled.'),
+    });
   };
+
+  const currentBalance =
+    balanceQuery.data?.balance ?? user?.credits ?? 0;
 
   return (
     <div className="worker-dashboard">
-      <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <header
+        className="dashboard-header"
+        style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}
+      >
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft size={20} />
         </Button>
@@ -67,7 +123,9 @@ export default function TopUpPage() {
               <span className="label">Available Balance</span>
               <div className="value-row">
                 <Wallet size={24} className="text-orange" />
-                <span className="value">{user?.credits || 0}</span>
+                <span className="value">
+                  {balanceQuery.isLoading ? '—' : currentBalance.toLocaleString()}
+                </span>
                 <span className="unit">Credits</span>
               </div>
             </div>
@@ -78,19 +136,30 @@ export default function TopUpPage() {
           </div>
 
           <Card className="custom-amount-card">
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>Enter Amount to Buy</h2>
-            
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+              Enter Amount to Buy
+            </h2>
+
             <div className="amount-input-wrapper">
               <span className="currency-symbol">₦</span>
-              <input 
-                type="number" 
-                placeholder="0.00" 
+              <input
+                type="number"
+                placeholder="0.00"
                 className="custom-amount-input"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  if (errors['amount']) clearAll();
+                }}
                 min="100"
+                disabled={isProcessing}
               />
             </div>
+            {errors['amount'] && (
+              <p className="input-error-text" style={{ marginTop: '8px' }}>
+                {errors['amount']}
+              </p>
+            )}
             <p className="min-amount-text">Minimum purchase: ₦100</p>
 
             <div className="calculation-box">
@@ -110,11 +179,11 @@ export default function TopUpPage() {
           </Card>
 
           <div className="top-up-footer">
-            <Button 
-              fullWidth 
-              size="lg" 
-              disabled={!amount || Number(amount) < 100}
-              onClick={() => setStep('payment')}
+            <Button
+              fullWidth
+              size="lg"
+              disabled={!amount || Number(amount) < 100 || isProcessing}
+              onClick={goToPayment}
             >
               Continue to Payment
             </Button>
@@ -144,46 +213,61 @@ export default function TopUpPage() {
               </div>
             </div>
 
-            <div className="mock-card-input">
-              <div className="card-input-row">
-                <CreditCard size={20} className="text-tertiary" />
-                <input type="text" placeholder="Card Number" defaultValue="4242 4242 4242 4242" readOnly />
+            <div className="paystack-payment-info">
+              <div className="payment-icon-box">
+                <CreditCard size={32} className="text-purple" />
               </div>
-              <div className="card-input-row-group">
-                <input type="text" placeholder="MM/YY" defaultValue="12/26" readOnly />
-                <input type="text" placeholder="CVC" defaultValue="123" readOnly />
-              </div>
+              <p className="payment-info-text">
+                You will be redirected to Paystack's secure checkout to complete
+                your payment of <strong>₦{Number(amount).toLocaleString()}.00</strong>.
+              </p>
             </div>
 
-            <Button 
-              fullWidth 
-              size="lg" 
+            <Button
+              fullWidth
+              size="lg"
               disabled={isProcessing}
               onClick={handlePurchase}
             >
-              {isProcessing ? 'Processing...' : `Pay ₦${Number(amount).toLocaleString()}.00`}
+              {paystack.isLoading
+                ? 'Opening Paystack...'
+                : topupWallet.isPending
+                ? 'Crediting Wallet...'
+                : purchaseSms.isPending
+                ? 'Purchasing Credits...'
+                : `Pay ₦${Number(amount).toLocaleString()}.00`}
             </Button>
-            <Button variant="ghost" fullWidth onClick={() => setStep('plans')}>Back</Button>
+            <Button
+              variant="ghost"
+              fullWidth
+              onClick={() => setStep('plans')}
+              disabled={isProcessing}
+            >
+              Back
+            </Button>
           </Card>
         </div>
       )}
 
-      {step === 'success' && (
-        <div className="success-container fade-in">
-          <div className="success-lottie">
-            <Sparkles size={80} className="text-orange" />
-          </div>
-          <h2>Credits Added!</h2>
-          <p>Your wallet has been recharged successfully. You can now continue sending messages.</p>
-          
-          <Card className="new-balance-card">
-            <span>New Balance</span>
-            <div className="new-value">{user?.credits} Credits</div>
-          </Card>
-
-          <Button fullWidth size="lg" onClick={() => router.push('/worker')}>Back to Dashboard</Button>
-        </div>
-      )}
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        icon="wallet"
+        title="Credits Added!"
+        description={
+          newBalance !== null
+            ? `Your new balance is ${newBalance.toLocaleString()} credits.`
+            : 'Your wallet has been recharged successfully.'
+        }
+        primaryAction={{
+          label: 'Back to Dashboard',
+          navigateTo: '/worker',
+        }}
+        secondaryAction={{
+          label: 'Send a Message',
+          navigateTo: '/worker/messages',
+        }}
+      />
     </div>
   );
 }

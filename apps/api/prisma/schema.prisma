@@ -108,8 +108,6 @@ model User {
 model OnboardingSession {
   id                          String    @id
   phone                       String
-  otp                         String?
-  otp_expires_at              DateTime?
   verified                    Boolean   @default(false)
   onboarding_token            String?   @unique
   onboarding_token_expires_at DateTime?

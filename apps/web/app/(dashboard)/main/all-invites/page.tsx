@@ -1,238 +1,239 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { 
-  MessageSquare, 
-  Users, 
-  ChevronDown, 
-  ChevronUp, 
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { useInvitesList } from "@/services/invites";
+import { useLocationsList } from "@/services/manage-organization";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
+import { toast } from "sonner";
+import {
   ArrowLeft,
-  Search,
   MapPin,
-  Filter
-} from 'lucide-react';
-import '../main.css';
+  Search,
+  Link as LinkIcon,
+  Users,
+  Copy,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import "../main.css";
 
 export default function AllInvitesPage() {
   const router = useRouter();
-  const [filterBranch, setFilterBranch] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const invitesQuery = useInvitesList();
+  const locationsQuery = useLocationsList();
 
-  // Mock data for all invites
-  const allInvites = [
-    { id: '1', name: 'Sarah Johnson', phone: '+1 555 0101', status: 'invited', date: 'Oct 24, 2023', location: 'HQ Location', worker: 'Michael Brown' },
-    { id: '2', name: 'Michael Brown', phone: '+1 555 0102', status: 'attended', date: 'Oct 20, 2023', location: 'HQ Location', worker: 'Jane Doe' },
-    { id: '3', name: 'David Smith', phone: '+1 555 0103', status: 'invited', date: 'Oct 18, 2023', location: 'Northside Location', worker: 'Emily Davis' },
-    { id: '4', name: 'Emily Davis', phone: '+1 555 0104', status: 'attended', date: 'Oct 15, 2023', location: 'Westend Center', worker: 'David Smith' },
-    { id: '5', name: 'John Wilson', phone: '+1 555 0105', status: 'invited', date: 'Oct 12, 2023', location: 'Northside Location', worker: 'Sarah Johnson' },
-    { id: '6', name: 'Robert Miller', phone: '+1 555 0106', status: 'invited', date: 'Oct 11, 2023', location: 'HQ Location', worker: 'Michael Brown' },
-    { id: '7', name: 'Linda Garcia', phone: '+1 555 0107', status: 'attended', date: 'Oct 10, 2023', location: 'Westend Center', worker: 'Emily Davis' },
-    { id: '8', name: 'James Taylor', phone: '+1 555 0108', status: 'invited', date: 'Oct 09, 2023', location: 'Northside Location', worker: 'Jane Doe' },
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
-  const filteredInvites = allInvites.filter(invite => {
-    const matchesBranch = filterBranch === 'all' || invite.location === filterBranch;
-    const matchesStatus = filterStatus === 'all' || invite.status === filterStatus;
-    const matchesSearch = invite.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         invite.phone.includes(searchTerm);
-    return matchesBranch && matchesStatus && matchesSearch;
+  const locations = locationsQuery.data?.data ?? [];
+
+  const filtered = (invitesQuery.data ?? []).filter((i) => {
+    if (statusFilter !== "all" && i.status !== statusFilter) return false;
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      i.code.toLowerCase().includes(q) ||
+      (i.location_id ?? "").toLowerCase().includes(q)
+    );
   });
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredInvites.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedInvites = filteredInvites.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const start = (page - 1) * perPage;
+  const paginated = filtered.slice(start, start + perPage);
 
-  const [expandedInviteId, setExpandedInviteId] = useState<string | null>(null);
+  const locationName = (id?: string) =>
+    locations.find((l) => l.id === id)?.name ?? "All Locations";
 
-  const toggleInvite = (id: string) => {
-    setExpandedInviteId(expandedInviteId === id ? null : id);
-  };
-
-  const handleMessageUser = (phone: string) => {
-    router.push(`/main/messages?recipient=${encodeURIComponent(phone)}&mode=custom`);
-  };
-
-  const handleWhatsAppChat = (phone: string) => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+  const handleCopy = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied.");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not copy link."));
+    }
   };
 
   const handleBulkMessage = () => {
-    router.push(`/main/messages?mode=all_invites`);
+    router.push("/main/messages?mode=all_invites");
   };
 
   return (
     <div className="hq-dashboard-premium">
       <div className="page-header flex-between">
         <div className="header-main">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="back-btn-pill"
+            style={{ marginBottom: "12px" }}
+          >
             <ArrowLeft size={16} /> Back
           </Button>
           <div className="header-badge">Outreach Central</div>
-          <h1>All Invites</h1>
-          <p>Consolidated list of all invitees across all locations.</p>
+          <h1>All Invite Links</h1>
+          <p>Consolidated list of all invite links across all locations.</p>
         </div>
-        <Button 
-          variant="primary" 
-          onClick={handleBulkMessage} 
+        <Button
+          variant="primary"
+          onClick={handleBulkMessage}
           className="btn-premium"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ display: "flex", alignItems: "center", gap: "8px" }}
         >
-          <Users size={18} /> <span>Bulk Message All</span>
+          <Users size={18} /> <span>Bulk Message</span>
         </Button>
       </div>
 
-      <Card className="filter-card-premium glass-morphism" style={{ marginBottom: '32px' }}>
+      <Card
+        className="filter-card-premium glass-morphism"
+        style={{ marginBottom: "32px" }}
+      >
         <div className="filter-grid-v2">
           <div className="premium-search-bar" style={{ flex: 1.5 }}>
             <Search size={18} />
-            <input 
-              type="text" 
-              placeholder="Search invitees by name or phone..." 
+            <input
+              type="text"
+              placeholder="Search by code or location..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1);
+                setPage(1);
               }}
             />
           </div>
-          
           <div className="filter-controls-group">
             <div className="premium-select-box">
-              <MapPin size={16} />
-              <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
-                <option value="all">All Locations</option>
-                <option value="HQ Location">HQ Location</option>
-                <option value="Northside Location">Northside Location</option>
-                <option value="Westend Center">Westend Center</option>
-              </select>
-            </div>
-            
-            <div className="premium-select-box">
-              <Filter size={16} />
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
                 <option value="all">All Status</option>
-                <option value="invited">Invited</option>
-                <option value="attended">Attended</option>
+                <option value="active">Active</option>
+                <option value="revoked">Revoked</option>
               </select>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="table-card-premium">
-        {/* Mobile View: Premium Expandable Cards */}
-        <div className="mobile-only invites-mobile-stack-premium">
-          {paginatedInvites.map((invite) => (
-            <Card key={invite.id} className={`invite-mobile-card-v2 ${expandedInviteId === invite.id ? 'active' : ''}`}>
-              <div className="invite-mobile-header-v2" onClick={() => toggleInvite(invite.id)}>
-                <div className="invitee-avatar-v2">{invite.name[0]}</div>
-                <div className="invitee-core-info">
-                  <div className="name-status-row">
-                    <h4>{invite.name}</h4>
-                    <span className={`status-pill-v2 ${invite.status}`}>
-                      {invite.status}
-                    </span>
-                  </div>
-                  <div className="invitee-sub-meta">
-                    <MapPin size={12} /> <span>{invite.location}</span>
-                  </div>
-                </div>
-                <div className="invite-expand-icon">
-                  {expandedInviteId === invite.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </div>
-              </div>
-              
-              {expandedInviteId === invite.id && (
-                <div className="invite-expanded-body-v2 fade-in">
-                  <div className="info-grid-v2">
-                    <div className="info-cell-v2">
-                      <span className="label">Phone</span>
-                      <span className="value">{invite.phone}</span>
-                    </div>
-                    <div className="info-cell-v2">
-                      <span className="label">Date</span>
-                      <span className="value">{invite.date}</span>
-                    </div>
-                    <div className="info-cell-v2" style={{ gridColumn: 'span 2' }}>
-                      <span className="label">Invited By</span>
-                      <span className="value">{invite.worker}</span>
-                    </div>
-                  </div>
-                  <div className="invite-card-footer-v2">
-                    <Button variant="outline" size="sm" fullWidth onClick={() => handleWhatsAppChat(invite.phone)} style={{ gap: '8px' }}>
-                      <Image src="/whatsapp.svg" alt="WA" width={16} height={16} /> WhatsApp
-                    </Button>
-                    <Button variant="outline" size="sm" fullWidth onClick={() => handleMessageUser(invite.phone)} style={{ gap: '8px' }}>
-                      <MessageSquare size={16} /> Message
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </Card>
-          ))}
-          {paginatedInvites.length === 0 && (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-              No invitees found matching your filters.
-            </div>
-          )}
-        </div>
-
-        {/* Desktop View: Full Table */}
-        <div className="table-responsive desktop-only">
+      <Card className="table-card-premium">
+        <div className="table-responsive">
           <table className="data-table-premium">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Phone</th>
+                <th>Code</th>
                 <th>Location</th>
-                <th>Worker</th>
-                <th>Date</th>
+                <th>Uses</th>
                 <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th>Created</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedInvites.map((invite) => (
-                <tr key={invite.id}>
-                  <td><div className="person-name">{invite.name}</div></td>
-                  <td className="monospace">{invite.phone}</td>
-                  <td>{invite.location}</td>
-                  <td>{invite.worker}</td>
-                  <td>{invite.date}</td>
+              {invitesQuery.isLoading && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{ textAlign: "center", padding: "32px" }}
+                  >
+                    <Loader2
+                      size={20}
+                      className="spinner"
+                      style={{ display: "inline", verticalAlign: "middle" }}
+                    />{" "}
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {invitesQuery.isError && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{
+                      textAlign: "center",
+                      padding: "32px",
+                      color: "var(--danger)",
+                    }}
+                  >
+                    Could not load invite links.
+                  </td>
+                </tr>
+              )}
+              {!invitesQuery.isLoading &&
+                !invitesQuery.isError &&
+                paginated.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{ textAlign: "center", padding: "32px" }}
+                    >
+                      No invite links match your filters.
+                    </td>
+                  </tr>
+                )}
+              {paginated.map((inv) => (
+                <tr key={inv.id}>
                   <td>
-                    <span className={`status-badge-v2 ${invite.status}`}>
-                      {invite.status === 'attended' ? 'Attended' : 'Invited'}
-                    </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <LinkIcon size={14} color="var(--text-tertiary)" />
+                      <code className="monospace">{inv.code}</code>
+                    </div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleWhatsAppChat(invite.phone)}
-                        className="action-icon-btn"
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <MapPin size={12} /> {locationName(inv.location_id)}
+                    </div>
+                  </td>
+                  <td>
+                    {inv.uses} / {inv.max_uses}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge status-${inv.status}`}
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td>{new Date(inv.created_at).toLocaleDateString()}</td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(inv.url)}
+                        title="Copy"
+                        aria-label="Copy link"
                       >
-                        <Image src="/whatsapp.svg" alt="WhatsApp" width={18} height={18} />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleMessageUser(invite.phone)}
-                        className="action-icon-btn"
-                      >
-                        <MessageSquare size={18} />
+                        <Copy size={16} />
                       </Button>
                     </div>
                   </td>
@@ -241,31 +242,41 @@ export default function AllInvitesPage() {
             </tbody>
           </table>
         </div>
-        
-        <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-light)' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>
-            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredInvites.length)} of {filteredInvites.length}
-          </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
+
+        {totalPages > 1 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "8px",
+              padding: "16px",
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              aria-label="Previous page"
             >
-              Previous
+              <ChevronLeft size={16} /> Prev
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={currentPage === totalPages || totalPages === 0}
-              onClick={() => setCurrentPage(prev => prev + 1)}
+            <span style={{ fontSize: "13px" }}>
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              aria-label="Next page"
             >
-              Next
+              Next <ChevronRight size={16} />
             </Button>
           </div>
-        </div>
-      </div>
+        )}
+      </Card>
     </div>
   );
 }

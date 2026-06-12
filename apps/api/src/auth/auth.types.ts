@@ -19,11 +19,6 @@ export interface OnboardingStartRequest {
   phone: string;
 }
 
-export interface OnboardingVerifyOtpRequest {
-  onboarding_id: string;
-  otp: string;
-}
-
 export interface OnboardingAccountRequest {
   onboarding_token: string;
   organization_name: string;

@@ -38,10 +38,6 @@ export class AuthService {
     return newId(prefix);
   }
 
-  private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
-  }
-
   private hash(value: string): string {
     return hashSecret(value);
   }

@@ -278,4 +278,120 @@ describe('Manage Organization - Forms Flow (integration)', () => {
     expect(versions).toHaveLength(1);
     expect((versions[0] as Record<string, unknown>).schema_version).toBe(1);
   });
+
+  it('allows an organization admin not pinned to a location to create a form for a team', async () => {
+    const draft = (await forms.create(
+      orgId,
+      null,
+      {
+        title: 'Org Admin form',
+        team_id: teamId,
+        fields: [{ key: 'name', label: 'Name', type: 'text' }],
+        distribution: { mode: 'public' },
+      },
+      {
+        sub: userId,
+        role: 'organization_admin',
+        organization_id: orgId,
+        branch_id: null,
+      },
+    )) as Record<string, unknown>;
+    expect(draft.status).toBe('draft');
+    expect(draft.location_id).toBe(locId);
+  });
+
+  it('prevents a location admin from creating forms for a team in a different location', async () => {
+    const otherLocId = newId('loc');
+    const otherTeamId = newId('team');
+    await db.location.create({
+      data: {
+        id: otherLocId,
+        organization_id: orgId,
+        name: 'Branch 2',
+        address: '2 Road',
+        city: 'Lagos',
+        state: 'Lagos',
+        country: 'NG',
+        is_hq: false,
+        sms_credits: 5,
+        createdAt: new Date(),
+      },
+    });
+    await db.team.create({
+      data: {
+        id: otherTeamId,
+        organization_id: orgId,
+        location_id: otherLocId,
+        name: 'Operational',
+        createdAt: new Date(),
+      },
+    });
+
+    await expect(
+      forms.create(
+        orgId,
+        otherLocId,
+        {
+          title: 'Unauthorized Form',
+          team_id: otherTeamId,
+          fields: [{ key: 'name', label: 'Name', type: 'text' }],
+          distribution: { mode: 'public' },
+        },
+        {
+          sub: userId,
+          role: 'location_admin',
+          organization_id: orgId,
+          branch_id: locId,
+        },
+      ),
+    ).rejects.toThrow();
+  });
+
+  it('allows an organization admin pinned to a location to create a form for a team in a different location', async () => {
+    const otherLocId = newId('loc');
+    const otherTeamId = newId('team');
+    await db.location.create({
+      data: {
+        id: otherLocId,
+        organization_id: orgId,
+        name: 'Branch 2',
+        address: '2 Road',
+        city: 'Lagos',
+        state: 'Lagos',
+        country: 'NG',
+        is_hq: false,
+        sms_credits: 5,
+        createdAt: new Date(),
+      },
+    });
+    await db.team.create({
+      data: {
+        id: otherTeamId,
+        organization_id: orgId,
+        location_id: otherLocId,
+        name: 'Operational',
+        createdAt: new Date(),
+      },
+    });
+
+    const draft = (await forms.create(
+      orgId,
+      undefined,
+      {
+        title: 'Org Admin Form in Branch 2',
+        team_id: otherTeamId,
+        fields: [{ key: 'name', label: 'Name', type: 'text' }],
+        distribution: { mode: 'public' },
+      },
+      {
+        sub: userId,
+        role: 'organization_admin',
+        organization_id: orgId,
+        branch_id: locId,
+      },
+    )) as Record<string, unknown>;
+
+    expect(draft.status).toBe('draft');
+    expect(draft.location_id).toBe(otherLocId);
+  });
 });

@@ -379,6 +379,444 @@
   }
 }
 
+/* ── Page Header ── */
+.page-header {
+  margin-bottom: 24px;
+}
+
+.back-btn-header {
+  margin-bottom: 12px;
+}
+
+.mobile-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.mobile-subtitle {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* ── Form Container & Card ── */
+.form-container-premium {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.management-card-premium {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+
+.premium-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Form Sections ── */
+.form-section {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.form-section + .form-section {
+  border-top: 1px solid var(--border-light);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-title-row h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ── Form Grid ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.input-group-premium {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group-premium.input-full {
+  grid-column: 1 / -1;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Tooltip ── */
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: var(--border-light);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.tooltip-trigger:hover,
+.tooltip-trigger:focus-visible {
+  background: var(--blue-subtle);
+  color: var(--blue);
+}
+
+.tooltip-popup {
+  position: absolute;
+  left: 28px;
+  top: -8px;
+  background: var(--text-primary);
+  color: white;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: 10px;
+  width: 220px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.tooltip-content {
+  padding-right: 16px;
+}
+
+.tooltip-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tooltip-close:hover {
+  color: white;
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Select Input ── */
+select.input-field {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: white;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+select.input-field:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px var(--blue-subtle);
+  outline: none;
+}
+
+/* ── Textarea ── */
+.textarea-field {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.textarea-field:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px var(--blue-subtle);
+  outline: none;
+}
+
+/* ── Upload Placeholder Zone ── */
+.upload-placeholder-zone-premium {
+  background: var(--bg-main);
+  border: 1px dashed var(--border-main);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-placeholder-zone-premium p {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Form Actions ── */
+.form-actions-footer-premium {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .form-actions-footer-premium {
+    flex-direction: row-reverse;
+  }
+}
+
+.form-actions-footer-premium button {
+  flex: 1;
+}
+
+/* ── Success State ── */
+.success-full-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px !important;
+  gap: 8px;
+}
+
+.success-icon-large {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.success-full-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.success-full-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 320px;
+}
+
+.redirect-hint {
+  font-size: 12px !important;
+  color: var(--text-tertiary) !important;
+  margin-top: 8px !important;
+}
+
+/* ── Error Banner ── */
+.error-banner-premium {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.error-banner-premium .error-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.error-banner-premium strong {
+  display: block;
+  font-size: 13px;
+  color: #b91c1c;
+  margin-bottom: 2px;
+}
+
+.error-banner-premium p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Photo Upload ── */
+.photo-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 24px 16px;
+  background: var(--bg-main);
+  border: 1px dashed var(--border-main);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-upload-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-subtle);
+}
+
+.photo-preview-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.photo-preview-img {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.photo-preview-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-preview-remove:hover {
+  background: rgba(220, 38, 38, 0.8);
+  transform: scale(1.1);
+}
+
+.photo-url-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  line-height: 1.4;
+}
+
+/* ── Mobile Overrides ── */
+@media (max-width: 480px) {
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .back-btn-header {
+    margin-bottom: 8px;
+  }
+
+  .mobile-title {
+    font-size: 20px;
+  }
+
+  .form-section {
+    margin-bottom: 4px;
+  }
+
+  .form-section + .form-section {
+    padding-top: 20px;
+  }
+
+  .section-header {
+    margin-bottom: 16px;
+  }
+
+  .header-title-row h3 {
+    font-size: 15px;
+  }
+
+  .management-card-premium {
+    border-radius: var(--radius-md) !important;
+  }
+
+  .success-full-card {
+    padding: 32px 20px !important;
+  }
+
+  .success-icon-large {
+    font-size: 40px;
+  }
+
+  .upload-placeholder-zone-premium {
+    padding: 16px;
+  }
+}
+
 /* Utilities */
 .text-gradient {
   background: linear-gradient(135deg, var(--blue), var(--purple));

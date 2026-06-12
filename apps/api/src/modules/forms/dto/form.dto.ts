@@ -155,9 +155,10 @@ export class CreateFormDto {
   @MaxLength(2000)
   description?: string;
 
-  @ApiProperty({ example: 'team_01H...' })
+  @ApiPropertyOptional({ example: 'team_01H...' })
+  @IsOptional()
   @IsString()
-  team_id!: string;
+  team_id?: string;
 
   @ApiProperty({ type: [FormFieldDto] })
   @IsArray()

@@ -11,8 +11,11 @@ export function AuthEventsBridge() {
 
   useEffect(() => {
     const handler = () => {
+      const path = window.location.pathname;
+      if (path === "/login" || path === "/onboarding" || path.startsWith("/forgot-pin")) {
+        return;
+      }
       qc.setQueryData(authKeys.me(), null);
-      qc.removeQueries({ queryKey: authKeys.me() });
       router.push("/login");
     };
     window.addEventListener("auth:logout", handler);

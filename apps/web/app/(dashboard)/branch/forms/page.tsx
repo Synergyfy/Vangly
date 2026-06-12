@@ -1,377 +1,396 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { 
-  FileText, 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Settings, 
-  Trash2, 
-  Eye, 
-  Users, 
-  Lock,
+import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  FileText,
+  Plus,
+  Search,
+  Settings,
   ArrowLeft,
   Layout,
   GripVertical,
-  Type,
-  AlignLeft,
-  Hash,
-  AtSign,
-  Smartphone,
-  CheckSquare,
-  Circle,
-  List,
-  CheckCircle,
-  Calendar,
-  Clock,
-  FileUp,
-  Image as ImageIcon,
-  PenTool,
-  Star,
-  Link as LinkIcon,
-  ToggleLeft,
-  MapPin,
-  Minus,
-  Layers,
   Trash,
-  ChevronDown,
-  ChevronUp,
-  ShieldCheck,
-  Share,
-  LogIn,
-  Check as CheckIcon,
-  Smartphone as PhoneIcon,
-  Monitor,
-  QrCode,
-  Copy,
-  ExternalLink,
-  Info,
-  Filter,
-  BarChart3,
-  Building2,
-  Users2
-} from 'lucide-react';
-import { Modal } from '@/components/ui/Modal';
-import '../branch.css';
+  Loader2,
+} from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
+import { toast } from "sonner";
+import { useAuth } from "@/services/auth";
+import {
+  useLocation,
+  useLocationTeams,
+  useCreateForm,
+} from "@/services/manage-organization";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
+import type { FormField, FormFieldType } from "@/types/api/teams";
+import "../branch.css";
+
+const FIELD_TYPES = [
+  { id: "text", label: "Short Text", cat: "Standard" },
+  { id: "longtext", label: "Long Text", cat: "Standard" },
+  { id: "number", label: "Number", cat: "Standard" },
+  { id: "email", label: "Email", cat: "Standard" },
+  { id: "phone", label: "Phone", cat: "Standard" },
+  { id: "checkbox", label: "Checkbox", cat: "Choice" },
+  { id: "radio", label: "Radio Choice", cat: "Choice" },
+  { id: "dropdown", label: "Dropdown", cat: "Choice" },
+  { id: "date", label: "Date", cat: "Date & Time" },
+  { id: "rating", label: "Rating", cat: "Advanced" },
+  { id: "address", label: "Address", cat: "Advanced" },
+  { id: "divider", label: "Divider", cat: "Layout" },
+];
 
 export default function BranchFormsPage() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showStats, setShowStats] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  
-  // Mock data for assignment
-  const mockTeams = [
-    { id: 'team1', name: 'Media Team' },
-    { id: 'team2', name: 'Hospitality' },
-    { id: 'team3', name: 'Security' },
-    { id: 'team4', name: 'Logistics' },
-  ];
+  const { user } = useAuth();
+  const branchId = user?.branch_id ?? undefined;
+  const locationQuery = useLocation(branchId);
+  const teamsQuery = useLocationTeams(branchId, { per_page: 100 });
+  const createForm = useCreateForm();
 
-  // Mock data for forms
-  const [forms, setForms] = useState<any[]>([
-    { id: '1', title: 'Location Member Registration', type: 'Outreach', status: 'Active', responses: 45, lastModified: '1 day ago', access: 'Public', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'public' }, teams: ['team1', 'team2'] } },
-    { id: '2', title: 'Local Staff Feedback', type: 'Internal', status: 'Active', responses: 12, lastModified: '3 days ago', access: 'Members Only', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'registered' }, teams: ['team3'] } },
-    { id: '3', title: 'Service Signups', type: 'Outreach', status: 'Draft', responses: 0, lastModified: '1 week ago', access: 'Public', fields: [], distribution: { memberAccess: { mode: 'all' }, publicAccess: { mode: 'public' }, teams: [] } },
-  ]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [builderTeamId, setBuilderTeamId] = useState<string | null>(null);
+  const [formTitle, setFormTitle] = useState("");
+  const [formFields, setFormFields] = useState<FormField[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Form Builder State
-  const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);
-  const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop' | null>(null);
-  const [formConfig, setFormConfig] = useState({
-    title: '',
-    description: '',
-    status: 'draft' as 'draft' | 'published',
-  });
-  const [formFields, setFormFields] = useState<any[]>([]);
-  const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
-  const [isDistributionModalOpen, setIsDistributionModalOpen] = useState(false);
-  const [editingFormId, setEditingFormId] = useState<string | null>(null);
-  const [isPublishSuccessOpen, setIsPublishSuccessOpen] = useState(false);
-  const [publishedFormUrl, setPublishedFormUrl] = useState('');
+  const teams = (teamsQuery.data?.data ?? []).filter((t) =>
+    searchTerm
+      ? t.name.toLowerCase().includes(searchTerm.toLowerCase())
+      : true,
+  );
 
-  const [formDistribution, setFormDistribution] = useState({
-    memberAccess: { mode: 'all' as 'all' | 'selected', userIds: [] as string[] },
-    publicAccess: { mode: 'public' as 'public' | 'registered' },
-    teams: [] as string[]
-  });
-
-  const fieldTypes = [
-    { id: 'text', label: 'Short Text', icon: Type, cat: 'Standard', desc: 'Single line of text.' },
-    { id: 'longtext', label: 'Long Text', icon: AlignLeft, cat: 'Standard', desc: 'Multiple lines for longer answers.' },
-    { id: 'number', label: 'Number', icon: Hash, cat: 'Standard', desc: 'Numeric input only.' },
-    { id: 'email', label: 'Email', icon: AtSign, cat: 'Standard', desc: 'Email address validation.' },
-    { id: 'phone', label: 'Phone', icon: Smartphone, cat: 'Standard', desc: 'International phone format.' },
-    { id: 'url', label: 'Website URL', icon: LinkIcon, cat: 'Standard', desc: 'Valid URL address.' },
-    { id: 'checkbox', label: 'Checkbox', icon: CheckSquare, cat: 'Choice', desc: 'Select multiple options.' },
-    { id: 'radio', label: 'Radio Choice', icon: Circle, cat: 'Choice', desc: 'Select exactly one option.' },
-    { id: 'dropdown', label: 'Dropdown', icon: List, cat: 'Choice', desc: 'Choose from a compact list.' },
-    { id: 'multiselect', label: 'Multi-Select', icon: List, cat: 'Choice', desc: 'Select multiple items from a list.' },
-    { id: 'yesno', label: 'Yes/No', icon: ToggleLeft, cat: 'Choice', desc: 'Simple boolean selection.' },
-    { id: 'date', label: 'Date', icon: Calendar, cat: 'Date & Time', desc: 'Pick a specific calendar date.' },
-    { id: 'time', label: 'Time', icon: Clock, cat: 'Date & Time', desc: 'Select a specific time.' },
-    { id: 'monthday', label: 'Month & Day', icon: Calendar, cat: 'Date & Time', desc: 'Recurring yearly date.' },
-    { id: 'fileupload', label: 'File Upload', icon: FileUp, cat: 'Media', desc: 'Documents or generic files.' },
-    { id: 'image', label: 'Image', icon: ImageIcon, cat: 'Media', desc: 'Photos or visual assets.' },
-    { id: 'signature', label: 'Signature', icon: PenTool, cat: 'Advanced', desc: 'Digital signature capture.' },
-    { id: 'rating', label: 'Rating', icon: Star, cat: 'Advanced', desc: 'Star or scale-based feedback.' },
-    { id: 'address', label: 'Address', icon: MapPin, cat: 'Advanced', desc: 'Location or postal details.' },
-    { id: 'paragraph', label: 'Paragraph Text', icon: Type, cat: 'Layout', desc: 'Display-only informational text.' },
-    { id: 'divider', label: 'Divider', icon: Minus, cat: 'Layout', desc: 'Visual separation between fields.' },
-  ];
-
-  const addField = (type: string) => {
-    const newField = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      title: '',
-      description: '',
-      required: false,
-      showDescription: false,
-      options: ['Option 1', 'Option 2'],
-    };
-    setFormFields([...formFields, newField]);
-    setIsFieldSelectorOpen(false);
-  };
-
-  const handleCreateNew = () => {
-    setEditingFormId(null);
-    setFormConfig({ title: '', description: '', status: 'draft' });
+  const startCreateForm = (teamId: string) => {
+    setBuilderTeamId(teamId);
+    setFormTitle("");
     setFormFields([]);
-    setFormDistribution({
-        memberAccess: { mode: 'all', userIds: [] },
-        publicAccess: { mode: 'public' },
-        teams: []
+    setIsBuilderOpen(true);
+  };
+
+  const fieldCounter = useRef(0);
+  const addField = (typeId: string) => {
+    fieldCounter.current += 1;
+    setFormFields((prev) => [
+      ...prev,
+      {
+        key: `f_${fieldCounter.current}`,
+        label: "",
+        type: typeId as FormFieldType,
+        required: false,
+      },
+    ]);
+  };
+
+  const updateField = (idx: number, patch: Partial<FormField>) => {
+    setFormFields((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...patch };
+      return next;
     });
-    setIsFormBuilderOpen(true);
   };
 
-  const handleEditClick = (form: any) => {
-    setEditingFormId(form.id);
-    setFormConfig({ title: form.title, description: '', status: form.status.toLowerCase() as any });
-    setFormFields(form.fields || []);
-    setFormDistribution(form.distribution || {
-        memberAccess: { mode: 'all', userIds: [] },
-        publicAccess: { mode: 'public' },
-        teams: []
-    });
-    setIsFormBuilderOpen(true);
-  };
-
-  const handlePublishForm = (isDraft = false) => {
-    const finalUrl = `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
-    if (editingFormId) {
-      setForms(forms.map(f => f.id === editingFormId ? { 
-          ...f, 
-          title: formConfig.title || 'Untitled Form', 
-          status: isDraft ? 'Draft' : 'Active', 
-          fields: formFields,
-          distribution: formDistribution,
-          lastModified: 'Just now'
-        } : f));
-    } else {
-      const newForm = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: formConfig.title || 'Untitled Form',
-        type: 'Outreach',
-        status: isDraft ? 'Draft' : 'Active',
-        responses: 0,
-        lastModified: 'Just now',
-        access: formDistribution.publicAccess.mode === 'public' ? 'Public' : 'Members Only',
-        fields: formFields,
-        distribution: formDistribution
-      };
-      setForms([newForm, ...forms]);
+  const handlePublish = async () => {
+    if (!builderTeamId || !formTitle.trim()) {
+      toast.error("Form title is required.");
+      return;
     }
-    setPublishedFormUrl(finalUrl);
-    setIsDistributionModalOpen(false);
-    setIsFormBuilderOpen(false);
-    if (!isDraft) {
-      setIsPublishSuccessOpen(true);
+    try {
+      await createForm.mutateAsync({
+        teamId: builderTeamId,
+        input: { title: formTitle, team_id: builderTeamId, fields: formFields },
+      });
+      setIsBuilderOpen(false);
+      setShowSuccess(true);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not create form."));
     }
-  };
-
-  const handleSaveDraft = () => {
-    handlePublishForm(true);
-  };
-
-  const toggleTeam = (id: string) => {
-      setFormDistribution(prev => ({
-          ...prev,
-          teams: prev.teams.includes(id) 
-            ? prev.teams.filter(t => t !== id)
-            : [...prev.teams, id]
-      }));
   };
 
   return (
-    <div className="hq-dashboard-premium animate-premium" style={{ paddingBottom: '100px' }}>
-      <header className="dashboard-header-premium" style={{ border: 'none', background: 'transparent', padding: '24px 0' }}>
+    <div className="hq-dashboard-premium animate-premium" style={{ paddingBottom: "100px" }}>
+      <header
+        className="dashboard-header-premium"
+        style={{ border: "none", background: "transparent", padding: "24px 0" }}
+      >
         <div className="header-left">
-          <button className="back-link-premium" onClick={() => router.push('/branch')}>
+          <button
+            className="back-link-premium"
+            onClick={() => router.push("/branch")}
+          >
             <ArrowLeft size={18} /> Back to Hub
           </button>
-          
           <div className="badge-premium blue">OPERATIONAL TOOLS</div>
-          <h1>Location Forms</h1>
+          <h1>
+            {locationQuery.data?.name ?? "Branch"} Forms
+          </h1>
           <p>Create and manage outreach forms for this branch.</p>
-        </div>
-
-        <div className="header-actions">
-           <Button className="btn-premium" onClick={handleCreateNew}>
-              <Plus size={18} /> New Form
-           </Button>
         </div>
       </header>
 
       <main className="dashboard-main-content">
-        <div className="section-actions" style={{ marginBottom: '24px' }}>
-           <div className="search-box">
-              <Search size={18} />
-              <input 
-                type="text" 
-                placeholder="Search local forms..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-           </div>
+        <div className="section-actions" style={{ marginBottom: "24px" }}>
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search teams..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="forms-display-grid-premium" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-            {forms.filter(f => f.title.toLowerCase().includes(searchTerm.toLowerCase())).map((form) => (
-            <Card key={form.id} className="team-main-card" style={{ padding: '24px' }}>
-                <div className="form-card-main-info" style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                   <div className="team-icon-box" style={{ background: '#eff6ff', color: '#3b82f6', width: '48px', height: '48px' }}>
-                       <FileText size={24} />
-                   </div>
-                   <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                         <span className="admin-badge-mini blue" style={{ fontSize: '10px' }}>{form.type.toUpperCase()}</span>
-                         <span className={`status-pill ${form.status.toLowerCase()}`} style={{ fontSize: '10px' }}>{form.status}</span>
-                      </div>
-                      <h3 style={{ fontSize: '18px', fontWeight: '800', marginTop: '4px' }}>{form.title}</h3>
-                   </div>
-                </div>
+        {teamsQuery.isLoading && (
+          <div style={{ textAlign: "center", padding: "32px", color: "var(--text-tertiary)" }}>
+            <Loader2 size={20} className="spinner" style={{ display: "inline", verticalAlign: "middle" }} /> Loading teams…
+          </div>
+        )}
 
-                <div className="team-card-stats" style={{ background: '#f8fafc', borderRadius: '12px', padding: '12px', display: 'flex', gap: '12px' }}>
-                  <div className="t-stat">
-                    <span className="label">Responses</span>
-                    <span className="value" style={{ fontSize: '14px' }}>{form.responses}</span>
-                  </div>
-                  <div className="t-stat">
-                    <span className="label">Access</span>
-                    <span className="value" style={{ fontSize: '14px' }}>{form.access}</span>
-                  </div>
+        <div
+          className="forms-display-grid-premium"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+            gap: "20px",
+          }}
+        >
+          {teams.map((team) => (
+            <Card key={team.id} className="team-main-card" style={{ padding: "24px" }}>
+              <div
+                className="form-card-main-info"
+                style={{ display: "flex", gap: "16px", marginBottom: "16px" }}
+              >
+                <div
+                  className="team-icon-box"
+                  style={{
+                    background: "#eff6ff",
+                    color: "#3b82f6",
+                    width: "48px",
+                    height: "48px",
+                  }}
+                >
+                  <FileText size={24} />
                 </div>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <span className="admin-badge-mini blue" style={{ fontSize: "10px" }}>
+                      {team.is_public_joinable ? "PUBLIC" : "PRIVATE"}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: "18px", fontWeight: 800, marginTop: "4px" }}>
+                    {team.name}
+                  </h3>
+                </div>
+              </div>
 
-                <div className="form-card-v2-actions" style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                  <Button variant="outline" size="sm" fullWidth onClick={() => handleEditClick(form)}>
-                      <Settings size={16} /> Manage
-                  </Button>
-                  <Button variant="outline" size="sm" fullWidth onClick={() => {
-                      setEditingFormId(form.id);
-                      setFormConfig({ title: form.title, description: '', status: 'published' });
-                      setFormFields(form.fields);
-                      setPreviewMode('mobile');
-                      setIsFormBuilderOpen(true);
-                  }}>
-                      <Eye size={16} /> Preview
-                  </Button>
+              <div
+                className="team-card-stats"
+                style={{
+                  background: "#f8fafc",
+                  borderRadius: "12px",
+                  padding: "12px",
+                  display: "flex",
+                  gap: "12px",
+                }}
+              >
+                <div className="t-stat">
+                  <span className="label">Members</span>
+                  <span className="value" style={{ fontSize: "14px" }}>
+                    {team.member_count}
+                  </span>
                 </div>
+                <div className="t-stat">
+                  <span className="label">Forms</span>
+                  <span className="value" style={{ fontSize: "14px" }}>
+                    {team.form_count}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                className="form-card-v2-actions"
+                style={{ display: "flex", gap: "8px", marginTop: "16px" }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => router.push(`/branch/teams/${team.id}`)}
+                >
+                  <Settings size={16} /> Manage
+                </Button>
+                <Button
+                  className="btn-premium"
+                  size="sm"
+                  fullWidth
+                  onClick={() => startCreateForm(team.id)}
+                >
+                  <Plus size={16} /> New Form
+                </Button>
+              </div>
             </Card>
-            ))}
+          ))}
         </div>
       </main>
 
-      {/* FORM BUILDER MODAL */}
       <Modal
-        isOpen={isFormBuilderOpen}
-        onClose={() => {
-            setIsFormBuilderOpen(false);
-            setPreviewMode(null);
-        }}
-        title={previewMode ? `Preview: ${formConfig.title}` : `Local Form Builder`}
+        isOpen={isBuilderOpen}
+        onClose={() => setIsBuilderOpen(false)}
+        title="Create Form"
         size="full"
       >
         <div className="form-builder-container-premium">
-          {!previewMode ? (
-            <div className="builder-interface fade-in">
-              <div className="builder-header-sticky">
-                <div className="header-main-info">
-                  <div className="title-area">
-                    <input 
-                      type="text" 
-                      className="form-title-input-ghost"
-                      placeholder="Untitled Form"
-                      value={formConfig.title}
-                      onChange={(e) => setFormConfig({...formConfig, title: e.target.value})}
-                    />
-                  </div>
-                  <div className="header-actions">
-                    <Button variant="outline" size="sm" onClick={() => handleSaveDraft()}>Save</Button>
-                    <Button className="btn-premium" size="sm" onClick={() => setIsDistributionModalOpen(true)}>Publish</Button>
-                    <Button variant="ghost" size="sm" onClick={() => setPreviewMode('mobile')}><Eye size={18} /></Button>
-                  </div>
+          <div className="builder-interface fade-in">
+            <div className="builder-header-sticky">
+              <div className="header-main-info">
+                <div className="title-area" style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    className="form-title-input-ghost"
+                    placeholder="Form Title"
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    style={{
+                      width: "100%",
+                      fontSize: "24px",
+                      fontWeight: 800,
+                      border: "none",
+                      outline: "none",
+                      padding: "8px 0",
+                    }}
+                  />
+                </div>
+                <div className="header-actions" style={{ display: "flex", gap: "8px" }}>
+                  <Button
+                    className="btn-premium"
+                    size="sm"
+                    onClick={handlePublish}
+                    disabled={createForm.isPending || !formTitle.trim()}
+                  >
+                    {createForm.isPending ? "Publishing…" : "Publish"}
+                  </Button>
                 </div>
               </div>
-              <div className="builder-body-scrollable">
-                <div className="fields-stack">
-                  {formFields.length === 0 ? (
-                    <div className="empty-builder-state">
-                      <Button className="btn-premium" onClick={() => setIsFieldSelectorOpen(true)}>Add Field</Button>
-                    </div>
-                  ) : (
-                    formFields.map((field, idx) => (
-                      <div key={field.id} className="field-card-premium">
-                        <Input 
-                          placeholder="Question Title"
-                          value={field.title}
-                          onChange={(e) => {
-                            const newFields = [...formFields];
-                            newFields[idx].title = e.target.value;
-                            setFormFields(newFields);
-                          }}
+            </div>
+
+            <div className="builder-body-scrollable" style={{ padding: "24px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
+                {FIELD_TYPES.map((ft) => (
+                  <button
+                    key={ft.id}
+                    onClick={() => addField(ft.id)}
+                    style={{
+                      padding: "6px 14px",
+                      border: "1px solid var(--border-light)",
+                      borderRadius: "8px",
+                      background: "white",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    + {ft.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="fields-stack">
+                {formFields.length === 0 && (
+                  <div
+                    className="empty-builder-state"
+                    style={{
+                      textAlign: "center",
+                      padding: "48px",
+                      color: "var(--text-tertiary)",
+                    }}
+                  >
+                    <Layout size={40} style={{ opacity: 0.3, marginBottom: "12px" }} />
+                    <p>Click a field type above to add it.</p>
+                  </div>
+                )}
+                {formFields.map((field, idx) => (
+                  <div key={field.key} className="field-card-premium" style={{ marginBottom: "12px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <GripVertical size={16} style={{ color: "var(--text-tertiary)", opacity: 0.4 }} />
+                      <Input
+                        placeholder="Field label"
+                        value={field.label}
+                        onChange={(e) => updateField(idx, { label: e.target.value })}
+                        style={{ flex: 1 }}
+                      />
+                      <label
+                        className="toggle-label-premium"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          fontSize: "12px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={field.required ?? false}
+                          onChange={(e) =>
+                            updateField(idx, { required: e.target.checked })
+                          }
                         />
-                        <Button variant="ghost" size="sm" onClick={() => setFormFields(formFields.filter(f => f.id !== field.id))}><Trash size={16} /></Button>
-                      </div>
-                    ))
-                  )}
-                </div>
+                        Required
+                      </label>
+                      <button
+                        onClick={() =>
+                          setFormFields((prev) =>
+                            prev.filter((f) => f.key !== field.key),
+                          )
+                        }
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--danger)",
+                          cursor: "pointer",
+                          padding: "4px",
+                        }}
+                        aria-label="Remove field"
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : (
-            <div className="preview-form-frame">
-                <h1>{formConfig.title}</h1>
-                <Button onClick={() => setPreviewMode(null)}>Back to Editor</Button>
-            </div>
-          )}
+          </div>
         </div>
       </Modal>
 
-      {/* DISTRIBUTION MODAL */}
-      <Modal
-        isOpen={isDistributionModalOpen}
-        onClose={() => setIsDistributionModalOpen(false)}
-        title="Form Assignment"
-      >
-        <div className="dist-content">
-          <h4>Assign to Outreach Teams</h4>
-          <div className="teams-grid">
-            {mockTeams.map(team => (
-              <Button key={team.id} variant={formDistribution.teams.includes(team.id) ? "primary" : "outline"} onClick={() => toggleTeam(team.id)}>
-                {team.name}
-              </Button>
-            ))}
-          </div>
-          <Button className="btn-premium full-width" onClick={() => handlePublishForm(false)}>Finish & Publish</Button>
-        </div>
-      </Modal>
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        icon="form"
+        title="Form Created"
+        description="The form has been published successfully."
+        primaryAction={{
+          label: "Back to Forms",
+          navigateTo: "/branch/forms",
+        }}
+      />
     </div>
   );
 }

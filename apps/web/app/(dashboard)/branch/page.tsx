@@ -82,6 +82,10 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/services/auth';
+import { useLocation, useLocationTeams, useLocationMembers } from '@/services/manage-organization';
+import { useWalletBalance, useWalletTransactions } from '@/services/wallet';
+import { useQuery } from '@tanstack/react-query';
+import { listForms } from '@/lib/api/endpoints/forms';
 import './branch.css';
 
 type MainTab = 'hub' | 'overview' | 'teams' | 'workers' | 'forms' | 'invitees' | 'messages' | 'wallet' | 'settings';
@@ -144,43 +148,77 @@ function BranchDashboardContent() {
     return () => clearInterval(timer);
   }, [banners.length]);
 
-  // --- MOCK DATA ---
+  // --- API HOOKS ---
+  const branchId = user?.branch_id ?? undefined;
+  const locationQuery = useLocation(branchId);
+  const teamsQuery = useLocationTeams(branchId, { per_page: 10 });
+  const membersQuery = useLocationMembers(branchId, { per_page: 10 });
+  const walletBalanceQuery = useWalletBalance();
+  const transactionsQuery = useWalletTransactions({ page: 1, page_size: 20 });
+  const formsQuery = useQuery({
+    queryKey: ['forms', 'scope', 'location', branchId],
+    queryFn: () => listForms({ scope: 'location' }),
+    enabled: Boolean(branchId),
+    staleTime: 30_000,
+  });
+
+  // --- COMPUTED STATE ---
   const stats = {
-    branchName: 'Downtown HQ',
-    totalTeams: 8,
-    totalMembers: 156,
-    totalForms: 12,
-    totalSubmissions: 1240,
-    smsCredits: 45200,
-    growth: '+14%',
-    conversions: '24%'
+    branchName: locationQuery.data?.name ?? 'Branch',
+    totalTeams: locationQuery.data?.stats?.teams ?? 0,
+    totalMembers: locationQuery.data?.stats?.members ?? 0,
+    totalForms: formsQuery.data?.meta?.total ?? 0,
+    totalSubmissions: locationQuery.data?.stats?.submissions_30d ?? 0,
+    smsCredits: walletBalanceQuery.data?.balance ?? user?.credits ?? 0,
+    growth: '+0%',
+    conversions: '0%'
   };
 
-  const [forms, setForms] = useState<any[]>([
-    { id: '1', title: 'Member Registration', type: 'Outreach', status: 'Active', responses: 124, lastModified: '2 days ago', access: 'Public', fields: [], distribution: { teams: ['t1', 't2'] } },
-    { id: '2', title: 'Weekly Feedback', type: 'Internal', status: 'Active', responses: 45, lastModified: '5 days ago', access: 'Members Only', fields: [], distribution: { teams: ['t3'] } },
-  ]);
+  const [forms, setForms] = useState<any[]>([]);
 
-  const [inviteLinks, setInviteLinks] = useState([
-    { id: "1", name: "Downtown Outreach", url: "vangly.com/invite/downtown", type: "Location", usage: "Local Outreach", location: "Downtown HQ", hits: 450 },
-  ]);
+  useEffect(() => {
+    if (formsQuery.data?.data) {
+      setForms(formsQuery.data.data.map((f) => ({
+        id: f.id,
+        title: f.title,
+        type: 'Outreach',
+        status: f.status === 'published' ? 'Active' : 'Draft',
+        responses: f.analytics_submissions ?? 0,
+        lastModified: f.updated_at,
+        access: f.distribution?.mode === 'public' ? 'Public' : 'Members Only',
+        fields: f.fields ?? [],
+        distribution: f.distribution ?? {},
+      })));
+    }
+  }, [formsQuery.data]);
 
-  const teamsData = [
-    { id: 't1', name: 'Evangelism Team', members: 42, souls: 450, status: 'High' },
-    { id: 't2', name: 'Community Care', members: 25, souls: 320, status: 'High' },
-    { id: 't3', name: 'Youth Outreach', members: 35, souls: 280, status: 'High' },
-  ];
+  const teamsData = (teamsQuery.data?.data ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    members: t.member_count,
+    souls: 0,
+    status: 'High' as const,
+  }));
 
-  const workers = [
-    { id: 'm1', name: 'Sarah Jenkins', phone: '+234 801 234 5678', outreach: 124, submissions: 85, status: 'Active', role: 'Team Admin', attended: 45 },
-    { id: 'm2', name: 'James Wilson', phone: '+234 802 345 6789', outreach: 98, submissions: 64, status: 'Active', role: 'Worker', attended: 32 },
-    { id: 'm3', name: 'Grace Oladapo', phone: '+234 803 456 7890', outreach: 156, submissions: 110, status: 'Active', role: 'Worker', attended: 67 },
-  ];
+  const workers = (membersQuery.data?.data ?? []).map((m) => ({
+    id: m.id,
+    name: m.name,
+    phone: m.phone,
+    outreach: 0,
+    submissions: 0,
+    status: (m.status === 'active' ? 'Active' : 'Inactive') as 'Active' | 'Inactive',
+    role: (m.team_admins?.length ? 'Team Admin' : 'Worker') as 'Team Admin' | 'Worker',
+    attended: 0,
+  }));
 
-  const [recentTransactions, setRecentTransactions] = useState([
-    { id: 'tx1', type: 'Top-up', amount: '5,000 Credits', cost: '₦50,000', date: 'Oct 12, 10:30 AM', status: 'Completed' },
-    { id: 'tx2', type: 'Broadcast', amount: '-124 Credits', cost: 'Sunday Service', date: 'Oct 10, 09:00 AM', status: 'Sent' },
-  ]);
+  const recentTransactions = (transactionsQuery.data?.data ?? []).map((tx) => ({
+    id: tx.id,
+    type: tx.kind === 'topup' ? 'Top-up' : tx.kind === 'purchase_sms' ? 'SMS Purchase' : 'Broadcast',
+    amount: tx.delta > 0 ? `${tx.delta.toLocaleString()} Credits` : `${tx.delta} Credits`,
+    cost: tx.description ?? '',
+    date: tx.created_at,
+    status: 'Completed',
+  }));
 
   // --- FORM BUILDER STATE ---
   const [isFormBuilderOpen, setIsFormBuilderOpen] = useState(false);

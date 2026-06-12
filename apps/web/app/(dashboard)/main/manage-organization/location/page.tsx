@@ -746,6 +746,14 @@ function LocationDashboardContent() {
   const teamMembers = teamDetailQuery.data?.members ?? [];
   const teamForms: TeamDetailForm[] = teamDetailQuery.data?.forms ?? [];
 
+  const publishedFormUrl = React.useMemo(() => {
+    if (!publishedForm) return "";
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}/f/${publishedForm.public_id}`;
+    }
+    return publishedForm.public_url;
+  }, [publishedForm]);
+
   const teamById = React.useMemo(() => {
     const m = new Map<string, Team>();
     for (const t of teams) m.set(t.id, t);
@@ -807,7 +815,9 @@ function LocationDashboardContent() {
   // public_url), then copy it to the clipboard and reset the trigger.
   React.useEffect(() => {
     if (!copyingFormId || !copyingFormQuery.data) return;
-    const url = copyingFormQuery.data.public_url;
+    const url = typeof window !== "undefined"
+      ? `${window.location.origin}/f/${copyingFormQuery.data.public_id}`
+      : copyingFormQuery.data.public_url;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot trigger reset, no cascade
     setCopyingFormId(null);
     if (!url) return;
@@ -830,6 +840,7 @@ function LocationDashboardContent() {
     const input = {
       title,
       description: formConfig.description.trim() || undefined,
+      team_id: selectedTeamId,
       fields: formFields,
       distribution: { mode: "public" as const },
     };
@@ -1453,19 +1464,9 @@ function LocationDashboardContent() {
 
                 {teamSubView === "members" ? (
                   <>
-                    <div
-                      className="members-view-header animate-fade-in"
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 16,
-                      }}
-                    >
-                      <h3 style={{ fontSize: 18, fontWeight: 800 }}>
-                        Team Members
-                      </h3>
-                      <div style={{ display: "flex", gap: 8 }}>
+                    <div className="members-view-header animate-fade-in">
+                      <h3 className="section-title-18">Team Members</h3>
+                      <div className="members-header-actions">
                         <Button
                           variant="outline"
                           size="sm"
@@ -1474,12 +1475,7 @@ function LocationDashboardContent() {
                               `/main/messages?target=team&name=${encodeURIComponent(selectedTeam.name)}&location=${encodeURIComponent(locationQuery.data?.name ?? locationName)}`,
                             )
                           }
-                          style={{
-                            gap: 8,
-                            color: "var(--blue)",
-                            borderColor: "var(--blue)",
-                            background: "var(--blue-subtle)",
-                          }}
+                          className="btn-sms-outline"
                         >
                           <MessageSquare size={16} /> Send SMS
                         </Button>
@@ -1500,73 +1496,47 @@ function LocationDashboardContent() {
                           <tr>
                             <th>Member Details</th>
                             <th>Status</th>
-                            <th style={{ textAlign: "right" }}>Actions</th>
+                            <th className="text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {teamMembers.map(
                             (u: Member) => (
                               <tr key={u.id}>
-                                <td>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 12,
-                                    }}
-                                  >
+                                <td data-label="Member">
+                                  <div className="member-info-cell">
                                     <div className="user-avatar-tiny">
                                       {u.name?.[0]?.toUpperCase() ?? "?"}
                                     </div>
                                     <div>
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 8,
-                                        }}
-                                      >
-                                        <span style={{ fontWeight: 700, fontSize: 14 }}>
+                                      <div className="member-info-name-row">
+                                        <span className="member-name">
                                           {u.name}
                                         </span>
                                         {u.team_admins?.includes(selectedTeam.name) ? (
                                           <span
                                             title="Team Admin"
-                                            style={{
-                                              color: "var(--blue)",
-                                              display: "flex",
-                                            }}
+                                            className="member-admin-badge"
                                           >
                                             <Shield size={12} fill="var(--blue-subtle)" />
                                           </span>
                                         ) : null}
                                       </div>
-                                      <div
-                                        style={{
-                                          fontSize: 12,
-                                          color: "var(--text-tertiary)",
-                                        }}
-                                      >
+                                      <div className="member-phone">
                                         {u.phone}
                                       </div>
                                     </div>
                                   </div>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                   <span
                                     className={`status-badge-mini ${u.status}`}
                                   >
                                     {u.status}
                                   </span>
                                 </td>
-                                <td>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: 8,
-                                      justifyContent: "flex-end",
-                                    }}
-                                  >
+                                <td data-label="Actions">
+                                  <div className="member-actions">
                                     <a
                                       href={`https://wa.me/${u.phone.replace(/[^0-9]/g, "")}`}
                                       target="_blank"
@@ -1579,6 +1549,7 @@ function LocationDashboardContent() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
+                                      className="member-action-btn"
                                       onClick={() =>
                                         router.push(
                                           `/main/messages?target=individual&phone=${encodeURIComponent(u.phone)}&name=${encodeURIComponent(u.name)}`,
@@ -1591,6 +1562,7 @@ function LocationDashboardContent() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
+                                      className="member-action-btn"
                                       onClick={() => {
                                         setUserActionMember(u);
                                         setUserActionOpen(true);
@@ -1607,11 +1579,7 @@ function LocationDashboardContent() {
                             <tr>
                               <td
                                 colSpan={3}
-                                style={{
-                                  textAlign: "center",
-                                  padding: 32,
-                                  color: "var(--text-tertiary)",
-                                }}
+                                className="empty-table-cell"
                               >
                                 No members in this team yet.
                               </td>
@@ -1625,18 +1593,9 @@ function LocationDashboardContent() {
 
                 {teamSubView === "forms" ? (
                   <div className="group-forms-view fade-in">
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 20,
-                      }}
-                    >
-                      <h3 style={{ fontSize: 18, fontWeight: 800 }}>
-                        Team Forms
-                      </h3>
-                      <div style={{ display: "flex", gap: 12 }}>
+                    <div className="members-view-header">
+                      <h3 className="section-title-18">Team Forms</h3>
+                      <div className="members-header-actions">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1650,7 +1609,6 @@ function LocationDashboardContent() {
                         <Button
                           className="btn-premium"
                           size="sm"
-                          style={{ gap: 8 }}
                           onClick={() => openFormBuilder(selectedTeam, null)}
                         >
                           <Plus size={16} /> Create Team Form
@@ -2572,7 +2530,7 @@ function LocationDashboardContent() {
               <div style={{ display: "flex", gap: 8 }}>
                 <input
                   readOnly
-                  value={publishedForm.public_url}
+                  value={publishedFormUrl}
                   style={{
                     flex: 1,
                     background: "transparent",
@@ -2588,7 +2546,7 @@ function LocationDashboardContent() {
                   size="sm"
                   onClick={() =>
                     void navigator.clipboard.writeText(
-                      publishedForm.public_url,
+                      publishedFormUrl,
                     )
                   }
                 >
@@ -2606,7 +2564,7 @@ function LocationDashboardContent() {
             >
               <QRCodeSVG
                 id="published-qr-svg"
-                value={publishedForm.public_url}
+                value={publishedFormUrl}
                 size={200}
                 level="H"
               />
@@ -2626,7 +2584,7 @@ function LocationDashboardContent() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => window.open(publishedForm.public_url, "_blank")}
+                onClick={() => window.open(publishedFormUrl, "_blank")}
                 style={{ gap: 8 }}
               >
                 <ExternalLink size={18} /> Preview

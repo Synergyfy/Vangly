@@ -5,16 +5,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authQueries } from "@/lib/api/queries/auth.options";
 import { authMutations } from "@/lib/api/mutations/auth.mutations";
 import { authKeys } from "@/lib/api/queries/auth.keys";
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "@/lib/api/auth-token";
 import { ApiError } from "@/lib/api/client";
-import type { LoginInput, LogoutInput, User } from "@/types/api/auth";
+import type { LoginInput, User } from "@/types/api/auth";
 
 export function useMe() {
-  const hasToken = typeof window !== "undefined" && getAccessToken() !== null;
-
+  // With httpOnly cookies the browser always sends the access cookie automatically.
+  // We no longer gate on a localStorage token — the query simply runs; if the
+  // cookie is absent or expired the API returns 401 which the Axios interceptor
+  // handles by attempting a silent refresh before the query error surfaces.
   return useQuery({
     ...authQueries.me(),
-    enabled: hasToken,
+    retry: false,
   });
 }
 
@@ -24,7 +25,8 @@ export function useLogin() {
   return useMutation({
     ...authMutations.login(),
     onSuccess: (data) => {
-      setTokens(data.access_token, data.refresh_token);
+      // The API has already set the httpOnly access + refresh cookies.
+      // We only need to warm the React Query cache with the user object.
       qc.setQueryData(authKeys.me(), data.user);
     },
   });
@@ -36,9 +38,9 @@ export function useLogout() {
   return useMutation({
     mutationFn: authMutations.logout().mutationFn,
     onSettled: () => {
-      clearTokens();
+      // The API has already cleared the cookies via Set-Cookie.
+      // We just need to wipe the client-side cache.
       qc.setQueryData(authKeys.me(), null);
-      qc.removeQueries({ queryKey: authKeys.me() });
     },
   });
 }
@@ -74,17 +76,12 @@ export function useAuth(): UseAuthResult {
   );
 
   const logout = useCallback(
-    async (options?: { everywhere?: boolean }): Promise<void> => {
-      const refreshToken = getRefreshToken();
-      const payload: LogoutInput = refreshToken
-        ? { refresh_token: refreshToken, everywhere: options?.everywhere }
-        : { everywhere: options?.everywhere };
-
+    async (): Promise<void> => {
       try {
-        await logoutMut.mutateAsync(payload);
+        // POST /api/auth/logout — the refresh cookie is sent automatically.
+        await logoutMut.mutateAsync(undefined);
       } catch {
-        // The interceptor already cleared local state on auth:logout.
-        // Swallow network errors so the user is logged out client-side regardless.
+        // Swallow network errors: the cache is cleared in onSettled regardless.
       }
     },
     [logoutMut],

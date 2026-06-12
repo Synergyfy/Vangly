@@ -1,48 +1,25 @@
-const ACCESS_KEY = "vangly_access_token";
-const REFRESH_KEY = "vangly_refresh_token";
+// Tokens are now stored as httpOnly cookies set by the API server.
+// The browser sends them automatically — no JavaScript access is needed or possible.
+// These stubs are kept so existing call-sites compile without changes.
 
-function readKey(key: string): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeKey(key: string, value: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // Storage may be unavailable (private mode, quota). Swallow — auth
-    // will simply fall back to in-memory state for the session.
-  }
-}
-
-function removeKey(key: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(key);
-  } catch {
-    // Same rationale as writeKey.
-  }
-}
-
+/** @deprecated Tokens live in httpOnly cookies; always returns null. */
 export function getAccessToken(): string | null {
-  return readKey(ACCESS_KEY);
+  return null;
 }
 
+/** @deprecated Tokens live in httpOnly cookies; always returns null. */
 export function getRefreshToken(): string | null {
-  return readKey(REFRESH_KEY);
+  return null;
 }
 
-export function setTokens(access: string, refresh: string): void {
-  writeKey(ACCESS_KEY, access);
-  writeKey(REFRESH_KEY, refresh);
+/** @deprecated Tokens live in httpOnly cookies; this is a no-op. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setTokens(_access: string, _refresh: string): void {
+  // no-op: cookies are set by the API via Set-Cookie headers
 }
 
+/** @deprecated Tokens live in httpOnly cookies; this is a no-op. */
 export function clearTokens(): void {
-  removeKey(ACCESS_KEY);
-  removeKey(REFRESH_KEY);
+  // no-op: cookies are cleared by POST /api/auth/logout
 }
+

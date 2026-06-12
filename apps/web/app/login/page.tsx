@@ -2,7 +2,7 @@
 
 import React, { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/services/auth';
+import { useLogin } from '@/services/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ApiError } from '@/lib/api/client';
@@ -51,7 +51,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
   const { errors, setError, clearAll, bindField } = useFieldErrors();
-  const { login, isLoading: isAuthLoading } = useAuth();
+  const loginMutation = useLogin();
+  const isAuthLoading = loginMutation.isPending;
+  const login = async (input: Parameters<typeof loginMutation.mutateAsync>[0]) => {
+    const res = await loginMutation.mutateAsync(input);
+    return res.user;
+  };
   const router = useRouter();
 
   const handlePhoneChange = bindField('phone', setPhoneNumber);

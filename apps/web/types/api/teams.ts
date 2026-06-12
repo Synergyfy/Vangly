@@ -226,6 +226,7 @@ export interface FormEntity {
 export interface CreateFormInput {
   title: string;
   description?: string;
+  team_id?: string;
   fields: FormField[];
   distribution?: FormDistribution;
 }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -14,9 +15,7 @@ import {
   useOnboardingLocation,
   useOnboardingComplete,
 } from '@/services/onboarding';
-import { ApiError } from '@/lib/api/client';
 import { useFieldErrors } from '@/lib/forms/use-field-errors';
-import { mapApiErrorToField } from '@/lib/forms/map-api-error-to-field';
 import {
   isE164,
   isHexColor,
@@ -26,6 +25,7 @@ import {
   logoErrorMessage,
   toE164,
 } from '@/lib/forms/validators';
+import { extractErrorMessage } from '@/lib/forms/extract-error-message';
 import {
   CheckCircle2,
   ChevronRight,
@@ -50,15 +50,8 @@ const countryCodes = [
   { code: '+254', country: 'KE', name: 'Kenya' },
 ];
 
-function extractErrorMessage(err: unknown): string {
-  if (err instanceof ApiError) return err.body.message;
-  if (err instanceof Error) return err.message;
-  return 'Something went wrong. Please try again.';
-}
-
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
-  const [banner, setBanner] = useState<string | null>(null);
 
   const [onboardingToken, setOnboardingToken] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -136,7 +129,6 @@ export default function OnboardingPage() {
 
   const handleStart = async () => {
     clearAll();
-    setBanner(null);
 
     if (!phoneNumber) {
       setError('phoneNumber', 'Phone number is required.');
@@ -154,22 +146,16 @@ export default function OnboardingPage() {
       setOnboardingToken(result.onboarding_token);
       setStep(2);
     } catch (err) {
-      const field = mapApiErrorToField(err, ['phoneNumber', 'phone']);
-      if (field) {
-        setError(field, err instanceof ApiError ? err.body.message : 'Invalid phone.');
-      } else {
-        setBanner(extractErrorMessage(err));
-      }
+      toast.error(extractErrorMessage(err, 'Invalid phone number.'));
     }
   };
 
   const handleAccount = async () => {
     if (!onboardingToken) {
-      setBanner('Session expired. Please restart onboarding.');
+      toast.error('Session expired. Please restart onboarding.');
       return;
     }
     clearAll();
-    setBanner(null);
 
     let hasClientError = false;
     if (!orgName) {
@@ -207,31 +193,16 @@ export default function OnboardingPage() {
       setOrganizationId(result.organization_id);
       setStep(3);
     } catch (err) {
-      const field = mapApiErrorToField(err, [
-        'orgName',
-        'adminName',
-        'pin',
-        'organization_name',
-        'admin_name',
-      ]);
-      if (field) {
-        setError(
-          field,
-          err instanceof ApiError ? err.body.message : 'Invalid value.',
-        );
-      } else {
-        setBanner(extractErrorMessage(err));
-      }
+      toast.error(extractErrorMessage(err, 'Could not save your account details.'));
     }
   };
 
   const handleSubdomain = async () => {
     if (!onboardingToken) {
-      setBanner('Session expired. Please restart onboarding.');
+      toast.error('Session expired. Please restart onboarding.');
       return;
     }
     clearAll();
-    setBanner(null);
 
     if (!subdomain) {
       setError('subdomain', 'Subdomain is required.');
@@ -253,25 +224,16 @@ export default function OnboardingPage() {
       setOnboardingToken(result.onboarding_token);
       setStep(4);
     } catch (err) {
-      const field = mapApiErrorToField(err, ['subdomain']);
-      if (field) {
-        setError(
-          field,
-          err instanceof ApiError ? err.body.message : 'Invalid subdomain.',
-        );
-      } else {
-        setBanner(extractErrorMessage(err));
-      }
+      toast.error(extractErrorMessage(err, 'Invalid subdomain.'));
     }
   };
 
   const handleBrand = async () => {
     if (!onboardingToken) {
-      setBanner('Session expired. Please restart onboarding.');
+      toast.error('Session expired. Please restart onboarding.');
       return;
     }
     clearAll();
-    setBanner(null);
 
     if (!isHexColor(primaryColor)) {
       setError('primaryColor', 'Pick a valid hex color, e.g. #007AFF.');
@@ -292,30 +254,16 @@ export default function OnboardingPage() {
       });
       setStep(5);
     } catch (err) {
-      const field = mapApiErrorToField(err, [
-        'primaryColor',
-        'primary_color',
-        'logoFile',
-        'logo',
-      ]);
-      if (field) {
-        setError(
-          field,
-          err instanceof ApiError ? err.body.message : 'Invalid value.',
-        );
-      } else {
-        setBanner(extractErrorMessage(err));
-      }
+      toast.error(extractErrorMessage(err, 'Could not save your brand details.'));
     }
   };
 
   const handleLocation = async () => {
     if (!onboardingToken) {
-      setBanner('Session expired. Please restart onboarding.');
+      toast.error('Session expired. Please restart onboarding.');
       return;
     }
     clearAll();
-    setBanner(null);
 
     let hasClientError = false;
     if (!locationName) {
@@ -355,33 +303,16 @@ export default function OnboardingPage() {
       setLocationId(result.location_id);
       setStep(6);
     } catch (err) {
-      const field = mapApiErrorToField(err, [
-        'locationName',
-        'address',
-        'city',
-        'stateVal',
-        'country',
-        'name',
-        'state',
-      ]);
-      if (field) {
-        setError(
-          field,
-          err instanceof ApiError ? err.body.message : 'Invalid value.',
-        );
-      } else {
-        setBanner(extractErrorMessage(err));
-      }
+      toast.error(extractErrorMessage(err, 'Could not create your location.'));
     }
   };
 
   const handleComplete = async () => {
     if (!onboardingToken) {
-      setBanner('Session expired. Please restart onboarding.');
+      toast.error('Session expired. Please restart onboarding.');
       return;
     }
     clearAll();
-    setBanner(null);
 
     try {
       await completeMut.mutateAsync({
@@ -390,33 +321,14 @@ export default function OnboardingPage() {
       setOnboardingToken(null);
       router.push('/main');
     } catch (err) {
-      setBanner(extractErrorMessage(err));
+      toast.error(extractErrorMessage(err, 'Could not finalize onboarding.'));
     }
   };
 
   const handleBack = () => {
     clearAll();
-    setBanner(null);
     setStep((s) => Math.max(1, s - 1));
   };
-
-  const renderBanner = () =>
-    banner ? (
-      <div
-        role="alert"
-        style={{
-          marginTop: '16px',
-          padding: '12px 14px',
-          borderRadius: '12px',
-          background: 'rgba(255, 59, 48, 0.08)',
-          color: '#B42318',
-          fontSize: '13px',
-          fontWeight: 600,
-        }}
-      >
-        {banner}
-      </div>
-    ) : null;
 
   const renderProgress = () => (
     <div className="onboarding-progress">
@@ -465,8 +377,8 @@ export default function OnboardingPage() {
               </div>
               <h1>Let&apos;s start with your phone</h1>
               <p>
-                We&apos;ll send a secure onboarding token to this number. It
-                expires in 15 minutes.
+                Enter the phone number for your organization&apos;s primary
+                admin account.
               </p>
             </div>
             <Card className="onboarding-card">
@@ -510,14 +422,13 @@ export default function OnboardingPage() {
                     E.164 format, e.g. +2348012345678.
                   </span>
                 </div>
-                {renderBanner()}
                 <Button
                   fullWidth
                   size="lg"
                   onClick={handleStart}
                   disabled={isSubmitting}
                 >
-                  {startMut.isPending ? 'Sending…' : 'Send Code'}{' '}
+                  {startMut.isPending ? 'Starting…' : 'Continue'}{' '}
                   <ChevronRight size={18} />
                 </Button>
               </div>
@@ -579,7 +490,6 @@ export default function OnboardingPage() {
                   disabled={isSubmitting}
                   required
                 />
-                {renderBanner()}
                 <Button
                   fullWidth
                   size="lg"
@@ -626,7 +536,6 @@ export default function OnboardingPage() {
                   3 to 30 characters. Lowercase letters, numbers, and hyphens
                   only.
                 </p>
-                {renderBanner()}
                 <Button
                   fullWidth
                   size="lg"
@@ -709,7 +618,6 @@ export default function OnboardingPage() {
                     {errors['primaryColor']}
                   </span>
                 )}
-                {renderBanner()}
                 <Button
                   fullWidth
                   size="lg"
@@ -782,7 +690,6 @@ export default function OnboardingPage() {
                   disabled={isSubmitting}
                   required
                 />
-                {renderBanner()}
                 <Button
                   fullWidth
                   size="lg"
@@ -828,7 +735,6 @@ export default function OnboardingPage() {
                   </div>
                 )}
               </div>
-              {renderBanner()}
               <Button
                 fullWidth
                 size="lg"

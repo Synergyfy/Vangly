@@ -59,6 +59,14 @@ export interface LocationPhotoInput {
   photo_url: string;
 }
 
+export interface LocationBrand {
+  brand: Record<string, unknown>;
+}
+
+export interface UpdateLocationBrandInput {
+  brand: Record<string, unknown>;
+}
+
 export type DashboardTab = "performance" | "teams" | "settings";
 export type DashboardTimeframe = "week" | "month" | "year";
 

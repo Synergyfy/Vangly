@@ -563,46 +563,32 @@
   font-size: 1rem;
 }
 
-.mock-card-input {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+.paystack-payment-info {
+  text-align: center;
+  padding: 2rem 1rem;
   margin-bottom: 1.5rem;
-  overflow: hidden;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
 }
 
-.card-input-row {
-  display: flex;
+.payment-icon-box {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0 1rem;
-  border-bottom: 1px solid var(--border);
-  height: 48px;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f3e8ff;
+  margin-bottom: 1rem;
 }
 
-.card-input-row input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 0.9rem;
-}
-
-.card-input-row-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.card-input-row-group input {
-  padding: 0 1rem;
-  height: 48px;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 0.9rem;
-}
-
-.card-input-row-group input:first-child {
-  border-right: 1px solid var(--border);
+.payment-info-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
 }
 
 /* Success View */

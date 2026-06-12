@@ -4,6 +4,7 @@ import {
   Get,
   Body,
   Req,
+  Res,
   Patch,
   UseInterceptors,
   UploadedFile,
@@ -23,8 +24,6 @@ import {
   OnboardingBrandDto,
   OnboardingLocationDto,
   LoginDto,
-  RefreshDto,
-  LogoutDto,
   ForgotPinDto,
   ResetPinDto,
   SetupPinDto,
@@ -35,6 +34,7 @@ import { AuthUser } from '../common/decorators/current-user.decorator';
 import { UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { RolesGuard } from './roles.guard';
+import { ConfigService } from '@nestjs/config';
 
 interface MulterFile {
   mimetype: string;
@@ -46,13 +46,22 @@ interface AuthenticatedRequest extends express.Request {
   user?: AuthUser;
 }
 
+/** Cookie names used for httpOnly token storage */
+const COOKIE_ACCESS = 'vangly_access';
+const COOKIE_REFRESH = 'vangly_refresh';
+
 @Controller('api/auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
+  private readonly isProd: boolean;
+
   constructor(
     private readonly authService: AuthService,
     private readonly db: DatabaseService,
-  ) {}
+    private readonly config: ConfigService,
+  ) {
+    this.isProd = this.config.get<string>('NODE_ENV') === 'production';
+  }
 
   private getIpAndUa(req: express.Request) {
     const ip =
@@ -61,6 +70,46 @@ export class AuthController {
       'unknown';
     const ua = req.headers['user-agent'] || 'unknown';
     return { ip, ua };
+  }
+
+  /**
+   * Sets httpOnly auth cookies on the response.
+   * accessTtlSec  — lifetime of the access cookie (seconds)
+   * refreshTtlSec — lifetime of the refresh cookie (seconds)
+   */
+  private setAuthCookies(
+    res: express.Response,
+    accessToken: string,
+    refreshToken: string,
+    accessTtlSec: number,
+    refreshTtlSec: number,
+  ): void {
+    const base = {
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      secure: this.isProd,
+      path: '/',
+    };
+    res.cookie(COOKIE_ACCESS, accessToken, {
+      ...base,
+      maxAge: accessTtlSec * 1000,
+    });
+    res.cookie(COOKIE_REFRESH, refreshToken, {
+      ...base,
+      maxAge: refreshTtlSec * 1000,
+    });
+  }
+
+  /** Clears both auth cookies. */
+  private clearAuthCookies(res: express.Response): void {
+    const base = {
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      secure: this.isProd,
+      path: '/',
+    };
+    res.clearCookie(COOKIE_ACCESS, base);
+    res.clearCookie(COOKIE_REFRESH, base);
   }
 
   // --- Onboarding Endpoints ---
@@ -153,6 +202,7 @@ export class AuthController {
   async completeOnboarding(
     @Body() body: { onboarding_token: string },
     @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
   ) {
     const { ip, ua } = this.getIpAndUa(req);
     const result = await this.authService.completeOnboarding(
@@ -160,8 +210,11 @@ export class AuthController {
       ip,
       ua,
     );
+
+    const refreshTtlSec = (this.config.get<number>('JWT_REFRESH_TTL_DAYS') ?? 7) * 86400;
+    this.setAuthCookies(res, result.access_token, result.refresh_token, 900, refreshTtlSec);
+
     return {
-      ...result,
       user: UserEntity.fromUser(result.user),
     };
   }
@@ -170,7 +223,11 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: LoginDto, @Req() req: express.Request) {
+  async login(
+    @Body() body: LoginDto,
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     const { ip, ua } = this.getIpAndUa(req);
     const result = await this.authService.login(
       body.phone,
@@ -179,19 +236,51 @@ export class AuthController {
       ip,
       ua,
     );
+
+    // remember=true → 30 days, else default refresh TTL
+    const refreshTtlSec = body.remember
+      ? 30 * 86400
+      : (this.config.get<number>('JWT_REFRESH_TTL_DAYS') ?? 7) * 86400;
+
+    this.setAuthCookies(res, result.access_token, result.refresh_token, 900, refreshTtlSec);
+
+    // Return only the user — raw tokens stay in httpOnly cookies
     return {
-      ...result,
       user: UserEntity.fromUser(result.user),
     };
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() body: RefreshDto, @Req() req: express.Request) {
+  async refresh(
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     const { ip, ua } = this.getIpAndUa(req);
-    const result = await this.authService.refresh(body.refresh_token, ip, ua);
+
+    // Read the refresh token from the httpOnly cookie.
+    const cookies = (req.cookies as Record<string, string>) ?? {};
+    const cookieRefresh = cookies[COOKIE_REFRESH];
+
+    if (!cookieRefresh) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'UNAUTHENTICATED',
+            message: 'Refresh token cookie missing.',
+          },
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const result = await this.authService.refresh(cookieRefresh, ip, ua);
+
+    // Calculate remaining TTL from the new token's expiry (service preserves it)
+    const refreshTtlSec = (this.config.get<number>('JWT_REFRESH_TTL_DAYS') ?? 7) * 86400;
+    this.setAuthCookies(res, result.access_token, result.refresh_token, 900, refreshTtlSec);
+
     return {
-      ...result,
       user: UserEntity.fromUser(result.user),
     };
   }
@@ -241,17 +330,28 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Body() body: LogoutDto, @Req() req: express.Request) {
+  async logout(
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     const { ip, ua } = this.getIpAndUa(req);
     const authReq = req as AuthenticatedRequest;
     const userPayload = authReq.user;
+
+    // Read the refresh token from the httpOnly cookie.
+    const cookies = (req.cookies as Record<string, string>) ?? {};
+    const cookieRefresh = cookies[COOKIE_REFRESH];
+
+    // Revoke the refresh token family (best-effort — always clear cookies)
     await this.authService.logout(
-      body.refresh_token,
-      body.everywhere || false,
+      cookieRefresh,
+      false,
       userPayload,
       ip,
       ua,
     );
+
+    this.clearAuthCookies(res);
   }
 
   // --- PIN Reset Endpoints ---

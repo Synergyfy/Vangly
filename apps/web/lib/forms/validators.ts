@@ -3,6 +3,9 @@ export const PIN_REGEX = /^\d{4,6}$/;
 export const SUBDOMAIN_REGEX = /^[a-z0-9-]{3,30}$/;
 export const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
 export const ISO_COUNTRY_REGEX = /^[A-Z]{2}$/;
+export const URL_REGEX = /^https?:\/\/[^\s.]+\.\S{2,}$/i;
+export const FQDN_REGEX =
+  /^(?=.{4,253}$)(?!-)[A-Za-z0-9-]{1,63}(\.[A-Za-z0-9-]{1,63})+$/;
 export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/svg+xml"];
 export const MAX_LOGO_BYTES = 1_000_000;
 
@@ -63,4 +66,45 @@ export function logoErrorMessage(file: File | null | undefined): string | null {
     return "Logo must be 1MB or smaller.";
   }
   return null;
+}
+
+export function isValidUrl(value: string): boolean {
+  return URL_REGEX.test(value.trim());
+}
+
+export function isValidCustomDomain(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return false;
+  }
+  if (trimmed.includes("/") || trimmed.includes(" ")) return false;
+  return FQDN_REGEX.test(trimmed);
+}
+
+export interface AmountBounds {
+  min?: number;
+  max?: number;
+  integer?: boolean;
+}
+
+export function isValidAmount(
+  raw: string | number,
+  bounds: AmountBounds = {},
+): boolean {
+  const value = typeof raw === "number" ? raw : Number(String(raw).trim());
+  if (!Number.isFinite(value)) return false;
+  if (bounds.integer !== false && !Number.isInteger(value)) return false;
+  if (bounds.min !== undefined && value < bounds.min) return false;
+  if (bounds.max !== undefined && value > bounds.max) return false;
+  return value > 0;
+}
+
+export function isValidMessageBody(value: string, max = 1600): boolean {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= max;
+}
+
+export function isValidTemplateName(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= 80;
 }

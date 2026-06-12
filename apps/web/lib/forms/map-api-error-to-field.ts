@@ -8,9 +8,9 @@ export function mapApiErrorToField(
   err: unknown,
   hints: readonly string[],
 ): string | null {
-  if (!(err instanceof ApiError)) return null;
+  if (!(err instanceof ApiError) || !err.body) return null;
 
-  const details: unknown = err.body.details;
+  const details: unknown = err.body.details || err.body.error?.details;
   if (isPlainObject(details)) {
     const direct = details["field"];
     if (typeof direct === "string" && hints.includes(direct)) {
@@ -30,16 +30,19 @@ export function mapApiErrorToField(
     }
   }
 
-  const code: unknown = err.body.code;
+  const code: unknown = err.body.code || err.body.error?.code;
   if (typeof code === "string") {
     const matched = hints.find((hint) => hint.toLowerCase() === code.toLowerCase());
     if (matched) return matched;
   }
 
-  const message = err.body.message.toLowerCase();
-  for (const hint of hints) {
-    const needle = hint.toLowerCase();
-    if (message.includes(needle)) return hint;
+  const rawMessage = err.body.message || err.body.error?.message;
+  const message = typeof rawMessage === "string" ? rawMessage.toLowerCase() : "";
+  if (message) {
+    for (const hint of hints) {
+      const needle = hint.toLowerCase();
+      if (message.includes(needle)) return hint;
+    }
   }
 
   return null;

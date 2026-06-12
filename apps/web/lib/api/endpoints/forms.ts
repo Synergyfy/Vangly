@@ -11,6 +11,25 @@ import type {
   UpdateFormInput,
 } from "@/types/api/teams";
 
+export type FormsScope = 'org' | 'location' | 'me';
+
+export interface ListFormsScopeParams {
+  scope?: FormsScope;
+  page?: number;
+  per_page?: number;
+  status?: string;
+  q?: string;
+}
+
+export async function listForms(
+  params: ListFormsScopeParams = {},
+): Promise<PaginatedResponse<FormEntity>> {
+  const { data } = await api.get<PaginatedResponse<FormEntity>>('/api/forms', {
+    params,
+  });
+  return data;
+}
+
 export async function listTeamForms(
   teamId: string,
   params: ListFormsParams = {},

@@ -1,11 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsFQDN,
-  IsIn,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsFQDN, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCustomDomainDto {
   @ApiProperty({ example: 'forms.acme.org' })

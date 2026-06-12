@@ -4,7 +4,6 @@ import type {
   ForgotPinInput,
   ForgotPinResponse,
   LoginInput,
-  LogoutInput,
   ResetPinInput,
   ResetPinResponse,
   User,
@@ -20,8 +19,11 @@ export async function me(): Promise<User> {
   return data;
 }
 
-export async function logout(input: LogoutInput = {}): Promise<void> {
-  await api.post<void>("/api/auth/logout", input);
+export async function logout(): Promise<void> {
+  // The refresh cookie is sent automatically via withCredentials.
+  // The server reads req.cookies.vangly_refresh to revoke the family,
+  // then clears both cookies via Set-Cookie headers.
+  await api.post<void>("/api/auth/logout", {});
 }
 
 export async function forgotPin(input: ForgotPinInput): Promise<ForgotPinResponse> {

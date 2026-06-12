@@ -4,227 +4,448 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
+import { useFieldErrors } from "@/lib/forms/use-field-errors";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
+import { toast } from "sonner";
+import {
+  useCreateInvite,
+  useDeleteInvite,
+  useInvitesList,
+  useShareInvite,
+  useUpdateInvite,
+} from "@/services/invites";
+import { useLocationsList } from "@/services/manage-organization";
 import {
   Link as LinkIcon,
   Plus,
   Copy,
   Trash2,
-  Globe,
   MapPin,
   Share2,
-  ExternalLink,
-  Search,
-  Check,
+  Loader2,
+  Power,
+  X,
 } from "lucide-react";
 import "../main.css";
 
 export default function InviteesPage() {
+  const invitesQuery = useInvitesList();
+  const locationsQuery = useLocationsList();
+  const createInvite = useCreateInvite();
+  const updateInvite = useUpdateInvite();
+  const deleteInvite = useDeleteInvite();
+  const shareInvite = useShareInvite();
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [isCopied, setIsCopied] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [shareFor, setShareFor] = useState<{
+    id: string;
+    code: string;
+  } | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newMaxUses, setNewMaxUses] = useState("100");
+  const [shareChannel, setShareChannel] = useState<"sms" | "email">("sms");
+  const [shareRecipient, setShareRecipient] = useState("");
 
-  const [inviteLinks, setInviteLinks] = useState([
-    {
-      id: "main",
-      name: "Main Organization Invite",
-      url: "vangly.com/invite",
-      type: "Global",
-      usage: "Social Media / Flyers",
-      location: "All Locations",
-      hits: 1240,
-    },
-    {
-      id: "location-1",
-      name: "Downtown Outreach",
-      url: "vangly.com/invite/downtown",
-      type: "Location",
-      usage: "Local Outreach",
-      location: "HQ Location",
-      hits: 450,
-    },
-  ]);
+  const { errors, setError, clearAll } = useFieldErrors();
+  const isSaving = createInvite.isPending || shareInvite.isPending;
 
-  const [newLink, setNewLink] = useState({
-    name: "",
-    location: "All Locations",
-    usage: "",
-  });
+  const invites = invitesQuery.data ?? [];
+  const locations = locationsQuery.data?.data ?? [];
 
-  const branches = [
-    "HQ Location",
-    "Northside Location",
-    "Westend Center",
-    "Southpark Office",
-  ];
+  const filtered = invites.filter((i) =>
+    searchTerm
+      ? i.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (i.location_id ?? "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      : true,
+  );
 
-  const handleCopy = (url: string, id: string) => {
-    navigator.clipboard.writeText(url);
-    setIsCopied(id);
-    setTimeout(() => setIsCopied(null), 2000);
+  const locationName = (id?: string) =>
+    locations.find((l) => l.id === id)?.name ?? "All Locations";
+
+  const handleCopy = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied.");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not copy link."));
+    }
   };
 
-  const handleCreateLink = () => {
-    const slug = newLink.name.toLowerCase().replace(/\s+/g, "-");
-    const branchSlug = newLink.location === "All Locations" ? "" : `/${newLink.location.toLowerCase().split(" ")[0]}`;
-    const generatedUrl = `vangly.com/invite${branchSlug}/${slug}`;
+  const handleToggleStatus = async (id: string, current: string) => {
+    const next = current === "active" ? "revoked" : "active";
+    try {
+      await updateInvite.mutateAsync({ id, input: { status: next } });
+      toast.success(`Invite link ${next}.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not update invite link."));
+    }
+  };
 
-    const link = {
-      id: Math.random().toString(),
-      name: newLink.name,
-      url: generatedUrl,
-      type: newLink.location === "All Locations" ? "Global" : "Location",
-      usage: newLink.usage || "General Outreach",
-      location: newLink.location,
-      hits: 0,
-    };
+  const handleDelete = async (id: string, code: string) => {
+    if (!window.confirm(`Delete invite link "${code}"?`)) return;
+    try {
+      await deleteInvite.mutateAsync(id);
+      toast.success("Invite link deleted.");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not delete invite link."));
+    }
+  };
 
-    setInviteLinks([link, ...inviteLinks]);
-    setNewLink({ name: "", location: "All Locations", usage: "" });
+  const resetForm = () => {
+    setNewName("");
+    setNewMaxUses("100");
+    clearAll();
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateModalOpen(false);
+    setTimeout(resetForm, 250);
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearAll();
+    if (!newName.trim()) {
+      setError("name", "Name is required.");
+      return;
+    }
+    const max = Number(newMaxUses);
+    if (!Number.isInteger(max) || max < 1) {
+      setError("maxUses", "Max uses must be a positive number.");
+      return;
+    }
+    try {
+      await createInvite.mutateAsync({ max_uses: max });
+      toast.success(`Invite link "${newName.trim()}" created.`);
+      setShowSuccess(true);
+      handleCloseCreate();
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not create invite link."));
+    }
+  };
+
+  const handleShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shareFor) return;
+    clearAll();
+    if (!shareRecipient.trim()) {
+      setError("recipient", "Recipient is required.");
+      return;
+    }
+    try {
+      await shareInvite.mutateAsync({
+        id: shareFor.id,
+        input: { channel: shareChannel, recipient: shareRecipient.trim() },
+      });
+      toast.success(`Invite shared via ${shareChannel}.`);
+      setShareFor(null);
+      setShareRecipient("");
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not share invite link."));
+    }
   };
 
   return (
     <div className="hq-dashboard-premium">
       <div className="page-header flex-between">
-        <div className="header-main">
-          <div className="header-badge">Outreach Tools</div>
-          <h1>Public Invite Links</h1>
-          <p>Create and manage public URLs for organization-wide and location-specific outreach.</p>
+        <div>
+          <div className="header-badge">Invite Management</div>
+          <h1>Invite Links</h1>
+          <p>
+            Create reusable invite links for your organization and locations.
+          </p>
         </div>
-        <div className="header-actions">
-           <div className="link-count-pill">
-              <LinkIcon size={14} />
-              <span>{inviteLinks.length} Active Links</span>
-           </div>
-        </div>
+        <Button
+          className="btn-premium"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          <Plus size={18} /> Create Invite Link
+        </Button>
       </div>
 
-      <div className="invitees-content-grid">
-        <div className="invitees-main-col">
-          <Card className="link-generator-card-premium">
-            <div className="card-header-premium">
-              <div className="icon-box-small blue">
-                <Plus size={18} />
-              </div>
-              <h3>Generate New Invite Link</h3>
-            </div>
-            <div className="generator-form">
-              <div className="form-group-premium">
-                <label>Campaign / Link Name</label>
-                <Input 
-                  placeholder="e.g. Easter Special 2026"
-                  value={newLink.name}
-                  onChange={(e) => setNewLink({ ...newLink, name: e.target.value })}
-                />
-              </div>
-              <div className="form-row-premium">
-                <div className="form-group-premium">
-                  <label>Target Location</label>
-                  <select 
-                    className="premium-select"
-                    value={newLink.location}
-                    onChange={(e) => setNewLink({ ...newLink, location: e.target.value })}
+      <Card
+        className="filter-card"
+        style={{ marginBottom: "20px", padding: "20px" }}
+      >
+        <Input
+          label="Search"
+          placeholder="Code or location..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </Card>
+
+      <Card className="table-card">
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Location</th>
+                <th>Uses</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invitesQuery.isLoading && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{ textAlign: "center", padding: "32px" }}
                   >
-                    <option value="All Locations">Main Organization (Global)</option>
-                    {branches.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
-                <div className="form-group-premium">
-                  <label>Intended Usage</label>
-                  <Input 
-                    placeholder="e.g. WhatsApp / Instagram"
-                    value={newLink.usage}
-                    onChange={(e) => setNewLink({ ...newLink, usage: e.target.value })}
-                  />
-                </div>
-              </div>
-              <Button 
-                className="btn-premium full-width"
-                disabled={!newLink.name}
-                onClick={handleCreateLink}
-              >
-                <Share2 size={18} /> Generate & Activate Link
-              </Button>
-            </div>
-          </Card>
-
-          <div className="links-search-bar">
-            <div className="search-input-wrapper">
-              <Search size={18} className="search-icon" />
-              <input 
-                type="text" 
-                placeholder="Search invite links..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="links-display-grid">
-            {inviteLinks
-              .filter(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map((link) => (
-              <Card key={link.id} className="invite-link-card">
-                <div className="link-card-body">
-                  <div className="link-type-icon">
-                    {link.type === "Global" ? <Globe size={24} /> : <MapPin size={24} />}
-                  </div>
-                  <div className="link-details">
-                    <div className="link-header-row">
-                      <h4>{link.name}</h4>
-                      <span className={`type-tag ${link.type.toLowerCase()}`}>{link.type}</span>
-                    </div>
-                    <code className="link-url-display">{link.url}</code>
-                    <div className="link-meta-row">
-                      <span>{link.location}</span>
-                      <span className="dot">•</span>
-                      <span>{link.usage}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="link-card-footer">
-                  <div className="link-stats">
-                    <strong>{link.hits.toLocaleString()}</strong>
-                    <span>Visits</span>
-                  </div>
-                  <div className="link-actions">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className={isCopied === link.id ? "btn-success" : ""}
-                      onClick={() => handleCopy(link.url, link.id)}
+                    <Loader2
+                      size={20}
+                      className="spinner"
+                      style={{ display: "inline", verticalAlign: "middle" }}
+                    />{" "}
+                    Loading invite links…
+                  </td>
+                </tr>
+              )}
+              {invitesQuery.isError && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{
+                      textAlign: "center",
+                      padding: "32px",
+                      color: "var(--danger)",
+                    }}
+                  >
+                    Could not load invite links.
+                  </td>
+                </tr>
+              )}
+              {!invitesQuery.isLoading &&
+                !invitesQuery.isError &&
+                filtered.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{ textAlign: "center", padding: "32px" }}
                     >
-                      {isCopied === link.id ? <Check size={16} /> : <Copy size={16} />}
-                      <span>{isCopied === link.id ? "Copied" : "Copy"}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-danger" onClick={() => setInviteLinks(inviteLinks.filter(l => l.id !== link.id))}>
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                      {searchTerm
+                        ? "No invite links match your search."
+                        : "No invite links yet. Click Create Invite Link to get started."}
+                    </td>
+                  </tr>
+                )}
+              {filtered.map((inv) => (
+                <tr key={inv.id}>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <LinkIcon size={14} color="var(--text-tertiary)" />
+                      <code className="monospace">{inv.code}</code>
+                    </div>
+                  </td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <MapPin size={12} /> {locationName(inv.location_id)}
+                    </div>
+                  </td>
+                  <td>
+                    {inv.uses} / {inv.max_uses}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge status-${inv.status}`}
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td>{new Date(inv.created_at).toLocaleDateString()}</td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        justifyContent: "flex-end",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(inv.url)}
+                        title="Copy link"
+                        aria-label="Copy invite link"
+                      >
+                        <Copy size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setShareFor({ id: inv.id, code: inv.code })
+                        }
+                        title="Share"
+                        aria-label="Share invite link"
+                      >
+                        <Share2 size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStatus(inv.id, inv.status)}
+                        disabled={updateInvite.isPending}
+                        title={
+                          inv.status === "active"
+                            ? "Revoke"
+                            : "Activate"
+                        }
+                        aria-label={
+                          inv.status === "active"
+                            ? "Revoke invite link"
+                            : "Activate invite link"
+                        }
+                      >
+                        <Power size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(inv.id, inv.code)}
+                        disabled={deleteInvite.isPending}
+                        aria-label="Delete invite link"
+                        style={{ color: "var(--danger)" }}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </Card>
 
-        <div className="invitees-side-col">
-          <Card className="outreach-tips-card">
-            <h3>Outreach Tips</h3>
-            <ul className="tips-list">
-              <li>
-                <strong>Main Link:</strong> Use <code>vangly.com/invite</code> for your main website and social media bios.
-              </li>
-              <li>
-                <strong>Location Links:</strong> Create specific links for local neighborhood outreach to track location performance.
-              </li>
-              <li>
-                <strong>QR Codes:</strong> You can download QR codes for these links to print on flyers and posters.
-              </li>
-            </ul>
-            <Button variant="outline" className="full-width">
-              <ExternalLink size={16} /> Download Marketing Kit
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreate}
+        title="Create Invite Link"
+      >
+        <form onSubmit={handleCreate} className="form-stack-premium">
+          <Input
+            label="Name (display only)"
+            placeholder="e.g. Workers Registration"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            error={errors.name}
+            required
+            autoFocus
+          />
+          <Input
+            label="Max Uses"
+            type="number"
+            placeholder="100"
+            value={newMaxUses}
+            onChange={(e) => setNewMaxUses(e.target.value)}
+            error={errors.maxUses}
+            required
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleCloseCreate}
+              disabled={isSaving}
+            >
+              <X size={16} style={{ marginRight: "6px" }} />
+              Cancel
             </Button>
-          </Card>
-        </div>
-      </div>
+            <Button type="submit" className="btn-premium" disabled={isSaving}>
+              {isSaving && (
+                <Loader2
+                  size={16}
+                  className="spinner"
+                  style={{ marginRight: "8px" }}
+                />
+              )}
+              {createInvite.isPending ? "Creating…" : "Create Link"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(shareFor)}
+        onClose={() => setShareFor(null)}
+        title={shareFor ? `Share "${shareFor.code}"` : ""}
+      >
+        <form onSubmit={handleShare} className="form-stack-premium">
+          <div className="input-wrapper input-full">
+            <label className="input-label">Channel</label>
+            <select
+              className="input-field select-field"
+              value={shareChannel}
+              onChange={(e) =>
+                setShareChannel(e.target.value as "sms" | "email")
+              }
+            >
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+          <Input
+            label={
+              shareChannel === "sms" ? "Recipient phone (E.164)" : "Recipient email"
+            }
+            placeholder={shareChannel === "sms" ? "+12345678901" : "user@example.com"}
+            value={shareRecipient}
+            onChange={(e) => setShareRecipient(e.target.value)}
+            error={errors.recipient}
+            required
+            autoFocus
+          />
+          <Button type="submit" className="btn-premium" fullWidth disabled={isSaving}>
+            {isSaving && (
+              <Loader2 size={16} className="spinner" style={{ marginRight: "8px" }} />
+            )}
+            Share Invite
+          </Button>
+        </form>
+      </Modal>
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Invite link created"
+        description="Your reusable invite link is ready to share."
+        primaryAction={{
+          label: "Okay",
+          onClick: () => setShowSuccess(false),
+        }}
+        icon="shield"
+      />
     </div>
   );
 }

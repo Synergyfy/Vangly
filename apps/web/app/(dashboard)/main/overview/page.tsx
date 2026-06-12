@@ -8,301 +8,434 @@ import {
   Users,
   Send,
   CheckCircle2,
-  TrendingUp,
-  ArrowUpRight,
   MoreHorizontal,
-  Search,
-  Eye,
-  Edit2,
-  Trash2,
-  ExternalLink,
-  ChevronLeft,
   Filter,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  Loader2,
+  Eye,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  useLocationsList,
+} from "@/services/manage-organization";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
 import "../main.css";
 
 export default function HQOverviewPage() {
   const router = useRouter();
   const [activeBranchId, setActiveBranchId] = useState<string | null>(null);
-  
-  const [branchStats] = useState([
-    {
-      id: "1",
-      name: "HQ Location (Downtown)",
-      workers: 45,
-      invites: 650,
-      attended: 180,
-      status: "Active",
+
+  const locationsQuery = useLocationsList({ per_page: 100 });
+
+  const locations = locationsQuery.data?.data ?? [];
+
+  const totals = locations.reduce(
+    (acc, l) => {
+      acc.teams += l.stats.teams;
+      acc.members += l.stats.members;
+      acc.submissions += l.stats.submissions_30d;
+      return acc;
     },
-    {
-      id: "2",
-      name: "Northside Location",
-      workers: 30,
-      invites: 400,
-      attended: 85,
-      status: "Active",
-    },
-    {
-      id: "3",
-      name: "Westend Center",
-      workers: 25,
-      invites: 250,
-      attended: 40,
-      status: "Warning",
-    },
-    {
-      id: "4",
-      name: "Southpark Office",
-      workers: 25,
-      invites: 150,
-      attended: 15,
-      status: "Inactive",
-    },
-  ]);
+    { teams: 0, members: 0, submissions: 0 },
+  );
 
   const toggleDropdown = (id: string) => {
     setActiveBranchId(activeBranchId === id ? null : id);
   };
 
-  const handleAction = (action: string, location: any) => {
+  const handleView = (id: string, name: string) => {
     setActiveBranchId(null);
-    switch (action) {
-      case "view":
-        router.push(`/main/manage-organization/location?id=${location.id}&name=${encodeURIComponent(location.name)}`);
-        break;
-      default:
-        break;
-    }
+    router.push(
+      `/main/manage-organization/location?id=${id}&name=${encodeURIComponent(
+        name,
+      )}`,
+    );
   };
 
   return (
     <div className="hq-dashboard-premium">
       <header className="dashboard-header-premium">
         <div className="header-left">
-          <Button variant="ghost" size="sm" onClick={() => router.back()} className="back-btn-pill" style={{ marginBottom: '12px' }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="back-btn-pill"
+          >
             <ArrowLeft size={16} /> Back
           </Button>
           <h1>Location Performance</h1>
           <p>Detailed growth analytics across all organization hubs</p>
         </div>
-        <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
-          <Button variant="outline" size="sm" style={{ padding: '8px' }}>
+        <div
+          className="header-actions header-actions-mobile-hidden"
+          style={{ display: "flex", gap: "8px" }}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            style={{ padding: "8px" }}
+            aria-label="Filter"
+          >
             <Filter size={18} />
           </Button>
-          <Button variant="outline" size="sm" style={{ padding: '8px' }}>
+          <Button
+            variant="outline"
+            size="sm"
+            style={{ padding: "8px" }}
+            aria-label="Download"
+          >
             <Download size={18} />
           </Button>
         </div>
       </header>
 
       <div className="dashboard-main-content">
-        {/* Quick Actions - Now inside Overview */}
-        <section className="quick-actions-section" style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 className="section-title" style={{ margin: 0 }}>Management Actions</h2>
+        <section
+          className="quick-actions-section"
+          style={{ marginBottom: "32px" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+            }}
+          >
+            <h2 className="section-title" style={{ margin: 0 }}>
+              Management Actions
+            </h2>
           </div>
-          <div className="quick-actions-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+          <div
+            className="quick-actions-grid-mobile"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+              gap: "12px",
+            }}
+          >
             {[
-              { label: "Add Location", icon: Building2, path: "/main/manage-organization/new", color: "#3b82f6" },
-              { label: "New Message", icon: Send, path: "/main/messages", color: "#8b5cf6" },
-              { label: "Setup Teams", icon: Users, path: "/main/manage-organization", color: "#f59e0b" },
-              { label: "Buy Credits", icon: CheckCircle2, path: "/main/wallet", color: "#10b981" },
+              {
+                label: "Add Location",
+                icon: Building2,
+                path: "/main/manage-organization/new",
+                color: "#3b82f6",
+              },
+              {
+                label: "New Message",
+                icon: Send,
+                path: "/main/messages",
+                color: "#8b5cf6",
+              },
+              {
+                label: "Setup Teams",
+                icon: Users,
+                path: "/main/manage-organization",
+                color: "#f59e0b",
+              },
+              {
+                label: "Buy Credits",
+                icon: CheckCircle2,
+                path: "/main/wallet",
+                color: "#10b981",
+              },
             ].map((action, i) => (
-              <button 
-                key={i} 
-                className="action-btn-mobile glass-morphism" 
+              <button
+                key={i}
+                className="action-btn-mobile glass-morphism"
                 onClick={() => router.push(action.path)}
-                style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+                style={{
+                  background: "white",
+                  border: "1px solid var(--border-light)",
+                  borderRadius: "16px",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
               >
-                <div className="action-icon" style={{ color: action.color, background: `${action.color}10`, width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div
+                  className="action-icon"
+                  style={{
+                    color: action.color,
+                    background: `${action.color}10`,
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <action.icon size={20} />
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{action.label}</span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  {action.label}
+                </span>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Global Stats Summary */}
-        <div className="content-section" style={{ marginBottom: '32px' }}>
-          <h2 className="section-title" style={{ marginBottom: '16px' }}>Growth Analytics</h2>
+        <div className="content-section" style={{ marginBottom: "32px" }}>
+          <h2 className="section-title" style={{ marginBottom: "16px" }}>
+            Growth Analytics
+          </h2>
           <div className="stats-grid-premium">
-            {[
-              {
-                label: "Total Locations",
-                value: "4",
-                icon: Building2,
-                color: "blue",
-                trend: "+1 this month",
-              },
-              {
-                label: "Total Workers",
-                value: "125",
-                icon: Users,
-                color: "purple",
-                trend: "+12% vs last month",
-              },
-              {
-                label: "Total Invited",
-                value: "1,450",
-                icon: Send,
-                color: "orange",
-                trend: "+240 this week",
-              },
-              {
-                label: "Total Attended",
-                value: "320",
-                icon: CheckCircle2,
-                color: "green",
-                trend: "22% conversion",
-              },
-            ].map((stat, i) => (
-              <Card key={i} className="stat-card-premium glass-morphism">
-                <div className={`icon-box ${stat.color}`}>
-                  <stat.icon size={20} />
+            <Card className="stat-card-premium glass-morphism">
+              <div className="icon-box blue">
+                <Building2 size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-label">Total Locations</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">
+                    {locationsQuery.isLoading ? "…" : locations.length}
+                  </span>
                 </div>
-                <div className="stat-content">
-                  <span className="stat-label">{stat.label}</span>
-                  <div className="stat-value-row">
-                    <span className="stat-value">{stat.value}</span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '4px' }}>{stat.trend}</div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-tertiary)",
+                    marginTop: "4px",
+                  }}
+                >
+                  {locations.filter((l) => l.is_hq).length} HQ
                 </div>
-              </Card>
-            ))}
+              </div>
+            </Card>
+            <Card className="stat-card-premium glass-morphism">
+              <div className="icon-box purple">
+                <Users size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-label">Total Workers</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">
+                    {locationsQuery.isLoading ? "…" : totals.members}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-tertiary)",
+                    marginTop: "4px",
+                  }}
+                >
+                  Across all locations
+                </div>
+              </div>
+            </Card>
+            <Card className="stat-card-premium glass-morphism">
+              <div className="icon-box orange">
+                <Send size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-label">Form Submissions (30d)</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">
+                    {locationsQuery.isLoading ? "…" : totals.submissions}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-tertiary)",
+                    marginTop: "4px",
+                  }}
+                >
+                  Last 30 days
+                </div>
+              </div>
+            </Card>
+            <Card className="stat-card-premium glass-morphism">
+              <div className="icon-box green">
+                <CheckCircle2 size={20} />
+              </div>
+              <div className="stat-content">
+                <span className="stat-label">Total Teams</span>
+                <div className="stat-value-row">
+                  <span className="stat-value">
+                    {locationsQuery.isLoading ? "…" : totals.teams}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-tertiary)",
+                    marginTop: "4px",
+                  }}
+                >
+                  Active groups
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
 
-        <Card className="table-card-premium" style={{ marginTop: '0' }}>
+        <Card className="table-card-premium" style={{ marginTop: "0" }}>
           <div className="mobile-list-view">
-            {branchStats.map((location) => {
-              const conversion =
-                Math.round((location.attended / location.invites) * 100) || 0;
-              return (
-                <div key={location.id} className="location-performance-card" onClick={() => handleAction('view', location)}>
-                  <div className="location-card-top">
-                    <div className="location-card-identity">
-                      <span className="location-card-name">{location.name}</span>
-                      <span className={`status-pill ${location.status.toLowerCase()}`}>
-                        {location.status}
-                      </span>
-                    </div>
-                    <MoreHorizontal size={18} className="text-tertiary" />
+            {locationsQuery.isLoading && (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "32px",
+                  color: "var(--text-tertiary)",
+                }}
+              >
+                <Loader2
+                  size={20}
+                  className="spinner"
+                  style={{ display: "inline", verticalAlign: "middle" }}
+                />{" "}
+                Loading locations…
+              </div>
+            )}
+            {locationsQuery.isError && (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "32px",
+                  color: "var(--danger)",
+                }}
+              >
+                {extractErrorMessage(
+                  locationsQuery.error,
+                  "Could not load locations.",
+                )}
+              </div>
+            )}
+            {!locationsQuery.isLoading &&
+              !locationsQuery.isError &&
+              locations.length === 0 && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "32px",
+                    color: "var(--text-tertiary)",
+                  }}
+                >
+                  No locations yet. Add your first branch to get started.
+                </div>
+              )}
+            {locations.map((location) => (
+              <div
+                key={location.id}
+                className="location-performance-card"
+                onClick={() => handleView(location.id, location.name)}
+              >
+                <div className="location-card-top">
+                  <div className="location-card-identity">
+                    <span className="location-card-name">{location.name}</span>
+                    <span
+                      className={`status-pill ${location.status.toLowerCase()}`}
+                    >
+                      {location.status}
+                    </span>
                   </div>
+                  <MoreHorizontal size={18} className="text-tertiary" />
+                </div>
 
-                  <div className="location-card-stats-grid">
-                    <div className="location-card-stat">
-                      <span className="label">Workers</span>
-                      <span className="value">{location.workers}</span>
-                    </div>
-                    <div className="location-card-stat">
-                      <span className="label">Invites</span>
-                      <span className="value">{location.invites}</span>
-                    </div>
-                    <div className="location-card-stat">
-                      <span className="label">Attendance</span>
-                      <span className="value text-success">{location.attended}</span>
-                    </div>
-                    <div className="location-card-stat">
-                      <span className="label">Conv. Rate</span>
-                      <span className="value">{conversion}%</span>
-                    </div>
+                <div className="location-card-stats-grid">
+                  <div className="location-card-stat">
+                    <span className="label">Workers</span>
+                    <span className="value">{location.stats.members}</span>
                   </div>
-
-                  <div className="location-card-progress">
-                    <div className="progress-track">
-                      <div
-                        className="progress-bar"
-                        style={{ width: `${conversion}%` }}
-                      ></div>
-                    </div>
+                  <div className="location-card-stat">
+                    <span className="label">Teams</span>
+                    <span className="value">{location.stats.teams}</span>
+                  </div>
+                  <div className="location-card-stat">
+                    <span className="label">Submissions</span>
+                    <span className="value text-success">
+                      {location.stats.submissions_30d}
+                    </span>
+                  </div>
+                  <div className="location-card-stat">
+                    <span className="label">Activity</span>
+                    <span className="value">{location.activity}</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
-          {/* Desktop Table View */}
           <div className="table-responsive desktop-only">
             <table className="data-table-premium">
               <thead>
                 <tr>
                   <th>Location Name</th>
-                  <th>Active Workers</th>
-                  <th>Total Invites</th>
-                  <th>Attendance</th>
-                  <th>Conversion</th>
+                  <th>Workers</th>
+                  <th>Teams</th>
+                  <th>Submissions (30d)</th>
+                  <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {branchStats.map((location) => {
-                  const conversion =
-                    Math.round((location.attended / location.invites) * 100) || 0;
-                  return (
-                    <tr key={location.id}>
-                      <td>
-                        <div className="location-info-cell">
-                          <span className="location-name-text">
-                            {location.name}
-                          </span>
+                {locations.map((location) => (
+                  <tr key={location.id}>
+                    <td>
+                      <div className="location-info-cell">
+                        <span className="location-name-text">
+                          {location.name}
+                        </span>
+                        {location.is_hq ? (
                           <span
-                            className={`status-dot ${location.status.toLowerCase()}`}
+                            className="status-dot active"
+                            style={{ marginLeft: "8px" }}
                           >
-                            {location.status}
+                            HQ
                           </span>
-                        </div>
-                      </td>
-                      <td>{location.workers}</td>
-                      <td>{location.invites}</td>
-                      <td className="text-success font-medium">
-                        {location.attended}
-                      </td>
-                      <td>
-                        <div className="conversion-cell">
-                          <div className="mini-progress-bg">
-                            <div
-                              className="mini-progress-fill"
-                              style={{ width: `${conversion}%` }}
-                            ></div>
-                          </div>
-                          <span className="conversion-text">
-                            {conversion}%
-                          </span>
-                        </div>
-                      </td>
-                      <td className="relative">
-                        <button
-                          className="btn-icon-only"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleDropdown(location.id);
-                          }}
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td>{location.stats.members}</td>
+                    <td>{location.stats.teams}</td>
+                    <td className="text-success font-medium">
+                      {location.stats.submissions_30d}
+                    </td>
+                    <td>
+                      <span
+                        className={`status-dot ${location.status.toLowerCase()}`}
+                      >
+                        {location.status}
+                      </span>
+                    </td>
+                    <td className="relative">
+                      <button
+                        className="btn-icon-only"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDropdown(location.id);
+                        }}
+                        aria-label="Actions"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
 
-                        {activeBranchId === location.id && (
-                          <div className="dropdown-panel-premium">
-                            <button
-                              className="dropdown-item"
-                              onClick={() => handleAction("view", location)}
-                            >
-                              <Eye size={14} /> View Details
-                            </button>
-                            <div className="dropdown-divider"></div>
-                            <button className="dropdown-item danger">
-                              <Trash2 size={14} /> Remove
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                      {activeBranchId === location.id && (
+                        <div className="dropdown-panel-premium">
+                          <button
+                            className="dropdown-item"
+                            onClick={() => handleView(location.id, location.name)}
+                          >
+                            <Eye size={14} /> View Details
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

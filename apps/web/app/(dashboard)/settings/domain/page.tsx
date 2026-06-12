@@ -1,73 +1,140 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { SuccessModal } from '@/components/ui/SuccessModal';
+import {
+  Copy,
+  Globe,
+  Loader2,
+} from 'lucide-react';
+import {
+  useDomainsList,
+  useCreateDomain,
+  useVerifyDomain,
+} from '@/services/domains';
+import { useFieldErrors } from '@/lib/forms/use-field-errors';
+import { isValidCustomDomain } from '@/lib/forms/validators';
+import { extractErrorMessage } from '@/lib/forms/extract-error-message';
+import { toast } from 'sonner';
 import './domain.css';
 
+function copyToClipboard(value: string, label: string) {
+  if (typeof navigator !== 'undefined' && navigator.clipboard) {
+    void navigator.clipboard.writeText(value).then(
+      () => toast.success(`${label} copied`),
+      () => toast.error('Could not copy'),
+    );
+  }
+}
+
 export default function CustomDomainPage() {
-  const [step, setStep] = useState(1);
-  const [domain, setDomain] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isSecuring, setIsSecuring] = useState(false);
+  const domainsQuery = useDomainsList();
+  const createDomain = useCreateDomain();
+  const verifyDomain = useVerifyDomain();
 
-  const handleContinue = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep(3);
+  const existingDomain = useMemo(() => domainsQuery.data?.[0] ?? null, [domainsQuery.data]);
+
+  const [step, setStep] = useState<1 | 2 | 3>(existingDomain ? 3 : 1);
+  const [domain, setDomain] = useState(existingDomain?.domain ?? '');
+  const [createdDomainId, setCreatedDomainId] = useState<string | null>(
+    existingDomain?.id ?? null,
+  );
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const { errors, setError, clearAll } = useFieldErrors();
+  const isCreating = createDomain.isPending;
+  const isVerifying = verifyDomain.isPending;
+
+  useEffect(() => {
+    if (existingDomain && existingDomain.status === 'active') {
+      setStep(3);
+      setDomain(existingDomain.domain);
+      setCreatedDomainId(existingDomain.id);
+    }
+  }, [existingDomain]);
+
+  const handleContinue = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    clearAll();
+    if (!isValidCustomDomain(domain)) {
+      setError('domain', 'Use a valid subdomain like connect.myorganization.com.');
+      return;
+    }
+    try {
+      const result = await createDomain.mutateAsync({ domain: domain.trim().toLowerCase() });
+      setCreatedDomainId(result.id);
+      setStep(2);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, 'Could not start domain setup.'));
+    }
   };
 
-  const handleVerify = () => {
-    setIsVerifying(true);
-    // Mock verification delay
-    setTimeout(() => {
-      setIsVerifying(false);
-      setStep(5); // Skip to SSL setup
-      
-      // Auto-start SSL
-      setTimeout(() => {
-        setIsSecuring(true);
-        setTimeout(() => {
-          setIsSecuring(false);
-          setStep(6);
-        }, 2000);
-      }, 500);
-    }, 1500);
+  const handleVerify = async () => {
+    if (!createdDomainId) {
+      toast.error('No domain in progress.');
+      return;
+    }
+    try {
+      const result = await verifyDomain.mutateAsync(createdDomainId);
+      if (result.status === 'active') {
+        setStep(3);
+        setShowSuccess(true);
+      } else {
+        toast.error('Domain is not yet active. Confirm your DNS and try again.');
+        setStep(2);
+      }
+    } catch (err) {
+      toast.error(extractErrorMessage(err, 'Verification failed.'));
+    }
   };
+
+  const verificationToken = existingDomain?.verification_token ?? '';
 
   return (
     <div className="domain-settings-page">
       <div className="page-header">
         <h1>Custom Domain</h1>
-        <p>Connect your own domain to white-label your organization's evangelism system.</p>
+        <p>Connect your own domain to white-label your organization evangelism system.</p>
       </div>
 
       <div className="onboarding-container">
         {step === 1 && (
           <Card className="onboarding-card glass">
             <h2>Use Your Own Domain</h2>
-            <p className="subtitle">Connect your organization domain so members see your brand instead of Invitely.</p>
+            <p className="subtitle">Connect your organization domain so members see your brand instead of Vangly.</p>
             <form onSubmit={handleContinue}>
-              <Input 
-                label="Custom Domain" 
-                placeholder="e.g. connect.myorganization.com" 
+              <Input
+                label="Custom Domain"
+                placeholder="e.g. connect.myorganization.com"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                required
+                onChange={(ev) => {
+                  setDomain(ev.target.value);
+                  if (errors['domain']) clearAll();
+                }}
+                error={errors['domain']}
+                disabled={isCreating}
               />
               <div className="onboarding-actions">
-                <Button type="submit" fullWidth disabled={!domain}>Continue</Button>
+                <Button type="submit" fullWidth disabled={isCreating || !domain}>
+                  {isCreating ? 'Saving...' : 'Continue'}
+                </Button>
               </div>
             </form>
           </Card>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <Card className="onboarding-card glass">
             <div className="step-indicator">DNS Setup Required</div>
             <h2>Configure Your DNS</h2>
-            <p className="subtitle">To connect your domain, please add the following CNAME record in your domain provider's settings (e.g., GoDaddy, Namecheap).</p>
-            
+            <p className="subtitle">
+              Add the following records at your domain provider (e.g. GoDaddy, Namecheap).
+            </p>
+
             <div className="dns-table">
               <div className="dns-row header">
                 <div>Type</div>
@@ -76,41 +143,78 @@ export default function CustomDomainPage() {
               </div>
               <div className="dns-row">
                 <div className="badge">CNAME</div>
-                <div className="monospace">connect</div>
-                <div className="monospace">app.invitely.com</div>
+                <div
+                  className="monospace"
+                  onClick={() => copyToClipboard(domain.split('.')[0] ?? 'connect', 'Host')}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {domain.split('.')[0] || 'connect'} <Copy size={12} />
+                </div>
+                <div
+                  className="monospace"
+                  onClick={() => copyToClipboard('app.vangly.com', 'Value')}
+                  role="button"
+                  tabIndex={0}
+                >
+                  app.vangly.com <Copy size={12} />
+                </div>
               </div>
+              {verificationToken && (
+                <div className="dns-row">
+                  <div className="badge">TXT</div>
+                  <div className="monospace">_vangly</div>
+                  <div
+                    className="monospace"
+                    onClick={() => copyToClipboard(verificationToken, 'Verification token')}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {verificationToken} <Copy size={12} />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="onboarding-actions">
-              <Button onClick={handleVerify} fullWidth disabled={isVerifying}>
-                {isVerifying ? 'Verifying...' : 'I have added this'}
+              <Button
+                onClick={handleVerify}
+                fullWidth
+                disabled={isVerifying}
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 size={18} className="spin-slow" style={{ marginRight: '8px' }} />
+                    Verifying...
+                  </>
+                ) : (
+                  'I have added this'
+                )}
               </Button>
             </div>
           </Card>
         )}
 
-        {step === 5 && (
-          <Card className="onboarding-card glass text-center">
-            <div className="loader-container">
-              <div className="spinner"></div>
-            </div>
-            <h2>{isSecuring ? 'Securing your domain...' : 'Verifying DNS...'}</h2>
-            <p className="subtitle">Automatically generating your SSL certificate (Let's Encrypt).</p>
-          </Card>
-        )}
-
-        {step === 6 && (
+        {step === 3 && (
           <Card className="onboarding-card glass text-center success-card">
-            <div className="success-icon">🎉</div>
+            <div className="success-icon">
+              <Globe size={36} />
+            </div>
             <h2>Your domain is now connected!</h2>
             <p className="subtitle">Everything is set up. Your new white-labeled link is ready.</p>
-            
+
             <div className="domain-link-box">
-              <span className="domain-url">https://{domain}</span>
+              <span className="domain-url">https://{domain || existingDomain?.domain}</span>
             </div>
 
             <div className="onboarding-actions">
-              <Button variant="primary" fullWidth onClick={() => window.open(`https://${domain}`, '_blank')}>Open My Site</Button>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => window.open(`https://${domain || existingDomain?.domain}`, '_blank')}
+              >
+                Open My Site
+              </Button>
             </div>
           </Card>
         )}
@@ -119,20 +223,30 @@ export default function CustomDomainPage() {
       <Card className="status-panel">
         <div className="status-header">
           <h3>Domain Status</h3>
-          <span className={`status-pill ${step === 6 ? 'active' : 'inactive'}`}>
-            {step === 6 ? 'Active ✅' : 'Not Connected'}
+          <span className={`status-pill ${step === 3 ? 'active' : 'inactive'}`}>
+            {step === 3 ? 'Active' : 'Not Connected'}
           </span>
         </div>
-        {step === 6 && (
+        {step === 3 && (
           <div className="status-details">
-            <p><strong>Domain:</strong> {domain}</p>
+            <p><strong>Domain:</strong> {domain || existingDomain?.domain}</p>
             <div className="status-actions">
-              <Button variant="ghost" size="sm">Edit</Button>
-              <Button variant="ghost" size="sm" className="text-danger">Remove</Button>
+              <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
+                Change
+              </Button>
             </div>
           </div>
         )}
       </Card>
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        icon="shield"
+        title="Domain Connected"
+        description={`${domain} is now serving your organization.`}
+        primaryAction={{ label: 'Okay' }}
+      />
     </div>
   );
 }

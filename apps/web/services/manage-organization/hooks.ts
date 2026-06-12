@@ -5,6 +5,11 @@ import { moQueries } from "@/lib/api/queries/manage-organization.options";
 import { moKeys } from "@/lib/api/queries/manage-organization.keys";
 import { moMutations } from "@/lib/api/mutations/manage-organization.mutations";
 import { deleteMember as deleteMemberFn } from "@/lib/api/endpoints/members";
+import {
+  getLocationBrand,
+  updateLocationBrand,
+} from "@/lib/api/endpoints/organizations";
+import type { UpdateLocationBrandInput } from "@/types/api/locations";
 import type {
   DashboardQueryParams,
   ListLocationsParams,
@@ -81,6 +86,28 @@ export function useSetLocationPhoto() {
       qc.setQueryData(moKeys.locations.detail(vars.id), (prev) =>
         prev ? { ...prev, photo_url: result.photo_url } : prev,
       );
+    },
+  });
+}
+
+export function useLocationBrand(locationId: string | undefined) {
+  return useQuery({
+    queryKey: ["locations", locationId ?? "", "brand"] as const,
+    queryFn: () => getLocationBrand(locationId ?? ""),
+    enabled: Boolean(locationId),
+    staleTime: 30_000,
+  });
+}
+
+export function useUpdateLocationBrand() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: {
+      locationId: string;
+      input: UpdateLocationBrandInput;
+    }) => updateLocationBrand(vars.locationId, vars.input),
+    onSuccess: (data, vars) => {
+      qc.setQueryData(["locations", vars.locationId, "brand"], data);
     },
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -13,10 +13,25 @@ import {
   HelpCircle,
   X,
   AlertCircle,
+  Upload,
+  Trash2,
 } from "lucide-react";
 import { useCreateLocation } from "@/services/manage-organization";
 import { ApiError } from "@/lib/api/client";
 import "../management.css";
+
+function isValidPhotoUrl(value: string): string | null {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return "URL must use http or https.";
+    }
+    return null;
+  } catch {
+    return "Enter a valid URL (e.g. https://cdn.vangly.app/...).";
+  }
+}
 
 const Tooltip = ({ content }: { content: string }) => {
   const [show, setShow] = useState(false);
@@ -77,8 +92,11 @@ const ISO_COUNTRIES = [
 export default function NewLocationPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoUrlError, setPhotoUrlError] = useState<string | null>(null);
   const createLocation = useCreateLocation();
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const apiError =
     createLocation.error instanceof ApiError ? createLocation.error : null;
@@ -88,9 +106,40 @@ export default function NewLocationPage() {
       ? createLocation.error.message
       : null);
 
+  const handlePhotoFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPhotoPreview(url);
+    setPhotoUrlError(null);
+  };
+
+  const handleRemovePhoto = () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoPreview(null);
+    setForm((f) => ({ ...f, photo_url: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handlePhotoUrlChange = (value: string) => {
+    setForm((f) => ({ ...f, photo_url: value }));
+    if (value) {
+      setPhotoUrlError(isValidPhotoUrl(value));
+    } else {
+      setPhotoUrlError(null);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (createLocation.isPending) return;
+
+    const urlErr = isValidPhotoUrl(form.photo_url.trim());
+    if (urlErr) {
+      setPhotoUrlError(urlErr);
+      return;
+    }
+
     createLocation.mutate(
       {
         name: form.name.trim(),
@@ -122,11 +171,11 @@ export default function NewLocationPage() {
           onClick={() => router.back()}
           className="back-btn-header"
         >
-          <ArrowLeft size={18} /> Back to Network
+          <ArrowLeft size={18} /> Back
         </Button>
         <h1 className="mobile-title">Create New Location</h1>
         <p className="mobile-subtitle">
-          Establish a new physical location for your organization community.
+          Establish a new location for your organization.
         </p>
       </div>
 
@@ -135,9 +184,9 @@ export default function NewLocationPage() {
           <Card className="success-full-card">
             <div className="success-icon-large">🎉</div>
             <h2>Location Established!</h2>
-            <p>You have successfully added a new location to your network.</p>
+            <p>Successfully added a new location to your network.</p>
             <p className="redirect-hint">
-              Taking you back to your network overview...
+              Redirecting to your network overview...
             </p>
           </Card>
         ) : (
@@ -152,11 +201,8 @@ export default function NewLocationPage() {
                 </div>
                 <div className="form-grid">
                   <div className="input-group-premium">
-                    <div
-                      className="label-row"
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <label style={{ margin: 0 }}>Location Name</label>
+                    <div className="label-row">
+                      <label>Location Name</label>
                       <Tooltip content="Choose a name that clearly identifies this site (e.g. Southpark Office)." />
                     </div>
                     <Input
@@ -170,15 +216,12 @@ export default function NewLocationPage() {
                     />
                   </div>
                   <div className="input-group-premium">
-                    <div
-                      className="label-row"
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <label style={{ margin: 0 }}>Location / City</label>
+                    <div className="label-row">
+                      <label>City</label>
                       <Tooltip content="The city or district where this location is physically located." />
                     </div>
                     <Input
-                      placeholder="e.g. Lagos, Nigeria"
+                      placeholder="e.g. Lagos"
                       icon={<MapPin size={16} />}
                       value={form.city}
                       onChange={(e) =>
@@ -188,21 +231,13 @@ export default function NewLocationPage() {
                       maxLength={100}
                     />
                   </div>
-                </div>
-                <div
-                  className="form-grid"
-                  style={{ marginTop: 20 }}
-                >
                   <div className="input-group-premium">
-                    <div
-                      className="label-row"
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <label style={{ margin: 0 }}>State / Region</label>
+                    <div className="label-row">
+                      <label>State / Region</label>
                       <Tooltip content="State, region, or province (optional)." />
                     </div>
                     <Input
-                      placeholder="e.g. Lagos"
+                      placeholder="e.g. Lagos State"
                       value={form.state}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, state: e.target.value }))
@@ -211,11 +246,8 @@ export default function NewLocationPage() {
                     />
                   </div>
                   <div className="input-group-premium">
-                    <div
-                      className="label-row"
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <label style={{ margin: 0 }}>Country</label>
+                    <div className="label-row">
+                      <label>Country</label>
                       <Tooltip content="ISO 3166-1 alpha-2 country code (e.g. NG, US, GB)." />
                     </div>
                     <select
@@ -225,14 +257,6 @@ export default function NewLocationPage() {
                         setForm((f) => ({ ...f, country: e.target.value }))
                       }
                       required
-                      style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        border: "1px solid var(--border-main)",
-                        borderRadius: 12,
-                        fontSize: 14,
-                        background: "white",
-                      }}
                     >
                       {ISO_COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>
@@ -242,15 +266,9 @@ export default function NewLocationPage() {
                     </select>
                   </div>
                 </div>
-                <div
-                  className="input-group-premium input-full"
-                  style={{ marginTop: 20 }}
-                >
-                  <div
-                    className="label-row"
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <label style={{ margin: 0 }}>Street Address</label>
+                <div className="input-group-premium input-full">
+                  <div className="label-row">
+                    <label>Street Address</label>
                     <Tooltip content="Optional street address for this location." />
                   </div>
                   <Input
@@ -262,19 +280,13 @@ export default function NewLocationPage() {
                     maxLength={500}
                   />
                 </div>
-                <div
-                  className="input-group-premium input-full"
-                  style={{ marginTop: 20 }}
-                >
-                  <div
-                    className="label-row"
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <label style={{ margin: 0 }}>Short Description</label>
+                <div className="input-group-premium input-full">
+                  <div className="label-row">
+                    <label>Short Description</label>
                     <Tooltip content="A 2-3 sentence overview of this location's focus or purpose." />
                   </div>
                   <textarea
-                    className="input-field textarea-field"
+                    className="textarea-field"
                     rows={3}
                     placeholder="Briefly describe this location's community or focus..."
                     value={form.description}
@@ -288,89 +300,77 @@ export default function NewLocationPage() {
 
               <div className="form-section">
                 <div className="section-header">
-                  <div
-                    className="header-title-row"
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
+                  <div className="header-title-row">
                     <ImageIcon size={20} className="text-primary" />
-                    <h3 style={{ margin: 0 }}>Location Photo URL</h3>
-                    <Tooltip content="Upload a high-quality photo to help members identify the site. Direct CDN uploads are wired up separately — paste a URL here for now." />
+                    <h3>Location Photo</h3>
+                    <Tooltip content="Upload an image or paste a CDN URL." />
                   </div>
                 </div>
-                <div
-                  className="upload-placeholder-zone-premium"
-                  style={{ flexDirection: "column", alignItems: "stretch", padding: 20 }}
-                >
-                  <Input
-                    placeholder="https://cdn.vangly.app/…/photo.webp"
-                    value={form.photo_url}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, photo_url: e.target.value }))
-                    }
-                    maxLength={2000}
+                <div className="upload-placeholder-zone-premium">
+                  {photoPreview ? (
+                    <div className="photo-preview-wrapper">
+                      <img
+                        src={photoPreview}
+                        alt="Preview"
+                        className="photo-preview-img"
+                      />
+                      <button
+                        type="button"
+                        className="photo-preview-remove"
+                        onClick={handleRemovePhoto}
+                        aria-label="Remove photo"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="photo-upload-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload size={20} />
+                      <span>Choose Image</span>
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    onChange={handlePhotoFile}
+                    style={{ display: "none" }}
                   />
-                  <p
-                    style={{
-                      fontSize: 12,
-                      color: "var(--text-tertiary)",
-                      marginTop: 8,
-                    }}
-                  >
-                    Paste a CDN URL (≤ 2 000 chars). The upload widget is
-                    wired up to the CDN in a follow-up — see the
-                    manage-organization dev doc §5 for the photo flow.
+                  <div className="photo-url-input-group">
+                    <Input
+                      placeholder="https://cdn.vangly.app/…/photo.webp"
+                      value={form.photo_url}
+                      onChange={(e) => handlePhotoUrlChange(e.target.value)}
+                      maxLength={2000}
+                    />
+                    {photoUrlError && (
+                      <span className="field-error">{photoUrlError}</span>
+                    )}
+                  </div>
+                  <p>
+                    Select an image or paste a CDN URL (max 2,000 characters).
                   </p>
                 </div>
               </div>
 
               {errorMessage ? (
-                <div
-                  style={{
-                    marginTop: 20,
-                    padding: 16,
-                    background: "var(--red-subtle, #fef2f2)",
-                    border: "1px solid var(--red, #ef4444)",
-                    borderRadius: 12,
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <AlertCircle
-                    size={18}
-                    color="var(--red, #ef4444)"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  />
+                <div className="error-banner-premium">
+                  <AlertCircle size={18} color="#ef4444" className="error-icon" />
                   <div>
-                    <strong style={{ color: "var(--red, #b91c1c)" }}>
-                      Couldn’t create location
-                    </strong>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        color: "var(--text-secondary)",
-                        marginTop: 4,
-                      }}
-                    >
-                      {errorMessage}
-                    </p>
+                    <strong>Couldn&apos;t create location</strong>
+                    <p>{errorMessage}</p>
                   </div>
                 </div>
               ) : null}
 
-              <div
-                className="form-actions-footer-premium"
-                style={{
-                  marginTop: 32,
-                  display: "flex",
-                  gap: 16,
-                  flexDirection: "row-reverse",
-                }}
-              >
+              <div className="form-actions-footer-premium">
                 <Button
                   type="submit"
                   disabled={createLocation.isPending}
-                  style={{ flex: 2 }}
                 >
                   {createLocation.isPending
                     ? "Establishing..."
@@ -381,7 +381,6 @@ export default function NewLocationPage() {
                   variant="outline"
                   onClick={() => router.back()}
                   disabled={createLocation.isPending}
-                  style={{ flex: 1 }}
                 >
                   Cancel
                 </Button>

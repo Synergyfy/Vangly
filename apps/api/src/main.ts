@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import helmet from 'helmet';
 import * as express from 'express';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { setupSwagger } from './infra/swagger/swagger.config';
@@ -21,6 +22,7 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get(PinoLogger));
 
   app.use(helmet());
+  app.use(cookieParser());
 
   const origins = (config.get<string>('CORS_ORIGINS') ?? '')
     .split(',')

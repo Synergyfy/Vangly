@@ -9,7 +9,6 @@ import type {
   ForgotPinInput,
   ForgotPinResponse,
   LoginInput,
-  LogoutInput,
   ResetPinInput,
   ResetPinResponse,
   AuthResponse,
@@ -21,8 +20,9 @@ export const authMutations = {
       mutationFn: (input) => loginFn(input),
     }),
   logout: () =>
-    mutationOptions<void, Error, LogoutInput | undefined>({
-      mutationFn: (input) => logoutFn(input ?? {}),
+    mutationOptions<void, Error, void>({
+      // The refresh cookie is sent automatically — no body needed.
+      mutationFn: () => logoutFn(),
     }),
   forgotPin: () =>
     mutationOptions<ForgotPinResponse, Error, ForgotPinInput>({

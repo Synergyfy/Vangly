@@ -7,6 +7,8 @@ export {
   useUpdateLocation,
   useArchiveLocation,
   useSetLocationPhoto,
+  useLocationBrand,
+  useUpdateLocationBrand,
   // teams
   useLocationTeams,
   useTeamDetail,

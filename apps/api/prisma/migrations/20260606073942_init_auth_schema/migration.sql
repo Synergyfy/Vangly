@@ -48,8 +48,6 @@ CREATE TABLE "User" (
 CREATE TABLE "OnboardingSession" (
     "id" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
-    "otp" TEXT,
-    "otp_expires_at" TIMESTAMP(3),
     "verified" BOOLEAN NOT NULL DEFAULT false,
     "onboarding_token" TEXT,
     "onboarding_token_expires_at" TIMESTAMP(3),

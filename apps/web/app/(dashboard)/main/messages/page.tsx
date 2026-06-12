@@ -1,84 +1,155 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from 'next/navigation';
-import { 
-  Send, Users, MessageSquare, Layout, History, 
-  ChevronRight, Plus, Smartphone, Shield, 
-  Clock, Info, Zap, User, ArrowLeft, 
-  MapPin, UserPlus, Type, CheckCircle2, 
-  X, Filter, LayoutTemplate, Wallet
+import React, { useMemo, useState, Suspense } from "react";
+import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import {
+  Send, Users, History,
+  ChevronRight, Plus, Smartphone,
+  Clock, Type, MapPin,
+  CheckCircle2,
+  X, LayoutTemplate, Wallet,
+  ArrowLeft, Trash2,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { SuccessModal } from "@/components/ui/SuccessModal";
+import { Modal } from "@/components/ui/Modal";
+import { useAuth } from "@/services/auth";
+import { useWalletBalance } from "@/services/wallet";
+import {
+  useLocationsList,
+  useLocationTeams,
+  useLocationMembers,
+} from "@/services/manage-organization";
+import {
+  useMessageTemplates,
+  useCreateMessageTemplate,
+  useDeleteMessageTemplate,
+  useSendMessage,
+} from "@/services/messages";
+import { useFieldErrors } from "@/lib/forms/use-field-errors";
+import { isValidMessageBody, isValidTemplateName } from "@/lib/forms/validators";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
 import "./messaging.css";
 
-// --- Mock Data ---
-const RECENT_MESSAGES = [
-  { id: '1', title: 'Sunday Service Reminder', recipients: 1248, date: 'Oct 12, 10:30 AM', status: 'delivered', cost: '₦4,992', deliveryRate: '98%' },
-  { id: '2', title: 'Workers Meeting', recipients: 85, date: 'Oct 10, 02:15 PM', status: 'sent', cost: '₦340', deliveryRate: '100%' },
-  { id: '3', title: 'Welcome New Members', recipients: 12, date: 'Oct 09, 09:00 AM', status: 'delivered', cost: '₦48', deliveryRate: '92%' },
+const HIGH_RISK_WORDS = [
+  "urgent", "immediate action", "click here", "prize", "won", "reward",
+  "verify", "account blocked", "password", "congratulations", "gift", "claim",
 ];
 
-const TEMPLATES = [
-  { id: 't1', name: 'First Timer Welcome', content: 'Hi {name}, we are so glad you joined us today at {organization}! We hope you had a great time.' },
-  { id: 't2', name: 'Service Reminder', content: 'Hey {name}! Just a reminder that service starts at 9AM tomorrow at {location}. See you there!' },
-  { id: 't3', name: 'Thank You', content: 'Dear {name}, thank you for your support. God bless you!' },
-];
-
-const LOCATIONS = [
-  { id: 'l1', name: 'Northside Campus', contacts: 450, teams: 12 },
-  { id: 'l2', name: 'Main HQ', contacts: 800, teams: 25 },
-  { id: 'l3', name: 'East Valley', contacts: 120, teams: 5 },
-];
-
-const TEAMS = [
-  { id: 't1', name: 'Evangelism Team', members: 25, contacts: 25 },
-  { id: 't2', name: 'Youth Ministry', members: 150, contacts: 150 },
-  { id: 't3', name: 'Volunteers', members: 85, contacts: 85 },
-];
+const PLACEHOLDER_VARS = ["name", "organization", "location", "date"];
 
 function MessagingContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  // Navigation State
-  const [currentView, setCurrentView] = useState<'dashboard' | 'flow' | 'history' | 'templates' | 'details'>('dashboard');
+  const { user } = useAuth();
+  const balanceQuery = useWalletBalance();
+  const locationsQuery = useLocationsList({ page: 1, per_page: 100 });
+  const sendMessage = useSendMessage();
+  const templatesQuery = useMessageTemplates();
+  const createTemplate = useCreateMessageTemplate();
+  const deleteTemplate = useDeleteMessageTemplate();
+
+  const initialView = ((): 'dashboard' | 'history' | 'templates' => {
+    if (typeof window === "undefined") return 'dashboard';
+    const sp = new URLSearchParams(window.location.search);
+    const view = sp.get("view");
+    if (view === "history") return 'history';
+    if (view === "templates") return 'templates';
+    return 'dashboard';
+  })();
+
+  const [currentView, setCurrentView] = useState<'dashboard' | 'flow' | 'history' | 'templates' | 'details'>(initialView);
   const [step, setStep] = useState(1);
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
-  
-  // App State
-  const [availableCredits, setAvailableCredits] = useState(12450);
+
   const [showHighRiskModal, setShowHighRiskModal] = useState(false);
 
-  // Message Flow State
   const [recipientType, setRecipientType] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [manualPhones, setManualPhones] = useState<string>("");
   const [filters, setFilters] = useState<string[]>(['all']);
   const [message, setMessage] = useState("");
   const [messageTitle, setMessageTitle] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
-  // Derived Values
+  const [showSendSuccess, setShowSendSuccess] = useState(false);
+  const [sendSuccessInfo, setSendSuccessInfo] = useState<{
+    sent: number;
+    failed: number;
+    total: number;
+  } | null>(null);
+
+  const [isCreateTemplateOpen, setIsCreateTemplateOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateBody, setNewTemplateBody] = useState("");
+
+  const { errors, setError, clearAll } = useFieldErrors();
+  const isSending = sendMessage.isPending;
+
+  const locations = useMemo(
+    () => locationsQuery.data?.data ?? [],
+    [locationsQuery.data?.data],
+  );
+  const selectedLocation = useMemo(
+    () => locations.find((l) => l.id === selectedLocationId) ?? null,
+    [locations, selectedLocationId],
+  );
+  const teamsQuery = useLocationTeams(
+    recipientType === "team" ? selectedLocationId ?? undefined : undefined,
+    { page: 1, per_page: 100 },
+  );
+  const teams = useMemo(
+    () => teamsQuery.data?.data ?? [],
+    [teamsQuery.data?.data],
+  );
+
+  const membersQuery = useLocationMembers(
+    selectedLocationId ?? undefined,
+    { page: 1, per_page: 500 },
+  );
+  const locationMembers = useMemo(
+    () => membersQuery.data?.data ?? [],
+    [membersQuery.data?.data],
+  );
+
+  const availableCredits = balanceQuery.data?.balance ?? user?.credits ?? 0;
+
   const charCount = message.length;
-  const smsUnitsPerMsg = Math.ceil(charCount / 160) || 1;
-  const estimatedRecipients = recipientType === 'organization' ? 1248 : (recipientType === 'location' ? 450 : (recipientType === 'team' ? 85 : 1));
+  const smsUnitsPerMsg = Math.max(1, Math.ceil(charCount / 160));
+
+  const recipients = useMemo(() => {
+    if (recipientType === "location" && selectedLocationId) {
+      return locationMembers.map((m) => ({
+        phone: m.phone,
+        name: m.name,
+      }));
+    }
+    if (recipientType === "manual" && manualPhones.trim()) {
+      return manualPhones
+        .split(/[\n,;\s]+/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((phone) => ({ phone }));
+    }
+    return [];
+  }, [recipientType, selectedLocationId, locationMembers, manualPhones]);
+
+  const estimatedRecipients = recipients.length;
   const totalUnitsNeeded = smsUnitsPerMsg * estimatedRecipients;
   const hasLowCredit = totalUnitsNeeded > availableCredits;
 
-  // High Risk Logic
-  const highRiskWords = ['urgent', 'immediate action', 'click here', 'prize', 'won', 'reward', 'verify', 'account blocked', 'password', 'congratulations', 'gift', 'claim'];
-  const detectedRiskWords = highRiskWords.filter(word => message.toLowerCase().includes(word));
-  const isHighRisk = detectedRiskWords.length > 0;
+  const isHighRisk = HIGH_RISK_WORDS.some((w) =>
+    message.toLowerCase().includes(w),
+  );
 
   const handleStartFlow = () => {
     setCurrentView('flow');
     setStep(1);
   };
 
-  const handleNext = () => setStep(prev => prev + 1);
+  const handleNext = () => setStep((prev) => prev + 1);
   const handleBack = () => {
     if (currentView === 'details') {
       setCurrentView('history');
@@ -86,20 +157,85 @@ function MessagingContent() {
     }
     if (currentView === 'flow') {
       if (step === 1) setCurrentView('dashboard');
-      else if (step === 2 && (recipientType === 'organization' || recipientType === 'specific' || recipientType === 'manual')) setStep(1);
-      else setStep(prev => prev - 1);
+      else if (step === 2 && (recipientType === 'organization' || recipientType === 'specific' || recipientType === 'manual' || recipientType === 'upload')) setStep(1);
+      else setStep((prev) => prev - 1);
       return;
     }
     setCurrentView('dashboard');
   };
 
   const insertVariable = (variable: string) => {
-    setMessage(prev => prev + `{${variable}}`);
+    setMessage((prev) => prev + `{${variable}}`);
   };
 
-  const openMessageDetails = (id: string) => {
-    setSelectedMessageId(id);
-    setCurrentView('details');
+  const applyTemplate = (tplId: string) => {
+    if (tplId === "none") return;
+    const tpl = (templatesQuery.data ?? []).find((t) => t.id === tplId);
+    if (tpl) setMessage(tpl.body);
+  };
+
+  const handleSend = async () => {
+    clearAll();
+    if (recipients.length === 0) {
+      setError("recipients", "Pick at least one recipient before sending.");
+      return;
+    }
+    if (!isValidMessageBody(message)) {
+      setError("message", "Enter a message up to 1600 characters.");
+      return;
+    }
+
+    try {
+      const result = await sendMessage.mutateAsync({
+        recipients,
+        body: message,
+      });
+      setSendSuccessInfo({
+        sent: result.sent,
+        failed: result.failed,
+        total: result.total,
+      });
+      setShowSendSuccess(true);
+      setStep(6);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not send your message."));
+    }
+  };
+
+  const handleCreateTemplate = async () => {
+    clearAll();
+    if (!isValidTemplateName(newTemplateName)) {
+      setError("newTemplateName", "Use 3 to 80 characters for the template name.");
+      return;
+    }
+    if (!isValidMessageBody(newTemplateBody)) {
+      setError("newTemplateBody", "Enter a body up to 1600 characters.");
+      return;
+    }
+    try {
+      await createTemplate.mutateAsync({
+        name: newTemplateName.trim(),
+        body: newTemplateBody,
+        channel: "sms",
+        mode: "flexible",
+        scope: "organization",
+      });
+      setNewTemplateName("");
+      setNewTemplateBody("");
+      setIsCreateTemplateOpen(false);
+      toast.success(`Template "${newTemplateName.trim()}" created.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not save your template."));
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string, name: string) => {
+    try {
+      await deleteTemplate.mutateAsync(id);
+      toast.success(`Template "${name}" deleted.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not delete your template."));
+    }
   };
 
   // --- Render Functions ---
@@ -112,13 +248,42 @@ function MessagingContent() {
           <h1>Messaging</h1>
           <p>Manage your communications and reach your community instantly.</p>
         </div>
-        
-        <div className="sms-balance-card glass-morphism" style={{ padding: '16px 20px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid var(--border-light)' }}>
+
+        <div
+          className="sms-balance-card glass-morphism"
+          style={{
+            padding: "16px 20px",
+            borderRadius: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "20px",
+            border: "1px solid var(--border-light)",
+          }}
+        >
           <div className="balance-info">
-            <h3 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0 }}>Credits</h3>
-            <div className="balance-amount" style={{ fontSize: '20px', fontWeight: 800 }}>{availableCredits.toLocaleString()}</div>
+            <h3
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "var(--text-tertiary)",
+                textTransform: "uppercase",
+                margin: 0,
+              }}
+            >
+              Credits
+            </h3>
+            <div
+              className="balance-amount"
+              style={{ fontSize: "20px", fontWeight: 800 }}
+            >
+              {balanceQuery.isLoading ? "—" : availableCredits.toLocaleString()}
+            </div>
           </div>
-          <Button onClick={() => router.push('/main/wallet')} className="btn-premium" size="sm">
+          <Button
+            onClick={() => router.push('/main/wallet')}
+            className="btn-premium"
+            size="sm"
+          >
             Top Up
           </Button>
         </div>
@@ -126,58 +291,58 @@ function MessagingContent() {
 
       <main className="dashboard-main-content">
         <div className="messaging-actions-hub-grid">
-          {[
-            { id: 'new', label: 'New Msg', icon: Send, action: handleStartFlow, color: 'blue' },
-            { id: 'temp', label: 'Templates', icon: LayoutTemplate, action: () => setCurrentView('templates'), color: 'purple' },
-            { id: 'up', label: 'Upload', icon: UserPlus, action: () => {}, color: 'green' },
-            { id: 'hist', label: 'History', icon: History, action: () => setCurrentView('history'), color: 'orange' },
-          ].map(action => (
-            <Card 
-              key={action.id} 
-              className={`msg-hub-card ${action.color}`} 
-              onClick={action.action}
-            >
-              <div className="msg-hub-icon">
-                <action.icon size={24} />
-              </div>
-              <strong>{action.label}</strong>
-            </Card>
-          ))}
+          <Card className="msg-hub-card blue" onClick={handleStartFlow}>
+            <div className="msg-hub-icon">
+              <Send size={24} />
+            </div>
+            <strong>New Msg</strong>
+          </Card>
+          <Card
+            className="msg-hub-card purple"
+            onClick={() => setCurrentView('templates')}
+          >
+            <div className="msg-hub-icon">
+              <LayoutTemplate size={24} />
+            </div>
+            <strong>Templates</strong>
+          </Card>
+          <Card
+            className="msg-hub-card orange"
+            onClick={() => setCurrentView('history')}
+          >
+            <div className="msg-hub-icon">
+              <History size={24} />
+            </div>
+            <strong>History</strong>
+          </Card>
         </div>
 
-      {/* Recent Messages */}
-        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 800 }}>Recent Activity</h2>
-          <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>View All</Button>
+        <div
+          className="section-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
+          <h2 style={{ fontSize: "16px", fontWeight: 800 }}>Recent Activity</h2>
+          <Button variant="ghost" size="sm" onClick={() => setCurrentView('history')}>
+            View All
+          </Button>
         </div>
 
-        <div className="team-grid-premium">
-          {RECENT_MESSAGES.map(msg => (
-            <Card key={msg.id} className="team-card-premium glass-morphism" style={{ padding: '16px !important' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{msg.title}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-                    {msg.recipients} recipients • {msg.date}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 800, fontSize: '14px' }}>{msg.cost}</div>
-                  <span className={`header-badge ${msg.status === 'sent' ? 'positive' : ''}`} style={{ fontSize: '9px', margin: 0, padding: '2px 8px' }}>
-                    {msg.status}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card style={{ padding: "24px", textAlign: "center", color: "var(--text-tertiary)" }}>
+          <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
+          <p>Your sent broadcasts will appear here once the backend exposes a message history endpoint.</p>
+        </Card>
       </main>
     </div>
   );
 
   const renderFlow = () => {
-    switch(step) {
-      case 1: // Recipient Selection
+    switch (step) {
+      case 1:
         return (
           <div className="messaging-hub">
             <div className="wizard-header">
@@ -191,18 +356,15 @@ function MessagingContent() {
               {[
                 { id: 'organization', title: 'Entire Organization', desc: 'Send to every contact in your network.', icon: <Users size={32} /> },
                 { id: 'location', title: 'By Location', desc: 'Target people at a specific campus or office.', icon: <MapPin size={32} /> },
-                { id: 'team', title: 'By Team', desc: 'Message a specific outreach team or team.', icon: <Users size={32} /> },
-                { id: 'specific', title: 'Specific People', desc: 'Search and pick individual contacts.', icon: <User size={32} /> },
-                { id: 'upload', title: 'Upload Contacts', desc: 'Import numbers from a CSV or Excel file.', icon: <UserPlus size={32} /> },
-                { id: 'manual', title: 'Type Phone Numbers', desc: 'Enter numbers manually separated by commas.', icon: <Type size={32} /> },
-              ].map(type => (
-                <div 
-                  key={type.id} 
+                { id: 'team', title: 'By Team', desc: 'Message a specific outreach team.', icon: <Users size={32} /> },
+                { id: 'manual', title: 'Type Phone Numbers', desc: 'Enter numbers separated by commas.', icon: <Type size={32} /> },
+              ].map((type) => (
+                <div
+                  key={type.id}
                   className={`recipient-type-card ${recipientType === type.id ? 'active' : ''}`}
                   onClick={() => {
                     setRecipientType(type.id);
-                    if (type.id === 'organization' || type.id === 'specific' || type.id === 'manual') handleNext();
-                    else handleNext(); // For location/team we'll go to selection steps
+                    handleNext();
                   }}
                 >
                   <div className="recipient-icon-bg">{type.icon}</div>
@@ -215,118 +377,280 @@ function MessagingContent() {
             </div>
           </div>
         );
-      case 2: // Sub-selection (Location or Group)
+      case 2:
         if (recipientType === 'location') {
           return (
             <div className="messaging-hub">
               <div className="wizard-header">
-                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
+                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}>
+                  <ArrowLeft size={18} /> Back
+                </Button>
                 <h1>Select Location</h1>
                 <p>Choose the campus you want to message.</p>
               </div>
-              <div className="recipient-cards-grid">
-                {LOCATIONS.map(loc => (
-                  <div key={loc.id} className="recipient-type-card" onClick={() => { setSelectedLocation(loc.name); handleNext(); }}>
-                    <div className="recipient-icon-bg"><MapPin size={32} /></div>
-                    <div className="recipient-info">
-                      <h3>{loc.name}</h3>
-                      <p>{loc.contacts} contacts • {loc.teams} teams</p>
+              {locationsQuery.isLoading ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>Loading locations…</Card>
+              ) : locationsQuery.isError ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>
+                  <p>Could not load locations.</p>
+                  <Button size="sm" onClick={() => locationsQuery.refetch()}>Retry</Button>
+                </Card>
+              ) : locations.length === 0 ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>
+                  <p>No locations yet.</p>
+                </Card>
+              ) : (
+                <div className="recipient-cards-grid">
+                  {locations.map((loc) => (
+                    <div
+                      key={loc.id}
+                      className={`recipient-type-card ${selectedLocationId === loc.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedLocationId(loc.id);
+                        handleNext();
+                      }}
+                    >
+                      <div className="recipient-icon-bg"><MapPin size={32} /></div>
+                      <div className="recipient-info">
+                        <h3>{loc.name}</h3>
+                        <p>
+                          {loc.stats?.members ?? 0} members • {loc.stats?.teams ?? 0} teams
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         }
         if (recipientType === 'team') {
+          if (!selectedLocationId) {
+            return (
+              <div className="messaging-hub">
+                <div className="wizard-header">
+                  <Button variant="ghost" onClick={() => setStep(1)} style={{ marginBottom: '16px' }}>
+                    <ArrowLeft size={18} /> Back
+                  </Button>
+                  <h1>Select Location First</h1>
+                  <p>Choose the location that contains your team.</p>
+                </div>
+                {locationsQuery.isLoading ? (
+                  <Card style={{ padding: "32px", textAlign: "center" }}>Loading locations…</Card>
+                ) : (
+                  <div className="recipient-cards-grid">
+                    {locations.map((loc) => (
+                      <div
+                        key={loc.id}
+                        className="recipient-type-card"
+                        onClick={() => setSelectedLocationId(loc.id)}
+                      >
+                        <div className="recipient-icon-bg"><MapPin size={32} /></div>
+                        <div className="recipient-info">
+                          <h3>{loc.name}</h3>
+                          <p>{loc.stats?.teams ?? 0} teams</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
           return (
             <div className="messaging-hub">
               <div className="wizard-header">
-                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
+                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}>
+                  <ArrowLeft size={18} /> Back
+                </Button>
                 <h1>Select Team</h1>
                 <p>Choose the specific team within your organization.</p>
               </div>
-              <div className="recipient-cards-grid">
-                {TEAMS.map(team => (
-                  <div key={team.id} className="recipient-type-card" onClick={() => { setSelectedTeam(team.name); handleNext(); }}>
-                    <div className="recipient-icon-bg"><Users size={32} /></div>
-                    <div className="recipient-info">
-                      <h3>{team.name}</h3>
-                      <p>{team.members} members • {team.contacts} contacts</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        }
-        // Fallthrough if not location/team
-        handleNext(); return null;
-
-      case 3: // Filtering (Optional)
-        return (
-          <div className="messaging-hub">
-             <div className="wizard-header">
-                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
-                <h1>Refine Your List</h1>
-                <p>Apply filters to target specific people within your selection.</p>
-              </div>
-              <Card style={{ padding: '32px', borderRadius: '24px', textAlign: 'center', border: '1px solid var(--ms-border)' }}>
-                <div className="filter-chips" style={{ justifyContent: 'center' }}>
-                  {['All Contacts', 'New Contacts', 'Attended Recently', 'Uncontacted', 'Regular Members'].map(f => (
-                    <div 
-                      key={f} 
-                      className={`filter-chip ${filters.includes(f) ? 'active' : ''}`}
-                      onClick={() => setFilters(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])}
+              {teamsQuery.isLoading ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>Loading teams…</Card>
+              ) : teamsQuery.isError ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>
+                  <p>Could not load teams.</p>
+                  <Button size="sm" onClick={() => teamsQuery.refetch()}>Retry</Button>
+                </Card>
+              ) : teams.length === 0 ? (
+                <Card style={{ padding: "32px", textAlign: "center" }}>
+                  <p>No teams at this location yet.</p>
+                </Card>
+              ) : (
+                <div className="recipient-cards-grid">
+                  {teams.map((team) => (
+                    <div
+                      key={team.id}
+                      className={`recipient-type-card ${selectedTeamId === team.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedTeamId(team.id);
+                        handleNext();
+                      }}
                     >
-                      {f}
+                      <div className="recipient-icon-bg"><Users size={32} /></div>
+                      <div className="recipient-info">
+                        <h3>{team.name}</h3>
+                        <p>{team.member_count} members • {team.form_count} forms</p>
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: '40px' }}>
-                  <Button className="btn-premium" size="lg" onClick={handleNext}>
-                    Continue to Message <ChevronRight size={18} style={{ marginLeft: '8px' }} />
+              )}
+            </div>
+          );
+        }
+        if (recipientType === 'manual') {
+          return (
+            <div className="messaging-hub">
+              <div className="wizard-header">
+                <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}>
+                  <ArrowLeft size={18} /> Back
+                </Button>
+                <h1>Type Phone Numbers</h1>
+                <p>Enter numbers separated by commas or new lines. E.164 format preferred.</p>
+              </div>
+              <Card style={{ padding: "24px" }}>
+                <textarea
+                  className="input-field textarea-field"
+                  rows={6}
+                  placeholder="+2348012345678, +2348098765432"
+                  value={manualPhones}
+                  onChange={(e) => {
+                    setManualPhones(e.target.value);
+                    if (errors["manualPhones"]) clearAll();
+                  }}
+                />
+                {errors["manualPhones"] && (
+                  <p className="input-error-text" style={{ marginTop: "8px" }}>
+                    {errors["manualPhones"]}
+                  </p>
+                )}
+                <p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+                  {recipients.length} number{recipients.length === 1 ? "" : "s"} detected.
+                </p>
+                <div style={{ marginTop: "16px" }}>
+                  <Button
+                    className="btn-premium"
+                    size="lg"
+                    onClick={handleNext}
+                    disabled={recipients.length === 0}
+                  >
+                    Continue to Message <ChevronRight size={18} style={{ marginLeft: "8px" }} />
                   </Button>
                 </div>
               </Card>
+            </div>
+          );
+        }
+        handleNext();
+        return null;
+
+      case 3:
+        return (
+          <div className="messaging-hub">
+            <div className="wizard-header">
+              <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}>
+                <ArrowLeft size={18} /> Back
+              </Button>
+              <h1>Refine Your List</h1>
+              <p>Apply filters to target specific people within your selection.</p>
+            </div>
+            <Card style={{ padding: "32px", borderRadius: "24px", textAlign: "center", border: "1px solid var(--ms-border)" }}>
+              <div className="filter-chips" style={{ justifyContent: "center" }}>
+                {['All Contacts', 'New Contacts', 'Attended Recently', 'Uncontacted', 'Regular Members'].map((f) => (
+                  <div
+                    key={f}
+                    className={`filter-chip ${filters.includes(f) ? 'active' : ''}`}
+                    onClick={() =>
+                      setFilters((prev) =>
+                        prev.includes(f)
+                          ? prev.filter((x) => x !== f)
+                          : [...prev, f],
+                      )
+                    }
+                  >
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "40px" }}>
+                <Button className="btn-premium" size="lg" onClick={handleNext}>
+                  Continue to Message <ChevronRight size={18} style={{ marginLeft: "8px" }} />
+                </Button>
+              </div>
+            </Card>
           </div>
         );
 
-      case 4: // Composer
+      case 4:
         return (
           <div className="messaging-hub">
-            <div className="wizard-header" style={{ textAlign: 'left', marginBottom: '24px' }}>
-               <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
-               <h1>Compose Your Message</h1>
+            <div className="wizard-header" style={{ textAlign: "left", marginBottom: "24px" }}>
+              <Button variant="ghost" onClick={handleBack} style={{ marginBottom: "16px" }}>
+                <ArrowLeft size={18} /> Back
+              </Button>
+              <h1>Compose Your Message</h1>
             </div>
 
             <div className="composer-layout">
               <div className="composer-main">
-                <div style={{ marginBottom: '24px' }}>
-                  <Input 
+                <div style={{ marginBottom: "24px" }}>
+                  <Input
                     label="Internal Message Title"
-                    placeholder="e.g. Sunday Service Reminder" 
+                    placeholder="e.g. Sunday Service Reminder"
                     value={messageTitle}
                     onChange={(e) => setMessageTitle(e.target.value)}
+                    disabled={isSending}
                   />
                 </div>
 
                 <div className="composer-toolbar-header">
-                   <label>Message Body</label>
-                   <Button variant="outline" size="sm" onClick={() => setMessage(TEMPLATES[0].content)}>
-                      <LayoutTemplate size={14} style={{ marginRight: '6px' }} /> Use Template
-                   </Button>
+                  <label>Message Body</label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      defaultValue="none"
+                      onChange={(e) => applyTemplate(e.target.value)}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        opacity: 0,
+                        cursor: "pointer",
+                      }}
+                      disabled={isSending}
+                    >
+                      <option value="none">Use Template</option>
+                      {(templatesQuery.data ?? []).map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <Button variant="outline" size="sm" type="button">
+                      <LayoutTemplate size={14} style={{ marginRight: "6px" }} /> Use Template
+                    </Button>
+                  </div>
                 </div>
-                
-                <textarea 
+
+                <textarea
                   className="composer-textarea"
                   placeholder="Start typing your message..."
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (errors["message"]) clearAll();
+                  }}
+                  disabled={isSending}
                 />
+                {errors["message"] && (
+                  <p className="input-error-text" style={{ marginTop: "8px" }}>
+                    {errors["message"]}
+                  </p>
+                )}
 
                 <div className="variable-chips">
-                  {['name', 'organization', 'location', 'date'].map(v => (
+                  {PLACEHOLDER_VARS.map((v) => (
                     <div key={v} className="var-chip" onClick={() => insertVariable(v)}>
                       +{v}
                     </div>
@@ -338,59 +662,71 @@ function MessagingContent() {
                     <Type size={14} /> {charCount} chars
                   </div>
                   <div className="stat-pill">
-                    <Smartphone size={14} /> {smsUnitsPerMsg} Unit{smsUnitsPerMsg > 1 ? 's' : ''}
+                    <Smartphone size={14} /> {smsUnitsPerMsg} Unit{smsUnitsPerMsg > 1 ? "s" : ""}
                   </div>
                   <div className="stat-pill primary">
                     <Users size={14} /> {totalUnitsNeeded.toLocaleString()} Total Units
                   </div>
                 </div>
 
-                <div className="composer-footer-actions" style={{ marginBottom: '16px' }}>
-                  <Button variant="outline" className="mobile-preview-trigger lg:hidden" onClick={() => setShowPreview(true)}>
+                <div className="composer-footer-actions" style={{ marginBottom: "16px" }}>
+                  <Button
+                    variant="outline"
+                    className="mobile-preview-trigger lg:hidden"
+                    onClick={() => setShowPreview(true)}
+                  >
                     <Smartphone size={18} /> Preview
                   </Button>
-                  <Button 
-                    className="btn-premium" 
-                    style={{ flex: 1 }} 
+                  <Button
+                    className="btn-premium"
+                    style={{ flex: 1 }}
                     onClick={handleNext}
-                    disabled={hasLowCredit}
+                    disabled={hasLowCredit || !message || recipients.length === 0}
                   >
-                    Review & Send <ChevronRight size={18} style={{ marginLeft: '8px' }} />
+                    Review &amp; Send <ChevronRight size={18} style={{ marginLeft: "8px" }} />
                   </Button>
                 </div>
 
+                {errors["recipients"] && (
+                  <p className="input-error-text" style={{ marginTop: "8px" }}>
+                    {errors["recipients"]}
+                  </p>
+                )}
+
                 <div className="high-risk-inline-warning">
-                   <button className="view-risk-tag" onClick={() => setShowHighRiskModal(true)}>View</button>
-                   <span className="risk-warning-text">
-                     {isHighRisk 
-                       ? "Message contains high-risk words that may affect delivery." 
-                       : "Avoid high-risk words to ensure your message is delivered."}
-                   </span>
+                  <button className="view-risk-tag" onClick={() => setShowHighRiskModal(true)}>View</button>
+                  <span className="risk-warning-text">
+                    {isHighRisk
+                      ? "Message contains high-risk words that may affect delivery."
+                      : "Avoid high-risk words to ensure your message is delivered."}
+                  </span>
                 </div>
 
                 {hasLowCredit && (
-                   <Card className="low-credit-warning" style={{ marginTop: '16px' }}>
-                      <div className="warning-content">
-                        <Wallet size={20} className="text-danger" />
-                        <div>
-                          <strong>Insufficient Credits</strong>
-                          <p>You need { (totalUnitsNeeded - availableCredits).toLocaleString() } more units to send this message.</p>
-                        </div>
+                  <Card className="low-credit-warning" style={{ marginTop: "16px" }}>
+                    <div className="warning-content">
+                      <Wallet size={20} className="text-danger" />
+                      <div>
+                        <strong>Insufficient Credits</strong>
+                        <p>You need {(totalUnitsNeeded - availableCredits).toLocaleString()} more units to send this message.</p>
                       </div>
-                      <Button className="btn-buy-mini" onClick={() => router.push(`/main/wallet?topup=${totalUnitsNeeded - availableCredits}`)}>
-                        Top Up Now
-                      </Button>
-                   </Card>
+                    </div>
+                    <Button
+                      className="btn-buy-mini"
+                      onClick={() => router.push(`/main/wallet?topup=${totalUnitsNeeded - availableCredits}`)}
+                    >
+                      Top Up Now
+                    </Button>
+                  </Card>
                 )}
               </div>
 
-              {/* Desktop Live Preview */}
               <div className="phone-preview-container">
                 <div className="iphone-frame">
                   <div className="iphone-screen">
                     <div className="iphone-header">
-                       <div className="iphone-avatar" />
-                       <div className="iphone-contact">Vangly Notifications</div>
+                      <div className="iphone-avatar" />
+                      <div className="iphone-contact">Vangly Notifications</div>
                     </div>
                     <div className="chat-content">
                       <div className="chat-timestamp">Today 10:45 AM</div>
@@ -403,33 +739,37 @@ function MessagingContent() {
               </div>
             </div>
 
-            {/* High Risk Modal */}
             {showHighRiskModal && (
               <div className="modal-overlay" onClick={() => setShowHighRiskModal(false)}>
-                <Card className="high-risk-info-modal" onClick={e => e.stopPropagation()}>
-                   <div className="modal-header">
-                      <h3>High-Risk Words</h3>
-                      <button className="close-btn" onClick={() => setShowHighRiskModal(false)}><X size={20} /></button>
-                   </div>
-                   <p>Using these words in your SMS may cause it to be flagged by telecom carriers and not delivered:</p>
-                   <div className="risk-words-grid">
-                      {highRiskWords.map(w => (
-                        <div key={w} className={`risk-word ${message.toLowerCase().includes(w) ? 'detected' : ''}`}>
-                          {w}
-                        </div>
-                      ))}
-                   </div>
-                   <Button fullWidth className="btn-premium" style={{ marginTop: '24px' }} onClick={() => setShowHighRiskModal(false)}>Got it</Button>
+                <Card className="high-risk-info-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h3>High-Risk Words</h3>
+                    <button className="close-btn" onClick={() => setShowHighRiskModal(false)}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <p>Using these words in your SMS may cause it to be flagged by telecom carriers and not delivered:</p>
+                  <div className="risk-words-grid">
+                    {HIGH_RISK_WORDS.map((w) => (
+                      <div key={w} className={`risk-word ${message.toLowerCase().includes(w) ? "detected" : ""}`}>
+                        {w}
+                      </div>
+                    ))}
+                  </div>
+                  <Button fullWidth className="btn-premium" style={{ marginTop: "24px" }} onClick={() => setShowHighRiskModal(false)}>
+                    Got it
+                  </Button>
                 </Card>
               </div>
             )}
 
-            {/* Mobile Preview Modal */}
             {showPreview && (
               <div className="mobile-preview-overlay" onClick={() => setShowPreview(false)}>
-                <div className="mobile-preview-content" onClick={e => e.stopPropagation()}>
-                  <div className="close-preview" onClick={() => setShowPreview(false)}><X size={32} /></div>
-                   <div className="iphone-frame">
+                <div className="mobile-preview-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="close-preview" onClick={() => setShowPreview(false)}>
+                    <X size={32} />
+                  </div>
+                  <div className="iphone-frame">
                     <div className="iphone-screen">
                       <div className="iphone-header">
                         <div className="iphone-avatar" />
@@ -449,11 +789,13 @@ function MessagingContent() {
           </div>
         );
 
-      case 5: // Review
+      case 5:
         return (
           <div className="messaging-hub">
             <div className="wizard-header">
-              <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back</Button>
+              <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}>
+                <ArrowLeft size={18} /> Back
+              </Button>
               <h1>Final Review</h1>
               <p>Please double-check everything before sending your broadcast.</p>
             </div>
@@ -462,11 +804,23 @@ function MessagingContent() {
               <div className="review-summary-card">
                 <div className="summary-item">
                   <span className="summary-label">Target Audience</span>
-                  <span className="summary-value">{recipientType === 'organization' ? 'Entire Organization' : (selectedLocation || selectedTeam || 'Selected People')}</span>
+                  <span className="summary-value">
+                    {recipientType === "organization"
+                      ? "Entire Organization"
+                      : recipientType === "location" && selectedLocation
+                        ? selectedLocation.name
+                        : recipientType === "team"
+                          ? "Selected Team"
+                          : recipientType === "manual"
+                            ? "Manual Numbers"
+                            : "Selected People"}
+                  </span>
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">Total Recipients</span>
-                  <span className="summary-value">{estimatedRecipients} contacts</span>
+                  <span className="summary-value">
+                    {estimatedRecipients.toLocaleString()} contacts
+                  </span>
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">SMS Units</span>
@@ -474,49 +828,64 @@ function MessagingContent() {
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">Total Units Required</span>
-                  <span className="summary-value" style={{ color: 'var(--ms-primary)', fontSize: '20px' }}>{totalUnitsNeeded.toLocaleString()} Units</span>
+                  <span className="summary-value" style={{ color: "var(--ms-primary)", fontSize: "20px" }}>
+                    {totalUnitsNeeded.toLocaleString()} Units
+                  </span>
                 </div>
                 <div className="summary-item">
                   <span className="summary-label">Scheduled For</span>
                   <span className="summary-value">Immediate Delivery</span>
                 </div>
-                
-                <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                   <Button className="btn-premium" fullWidth size="lg" onClick={handleNext}>
-                      <Send size={18} style={{ marginRight: '8px' }} /> Send Message Now
-                   </Button>
-                   <Button variant="outline" fullWidth size="lg">
-                      <Clock size={18} style={{ marginRight: '8px' }} /> Schedule for Later
-                   </Button>
+
+                <div style={{ marginTop: "32px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <Button
+                    className="btn-premium"
+                    fullWidth
+                    size="lg"
+                    onClick={handleSend}
+                    disabled={isSending || hasLowCredit || recipients.length === 0}
+                  >
+                    <Send size={18} style={{ marginRight: "8px" }} />
+                    {isSending ? "Sending..." : "Send Message Now"}
+                  </Button>
+                  <Button variant="outline" fullWidth size="lg" disabled>
+                    <Clock size={18} style={{ marginRight: "8px" }} /> Schedule for Later
+                  </Button>
                 </div>
               </div>
 
               <div className="composer-main" style={{ opacity: 0.8 }}>
-                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '16px' }}>Message Preview</label>
-                 <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '16px', fontSize: '16px', lineHeight: '1.6', color: '#334155' }}>
-                    {message}
-                 </div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: "16px" }}>
+                  Message Preview
+                </label>
+                <div style={{ padding: "20px", background: "#f8fafc", borderRadius: "16px", fontSize: "16px", lineHeight: "1.6", color: "#334155" }}>
+                  {message || "—"}
+                </div>
               </div>
             </div>
           </div>
         );
 
-      case 6: // Success
+      case 6:
         return (
           <div className="messaging-hub">
             <div className="success-screen">
               <div className="success-icon-check">
                 <CheckCircle2 size={64} />
               </div>
-              <h1 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '12px' }}>Message Sent!</h1>
-              <p style={{ color: '#64748b', fontSize: '18px', maxWidth: '400px', margin: '0 auto 40px' }}>
-                Your broadcast has been queued for delivery to <strong>{estimatedRecipients} contacts</strong>.
+              <h1 style={{ fontSize: "32px", fontWeight: 900, marginBottom: "12px" }}>Message Sent!</h1>
+              <p style={{ color: "#64748b", fontSize: "18px", maxWidth: "400px", margin: "0 auto 40px" }}>
+                Your broadcast has been queued for delivery to <strong>{estimatedRecipients.toLocaleString()} contacts</strong>.
               </p>
-              <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ display: "flex", gap: "16px" }}>
                 <Button className="btn-premium" size="lg" onClick={() => setCurrentView('history')}>
-                  View Report
+                  View History
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => { setCurrentView('dashboard'); setStep(1); }}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => { setCurrentView('dashboard'); setStep(1); }}
+                >
                   Go Home
                 </Button>
               </div>
@@ -524,154 +893,222 @@ function MessagingContent() {
           </div>
         );
 
-      default: return null;
+      default:
+        return null;
     }
   };
 
   const renderHistory = () => (
     <div className="messaging-hub">
-       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div
+        className="page-header"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "32px",
+        }}
+      >
         <div>
-          <Button variant="ghost" onClick={handleBack} style={{ paddingLeft: 0, marginBottom: '8px' }}>
-            <ArrowLeft size={18} style={{ marginRight: '8px' }} /> Back
+          <Button variant="ghost" onClick={handleBack} style={{ paddingLeft: 0, marginBottom: "8px" }}>
+            <ArrowLeft size={18} style={{ marginRight: "8px" }} /> Back
           </Button>
           <h1>Message History</h1>
         </div>
-        <Button className="btn-premium" onClick={handleStartFlow}><Send size={18} style={{ marginRight: '8px' }} /> New Message</Button>
+        <Button className="btn-premium" onClick={handleStartFlow}>
+          <Send size={18} style={{ marginRight: "8px" }} /> New Message
+        </Button>
       </div>
 
-      <div className="recent-messages-list">
-        {[...RECENT_MESSAGES, ...RECENT_MESSAGES].map((msg, i) => (
-          <div key={i} className="message-item-card">
-            <div className="msg-main-info">
-              <div className="msg-title">{msg.title}</div>
-              <div className="msg-meta">
-                <span style={{ color: 'var(--ms-primary)', fontWeight: 700 }}>{msg.deliveryRate} Delivery</span>
-                <span>•</span>
-                <span>{msg.recipients} recipients</span>
-                <span>•</span>
-                <span>{msg.date}</span>
-                <span className={`msg-status ${msg.status}`}>{msg.status}</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div className="msg-cost" style={{ textAlign: 'right' }}>
-                 <div style={{ fontSize: '18px', fontWeight: 800 }}>{msg.cost}</div>
-                 <div style={{ fontSize: '11px', opacity: 0.6 }}>Credits Used</div>
-              </div>
-              <Button variant="outline" size="sm" style={{ borderRadius: '12px' }} onClick={() => openMessageDetails(msg.id)}>Details</Button>
-            </div>
-          </div>
-        ))}
-      </div>
+      <Card style={{ padding: "32px", textAlign: "center", color: "var(--text-tertiary)" }}>
+        <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
+        <p>Message history will appear here once the backend exposes a sent-broadcasts endpoint.</p>
+      </Card>
     </div>
   );
 
-  const renderMessageDetails = () => {
-    const msg = RECENT_MESSAGES.find(m => m.id === selectedMessageId) || RECENT_MESSAGES[0];
-    return (
-      <div className="messaging-hub">
-        <div className="wizard-header" style={{ textAlign: 'left', marginBottom: '24px' }}>
-          <Button variant="ghost" onClick={handleBack} style={{ marginBottom: '16px' }}><ArrowLeft size={18} /> Back to History</Button>
-          <h1>Message Report</h1>
-          <p>Detailed delivery statistics for "{msg.title}"</p>
-        </div>
-
-        <div className="review-grid" style={{ marginBottom: '40px' }}>
-          <div className="review-summary-card">
-             <div className="summary-item">
-                <span className="summary-label">Status</span>
-                <span className={`msg-status ${msg.status}`}>{msg.status}</span>
-             </div>
-             <div className="summary-item">
-                <span className="summary-label">Total Recipients</span>
-                <span className="summary-value">{msg.recipients}</span>
-             </div>
-             <div className="summary-item">
-                <span className="summary-label">Delivery Rate</span>
-                <span className="summary-value" style={{ color: 'var(--ms-success)' }}>{msg.deliveryRate}</span>
-             </div>
-             <div className="summary-item">
-                <span className="summary-label">Total Cost</span>
-                <span className="summary-value">{msg.cost} Credits</span>
-             </div>
-             <div className="summary-item">
-                <span className="summary-label">Sent Date</span>
-                <span className="summary-value">{msg.date}</span>
-             </div>
-          </div>
-
-          <Card style={{ padding: '24px', borderRadius: '24px', border: '1px solid var(--ms-border)' }}>
-             <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '16px', textTransform: 'uppercase' }}>Message Content</h3>
-             <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '16px', fontSize: '15px', color: '#334155', lineHeight: '1.6' }}>
-                Hey {`{name}`}, just a reminder about our upcoming meeting. See you there!
-             </div>
-          </Card>
-        </div>
-
-        <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px' }}>Delivery Logs</h2>
-        <Card style={{ borderRadius: '24px', border: '1px solid var(--ms-border)', overflow: 'hidden' }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #f1f5f9', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', fontWeight: 700, fontSize: '13px', color: '#64748b' }}>
-            <span>Recipient</span>
-            <span>Phone</span>
-            <span>Status</span>
-          </div>
-          {[1,2,3,4,5].map(i => (
-            <div key={i} style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', fontSize: '14px' }}>
-              <span style={{ fontWeight: 600 }}>John Doe {i}</span>
-              <span style={{ color: '#64748b' }}>+234 803 000 000{i}</span>
-              <span style={{ color: 'var(--ms-success)', fontWeight: 700 }}>Delivered</span>
-            </div>
-          ))}
-        </Card>
-      </div>
-    );
-  };
-
   const renderTemplates = () => (
     <div className="messaging-hub">
-       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div
+        className="page-header"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "32px",
+        }}
+      >
         <div>
-          <Button variant="ghost" onClick={handleBack} style={{ paddingLeft: 0, marginBottom: '8px' }}>
-            <ArrowLeft size={18} style={{ marginRight: '8px' }} /> Back
+          <Button variant="ghost" onClick={handleBack} style={{ paddingLeft: 0, marginBottom: "8px" }}>
+            <ArrowLeft size={18} style={{ marginRight: "8px" }} /> Back
           </Button>
           <h1>SMS Templates</h1>
         </div>
-        <Button className="btn-premium"><Plus size={18} style={{ marginRight: '8px' }} /> Create Template</Button>
+        <Button
+          className="btn-premium"
+          onClick={() => setIsCreateTemplateOpen(true)}
+        >
+          <Plus size={18} style={{ marginRight: "8px" }} /> Create Template
+        </Button>
       </div>
 
-      <div className="recipient-cards-grid">
-        {TEMPLATES.map(t => (
-          <div key={t.id} className="recipient-type-card">
-            <div className="recipient-icon-bg"><LayoutTemplate size={32} /></div>
-            <div className="recipient-info">
-              <h3>{t.name}</h3>
-              <p>{t.content}</p>
+      {templatesQuery.isLoading ? (
+        <Card style={{ padding: "32px", textAlign: "center" }}>Loading templates…</Card>
+      ) : templatesQuery.isError ? (
+        <Card style={{ padding: "32px", textAlign: "center" }}>
+          <p>Could not load templates.</p>
+          <Button size="sm" onClick={() => templatesQuery.refetch()}>Retry</Button>
+        </Card>
+      ) : (templatesQuery.data ?? []).length === 0 ? (
+        <Card style={{ padding: "32px", textAlign: "center" }}>
+          <LayoutTemplate size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
+          <p>No templates yet. Create your first one.</p>
+          <Button
+            className="btn-premium"
+            onClick={() => setIsCreateTemplateOpen(true)}
+            style={{ marginTop: "16px" }}
+          >
+            <Plus size={16} style={{ marginRight: "6px" }} /> Create Template
+          </Button>
+        </Card>
+      ) : (
+        <div className="recipient-cards-grid">
+          {(templatesQuery.data ?? []).map((t) => (
+            <div key={t.id} className="recipient-type-card">
+              <div className="recipient-icon-bg"><LayoutTemplate size={32} /></div>
+              <div className="recipient-info">
+                <h3>{t.name}</h3>
+                <p style={{ whiteSpace: "pre-wrap" }}>{t.body}</p>
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ flex: 1 }}
+                  onClick={() => {
+                    setMessage(t.body);
+                    setCurrentView('flow');
+                    setStep(4);
+                  }}
+                >
+                  Use
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-danger"
+                  onClick={() => handleDeleteTemplate(t.id, t.name)}
+                  disabled={deleteTemplate.isPending}
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-               <Button variant="outline" size="sm" style={{ flex: 1 }}>Edit</Button>
-               <Button variant="ghost" size="sm" className="text-danger">Delete</Button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
   return (
-    <div className="hq-dashboard-premium" style={{ background: '#f8fafc', minHeight: '100vh' }}>
+    <div className="hq-dashboard-premium" style={{ background: "#f8fafc", minHeight: "100vh" }}>
       {currentView === 'dashboard' && renderDashboard()}
       {currentView === 'flow' && renderFlow()}
       {currentView === 'history' && renderHistory()}
       {currentView === 'templates' && renderTemplates()}
-      {currentView === 'details' && renderMessageDetails()}
+
+      <SuccessModal
+        isOpen={showSendSuccess}
+        onClose={() => setShowSendSuccess(false)}
+        icon="send"
+        title="Message Sent!"
+        description={
+          sendSuccessInfo
+            ? `Delivered to ${sendSuccessInfo.sent} of ${sendSuccessInfo.total} contact${sendSuccessInfo.total === 1 ? "" : "s"}${sendSuccessInfo.failed > 0 ? `. ${sendSuccessInfo.failed} failed.` : "."}`
+            : "Your broadcast has been queued for delivery."
+        }
+        primaryAction={{
+          label: "Send Another",
+          onClick: () => {
+            setShowSendSuccess(false);
+            setStep(1);
+            setMessage("");
+            setMessageTitle("");
+            setRecipientType(null);
+            setSelectedLocationId(null);
+            setSelectedTeamId(null);
+            setManualPhones("");
+          },
+        }}
+        secondaryAction={{
+          label: "Back to Hub",
+          navigateTo: "/main/messages",
+        }}
+      />
+
+      <Modal
+        isOpen={isCreateTemplateOpen}
+        onClose={() => setIsCreateTemplateOpen(false)}
+        title="Create SMS Template"
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <Input
+            label="Template Name"
+            placeholder="e.g. Service Reminder"
+            value={newTemplateName}
+            onChange={(e) => {
+              setNewTemplateName(e.target.value);
+              if (errors["newTemplateName"]) clearAll();
+            }}
+            error={errors["newTemplateName"]}
+            disabled={createTemplate.isPending}
+          />
+          <div>
+            <label className="input-label" style={{ display: "block", marginBottom: "6px" }}>
+              Message Body
+            </label>
+            <textarea
+              className="input-field textarea-field"
+              placeholder="Type the template body. Use {name}, {organization}, {location}, {date} as placeholders."
+              value={newTemplateBody}
+              onChange={(e) => {
+                setNewTemplateBody(e.target.value);
+                if (errors["newTemplateBody"]) clearAll();
+              }}
+              rows={5}
+              disabled={createTemplate.isPending}
+            />
+            {errors["newTemplateBody"] && (
+              <p className="input-error-text" style={{ marginTop: "6px" }}>
+                {errors["newTemplateBody"]}
+              </p>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateTemplateOpen(false)}
+              disabled={createTemplate.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="btn-premium"
+              onClick={handleCreateTemplate}
+              disabled={createTemplate.isPending}
+            >
+              {createTemplate.isPending ? "Saving..." : "Save Template"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
 
 export default function OrganizationMessagingPage() {
   return (
-    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading Messaging Center...</div>}>
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Loading Messaging Center...</div>}>
       <MessagingContent />
     </Suspense>
   );

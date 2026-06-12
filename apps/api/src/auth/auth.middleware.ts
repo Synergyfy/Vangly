@@ -17,45 +17,51 @@ export class AuthMiddleware implements NestMiddleware {
     // Check if route is public
     const isPublic = this.isPublicRoute(req.method, url);
 
+    // --- Resolve token from Cookie or Authorization header ---
+    // Web browsers send the httpOnly vangly_access cookie automatically.
+    // Mobile/Swagger clients send Authorization: Bearer <token>.
+    const cookieToken = (req.cookies as Record<string, string>)?.vangly_access;
     const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      if (isPublic) {
-        return next();
+
+    let token: string | null = null;
+
+    if (cookieToken) {
+      // Cookie takes precedence when present (web browser flow)
+      token = cookieToken;
+    } else if (authHeader) {
+      const parts = authHeader.split(' ');
+      if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+        if (isPublic) return next();
+        throw new HttpException(
+          {
+            error: {
+              code: 'UNAUTHENTICATED',
+              message: 'Invalid authorization format. Use Bearer <token>.',
+            },
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
       }
+      token = parts[1];
+    }
+
+    if (!token) {
+      if (isPublic) return next();
       throw new HttpException(
         {
           error: {
             code: 'UNAUTHENTICATED',
-            message: 'Authorization header is missing.',
+            message: 'Authorization required.',
           },
         },
         HttpStatus.UNAUTHORIZED,
       );
     }
 
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
-      if (isPublic) {
-        return next();
-      }
-      throw new HttpException(
-        {
-          error: {
-            code: 'UNAUTHENTICATED',
-            message: 'Invalid authorization format. Use Bearer <token>.',
-          },
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    const token = parts[1];
     const payload = this.authService.verifyAccessToken(token);
 
     if (!payload) {
-      if (isPublic) {
-        return next();
-      }
+      if (isPublic) return next();
       throw new HttpException(
         {
           error: {

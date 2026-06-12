@@ -4,6 +4,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BrandProvider } from "@/contexts/BrandContext";
+import { Toaster } from "@/providers/toaster";
 import PWARegister from "@/components/pwa/PWARegister";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 
@@ -49,6 +50,7 @@ export default function RootLayout({
           <AuthProvider>
             <BrandProvider>
               {children}
+              <Toaster />
               <PWARegister />
               <InstallPrompt />
             </BrandProvider>

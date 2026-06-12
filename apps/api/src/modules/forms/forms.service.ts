@@ -113,17 +113,16 @@ export class FormsService {
 
   async create(
     organizationId: string,
-    locationId: string,
+    locationId: string | null | undefined,
     dto: CreateFormDto,
     actor: AuthUser,
   ): Promise<unknown> {
     const team = await this.db.team.findFirst({
       where: {
         id: dto.team_id,
-        location_id: locationId,
         organization_id: organizationId,
       },
-      select: { id: true, name: true },
+      select: { id: true, name: true, location_id: true },
     });
     if (!team) {
       throw new BadRequestException({
@@ -133,6 +132,29 @@ export class FormsService {
         },
       });
     }
+
+    const resolvedLocationId = team.location_id;
+
+    if (locationId && resolvedLocationId !== locationId) {
+      throw new BadRequestException({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'team_id must belong to the location.',
+        },
+      });
+    }
+
+    if (actor.role === 'location_admin' || actor.role === 'branch_admin') {
+      if (resolvedLocationId !== actor.branch_id) {
+        throw new ForbiddenException({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'You can only create forms for teams in your location.',
+          },
+        });
+      }
+    }
+
     this.validateFieldShapes(dto.fields);
     const id = newId('frm');
     const publicId = await this.uniquePublicId();
@@ -141,8 +163,8 @@ export class FormsService {
         id,
         public_id: publicId,
         organization_id: organizationId,
-        location_id: locationId,
-        team_id: dto.team_id,
+        location_id: resolvedLocationId,
+        team_id: dto.team_id!,
         title: dto.title,
         description: dto.description,
         status: 'draft',
@@ -159,7 +181,7 @@ export class FormsService {
     await this.audit.log({
       actorId: actor.sub,
       organizationId,
-      locationId,
+      locationId: resolvedLocationId,
       entity: 'form',
       entityId: id,
       action: 'form.create',

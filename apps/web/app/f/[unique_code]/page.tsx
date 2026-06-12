@@ -1,138 +1,275 @@
 "use client";
 
-import React, { useState, use } from 'react';
-import { 
-  Heart, 
-  MapPin, 
-  Phone, 
-  User, 
-  Sparkles, 
-  CheckCircle2,
+import React, { useState, useEffect } from "react";
+import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Sparkles,
   Users,
-  MessageCircle,
-  PartyPopper
-} from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import '../first-timer.css';
+  Loader2,
+} from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { SuccessModal } from "@/components/ui/SuccessModal";
+import { getPublicForm } from "@/lib/api/endpoints/public-forms";
+import {
+  useTrackPublicScan,
+  useSubmitPublicForm,
+} from "@/services/manage-organization";
+import { useFieldErrors } from "@/lib/forms/use-field-errors";
+import { extractErrorMessage } from "@/lib/forms/extract-error-message";
+import { toast } from "sonner";
+import type { FormField } from "@/types/api/teams";
+import "../first-timer.css";
 
-export default function FirstTimerPage({ params }: { params: Promise<{ unique_code: string }> }) {
+export default function FirstTimerPage({
+  params,
+}: {
+  params: Promise<{ unique_code: string }>;
+}) {
   const { unique_code } = use(params);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  
-  // Format the worker name from the code for the UI
-  const workerDisplayName = unique_code
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const { errors, setError, clearAll } = useFieldErrors();
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSuccess(true);
-    }, 1500);
+  const formQuery = useQuery({
+    queryKey: ["public-form", unique_code],
+    queryFn: () => getPublicForm(unique_code),
+    enabled: Boolean(unique_code),
+  });
+
+  const trackScan = useTrackPublicScan();
+  const submitForm = useSubmitPublicForm();
+
+  useEffect(() => {
+    if (unique_code && !trackScan.isIdle) return;
+    trackScan.mutate({ publicId: unique_code, input: {} });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unique_code]);
+
+  const formData = formQuery.data;
+
+  const setFieldValue = (key: string, value: string) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
   };
 
-  if (success) {
+  const validate = (fields: FormField[]): boolean => {
+    clearAll();
+    let hasError = false;
+    for (const field of fields) {
+      if (field.required && !answers[field.key]?.trim()) {
+        setError(field.key, `${field.label} is required.`);
+        hasError = true;
+      }
+      if (field.type === "email" && answers[field.key]) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(answers[field.key])) {
+          setError(field.key, "Enter a valid email address.");
+          hasError = true;
+        }
+      }
+      if (field.type === "phone" && answers[field.key]) {
+        const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
+        if (!phoneRegex.test(answers[field.key])) {
+          setError(field.key, "Enter a valid phone number.");
+          hasError = true;
+        }
+      }
+    }
+    return !hasError;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData) return;
+    if (!validate(formData.fields)) return;
+
+    try {
+      const result = await submitForm.mutateAsync({
+        publicId: unique_code,
+        input: {
+          answers: answers as Record<string, unknown>,
+          scan_token: trackScan.data?.scan_token,
+        },
+      });
+      setSuccessMessage(
+        result.message ?? "Your information has been submitted successfully.",
+      );
+      setShowSuccess(true);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Could not submit form."));
+    }
+  };
+
+  const workerDisplayName = unique_code
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  if (formQuery.isLoading) {
     return (
       <div className="first-timer-container">
-        <Card className="first-timer-card success-view fade-in">
-          <div className="success-icon-wrapper">
-            <PartyPopper size={48} />
-          </div>
-          <h2>Welcome Home!</h2>
-          <p>
-            It's such a joy to have you with us, <strong>{name.split(' ')[0]}</strong>. 
-            Your journey with our family starts today, and we couldn't be more excited.
+        <div
+          style={{
+            textAlign: "center",
+            padding: "48px 24px",
+            color: "var(--text-tertiary)",
+          }}
+        >
+          <Loader2
+            size={32}
+            className="spinner"
+            style={{ display: "inline", verticalAlign: "middle" }}
+          />{" "}
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  if (formQuery.isError) {
+    return (
+      <div className="first-timer-container">
+        <Card className="first-timer-card" style={{ textAlign: "center", padding: "32px" }}>
+          <h2>Form Not Found</h2>
+          <p style={{ color: "var(--text-tertiary)", marginTop: "8px" }}>
+            {extractErrorMessage(
+              formQuery.error,
+              "This form could not be found or has expired.",
+            )}
           </p>
-          
-          <div className="success-footer">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <Heart size={18} style={{ color: 'var(--red)' }} />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>We'll be in touch soon!</span>
-            </div>
-            <p style={{ opacity: 0.7 }}>A host from {workerDisplayName}'s team will reach out to welcome you personally.</p>
-          </div>
         </Card>
       </div>
     );
   }
 
+  const primaryColor = formData?.primary_color ?? "var(--blue)";
+
   return (
     <div className="first-timer-container">
       <div className="first-timer-header">
         <div className="organization-logo-wrapper">
-          <Sparkles size={40} style={{ color: 'var(--blue)' }} />
+          <Sparkles size={40} style={{ color: primaryColor }} />
         </div>
-        <h1>Welcome Home</h1>
-        <p>We're so glad you're here with us today.</p>
+        <h1>{formData?.title || "Welcome Home"}</h1>
+        {formData?.description ? (
+          <p>{formData.description}</p>
+        ) : (
+          <p>We&apos;re so glad you&apos;re here with us today.</p>
+        )}
       </div>
 
       <Card className="first-timer-card glass">
-        <div className="guest-info-pill">
-          <Users size={18} style={{ color: 'var(--blue)' }} />
-          <span>Joining as a guest of {workerDisplayName}</span>
-        </div>
-        
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-          <div style={{ position: 'relative' }}>
-            <User size={18} style={{ position: 'absolute', right: '1rem', top: '42px', color: 'var(--text-tertiary)', zIndex: 2 }} />
-            <Input 
-              label="What's your name?" 
-              placeholder="e.g. John Doe" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+        {formData?.organization_name ? (
+          <div className="guest-info-pill">
+            <Users size={18} style={{ color: primaryColor }} />
+            <span>
+              Joining{" "}
+              {formData.location_name
+                ? `${formData.organization_name} (${formData.location_name})`
+                : formData.organization_name}
+            </span>
           </div>
-          
-          <div style={{ position: 'relative' }}>
-            <Phone size={18} style={{ position: 'absolute', right: '1rem', top: '42px', color: 'var(--text-tertiary)', zIndex: 2 }} />
-            <Input 
-              label="Phone Number" 
-              placeholder="+234..." 
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
+        ) : (
+          <div className="guest-info-pill">
+            <Users size={18} style={{ color: primaryColor }} />
+            <span>Joining as a guest of {workerDisplayName}</span>
           </div>
+        )}
 
-          <div style={{ position: 'relative' }}>
-            <MessageCircle size={18} style={{ position: 'absolute', right: '1rem', top: '42px', color: 'var(--text-tertiary)', zIndex: 2 }} />
-            <Input 
-              label="Email (Optional)" 
-              placeholder="john@example.com" 
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.75rem",
+          }}
+        >
+          {(formData?.fields ?? []).map((field: FormField) => (
+            <Input
+              key={field.key}
+              label={field.label}
+              placeholder={field.placeholder}
+              type={
+                field.type === "email"
+                  ? "email"
+                  : field.type === "phone"
+                    ? "tel"
+                    : field.type === "number"
+                      ? "number"
+                      : "text"
+              }
+              value={answers[field.key] ?? ""}
+              onChange={(e) => setFieldValue(field.key, e.target.value)}
+              error={errors[field.key]}
+              required={field.required}
             />
-          </div>
+          ))}
+
+          {(!formData?.fields || formData.fields.length === 0) && (
+            <>
+              <Input
+                label="What&apos;s your name?"
+                placeholder="e.g. John Doe"
+                value={answers.name ?? ""}
+                onChange={(e) => setFieldValue("name", e.target.value)}
+                required
+              />
+              <Input
+                label="Phone Number"
+                placeholder="+234..."
+                type="tel"
+                value={answers.phone ?? ""}
+                onChange={(e) => setFieldValue("phone", e.target.value)}
+                required
+              />
+            </>
+          )}
 
           <div className="form-submit">
-            <Button 
-              type="submit" 
-              fullWidth 
+            <Button
+              type="submit"
+              fullWidth
               className="btn-welcome"
-              disabled={!name || !phone || isSubmitting}
+              disabled={submitForm.isPending}
+              style={
+                primaryColor !== "var(--blue)"
+                  ? { background: primaryColor }
+                  : undefined
+              }
             >
-              {isSubmitting ? 'Preparing your welcome...' : 'Check In'}
+              {submitForm.isPending ? "Submitting..." : "Check In"}
             </Button>
           </div>
-          
-          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.5rem' }}>
-            By checking in, you agree to receive a warm welcome message from our team.
+
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "0.75rem",
+              color: "var(--text-tertiary)",
+              marginTop: "0.5rem",
+            }}
+          >
+            By checking in, you agree to receive a warm welcome message from
+            our team.
           </p>
         </form>
       </Card>
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        icon="check"
+        title="Welcome Home!"
+        description={successMessage}
+        primaryAction={{
+          label: "Close",
+          onClick: () => setShowSuccess(false),
+        }}
+      />
     </div>
   );
 }
