@@ -123,7 +123,7 @@ export default function ForgotPinPage() {
           <div className="login-logo-icon">
             <ShieldCheck size={28} />
           </div>
-          <h1>Vangly</h1>
+          <h1>Harvite</h1>
           <p>Reset your PIN</p>
         </div>
 

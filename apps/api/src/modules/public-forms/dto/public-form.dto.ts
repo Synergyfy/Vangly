@@ -24,4 +24,24 @@ export class PublicSubmitDto {
   @IsOptional()
   @IsString()
   user_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  worker_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  worker_name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  location_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  location_name?: string;
 }

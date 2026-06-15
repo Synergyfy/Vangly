@@ -765,8 +765,8 @@ export class FormsService {
       created_at: row.createdAt.toISOString(),
       published_at: row.published_at?.toISOString(),
       updated_at: row.updated_at.toISOString(),
-      public_url: `https://vangly.app/f/${row.public_id}`,
-      qr_payload: `https://vangly.app/f/${row.public_id}`,
+      public_url: `https://harvite.app/f/${row.public_id}`,
+      qr_payload: `https://harvite.app/f/${row.public_id}`,
     };
   }
 

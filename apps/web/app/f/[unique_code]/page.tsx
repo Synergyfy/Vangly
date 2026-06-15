@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import {
   Sparkles,
   Users,
@@ -33,6 +34,17 @@ export default function FirstTimerPage({
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
+  const searchParams = useSearchParams();
+  const workerNameParam = searchParams.get("worker_name") ?? "";
+  const workerIdParam = searchParams.get("worker_id") ?? "";
+  const locationIdParam = searchParams.get("location_id") ?? "";
+  const locationNameParam = searchParams.get("location_name") ?? "";
+
+  // Editable overrides — seeded once from URL params, then freely editable
+  const [workerName, setWorkerName] = useState(workerNameParam);
+  const [workerId, setWorkerId] = useState(workerIdParam);
+  const [locationName, setLocationName] = useState(locationNameParam);
+
   const { errors, setError, clearAll } = useFieldErrors();
 
   const formQuery = useQuery({
@@ -41,14 +53,31 @@ export default function FirstTimerPage({
     enabled: Boolean(unique_code),
   });
 
+  // Seed locationName from form data the first time it arrives (if not set via URL)
+  const locationSeeded = useRef(false);
+  if (!locationSeeded.current && formQuery.data?.location_name && !locationNameParam && !locationName) {
+    locationSeeded.current = true;
+    // setState during render is safe in React when guarded by a ref flag
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    setLocationName(formQuery.data.location_name);
+  }
+
   const trackScan = useTrackPublicScan();
   const submitForm = useSubmitPublicForm();
 
-  useEffect(() => {
-    if (unique_code && !trackScan.isIdle) return;
+  // Fire-and-forget scan track on mount (run once via ref guard)
+  const scanFired = useRef(false);
+  if (unique_code && !scanFired.current) {
+    scanFired.current = true;
     trackScan.mutate({ publicId: unique_code, input: {} });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unique_code]);
+  }
+
+  const handleWorkerNameChange = (val: string) => {
+    setWorkerName(val);
+    if (val !== workerNameParam) {
+      setWorkerId("");
+    }
+  };
 
   const formData = formQuery.data;
 
@@ -93,6 +122,10 @@ export default function FirstTimerPage({
         input: {
           answers: answers as Record<string, unknown>,
           scan_token: trackScan.data?.scan_token,
+          worker_id: workerId || undefined,
+          worker_name: workerName.trim() || undefined,
+          location_id: locationIdParam || undefined,
+          location_name: locationName.trim() || undefined,
         },
       });
       setSuccessMessage(
@@ -163,22 +196,13 @@ export default function FirstTimerPage({
       </div>
 
       <Card className="first-timer-card glass">
-        {formData?.organization_name ? (
-          <div className="guest-info-pill">
-            <Users size={18} style={{ color: primaryColor }} />
-            <span>
-              Joining{" "}
-              {formData.location_name
-                ? `${formData.organization_name} (${formData.location_name})`
-                : formData.organization_name}
-            </span>
-          </div>
-        ) : (
-          <div className="guest-info-pill">
-            <Users size={18} style={{ color: primaryColor }} />
-            <span>Joining as a guest of {workerDisplayName}</span>
-          </div>
-        )}
+        <div className="guest-info-pill">
+          <Users size={18} style={{ color: primaryColor }} />
+          <span>
+            {workerName ? `Joining as a guest of ${workerName}` : `Welcome to ${formData?.organization_name || "Harvite"}`}
+            {locationName && ` (${locationName})`}
+          </span>
+        </div>
 
         <form
           onSubmit={handleSubmit}
@@ -228,6 +252,24 @@ export default function FirstTimerPage({
               />
             </>
           )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", borderTop: "1px solid var(--border-light)", paddingTop: "1.25rem", marginTop: "0.5rem" }}>
+            <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Outreach Details
+            </h3>
+            <Input
+              label="Invited by"
+              placeholder="Who invited you?"
+              value={workerName}
+              onChange={(e) => handleWorkerNameChange(e.target.value)}
+            />
+            <Input
+              label="Campus / Branch"
+              placeholder="Which branch are you joining?"
+              value={locationName}
+              onChange={(e) => setLocationName(e.target.value)}
+            />
+          </div>
 
           <div className="form-submit">
             <Button

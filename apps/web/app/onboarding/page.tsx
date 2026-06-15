@@ -524,7 +524,7 @@ export default function OnboardingPage() {
                       disabled={isSubmitting}
                       className={errors['subdomain'] ? 'input-error' : ''}
                     />
-                    <span>.vangly.app</span>
+                    <span>.harvite.app</span>
                   </div>
                 </div>
                 {errors['subdomain'] && (
@@ -715,7 +715,7 @@ export default function OnboardingPage() {
               </p>
               <div className="onboarding-summary">
                 <div className="summary-item">
-                  <CheckCircle2 size={16} /> Subdomain: {subdomain}.vangly.app
+                  <CheckCircle2 size={16} /> Subdomain: {subdomain}.harvite.app
                 </div>
                 <div className="summary-item">
                   <CheckCircle2 size={16} /> Admin: {adminName}

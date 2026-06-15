@@ -8,6 +8,7 @@ import {
   Post,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -95,5 +96,16 @@ export class MessagesController {
     @Req() req: Request,
   ) {
     return this.service.send(user, dto, getIpAndUa(req));
+  }
+
+  @Get('messages/history')
+  @ApiOperation({ summary: 'Get message history' })
+  listHistory(
+    @CurrentUser() user: AuthUser,
+    @Query() q: { page?: string; page_size?: string },
+  ) {
+    const page = Number(q.page) || 1;
+    const pageSize = Number(q.page_size) || 20;
+    return this.service.listHistory(user, page, pageSize);
   }
 }

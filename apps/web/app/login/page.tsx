@@ -139,7 +139,7 @@ export default function LoginPage() {
               <path d="M2 12l10 5 10-5" />
             </svg>
           </div>
-          <h1>Vangly</h1>
+          <h1>Harvite</h1>
           <p>Organization management platform</p>
         </div>
 

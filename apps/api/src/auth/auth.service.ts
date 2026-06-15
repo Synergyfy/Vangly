@@ -187,7 +187,7 @@ export class AuthService {
       );
     }
 
-    const reserved = ['admin', 'www', 'mail', 'api', 'app', 'vangly'];
+    const reserved = ['admin', 'www', 'mail', 'api', 'app', 'harvite'];
     if (reserved.includes(subdomain.toLowerCase())) {
       throw new HttpException(
         {
@@ -231,7 +231,7 @@ export class AuthService {
 
     return {
       subdomain,
-      url: `https://${subdomain}.vangly.app`,
+      url: `https://${subdomain}.harvite.app`,
       onboarding_token: newToken,
     };
   }
@@ -257,8 +257,8 @@ export class AuthService {
 
     const orgId = this.generateId('org');
     const logoUrl = logoFilename
-      ? `https://cdn.vangly.app/${orgId}/${logoFilename}`
-      : `https://cdn.vangly.app/${orgId}/logo.png`;
+      ? `https://cdn.harvite.app/${orgId}/${logoFilename}`
+      : `https://cdn.harvite.app/${orgId}/logo.png`;
 
     const newToken = this.generateId('obt');
     const tokenExpires = new Date();

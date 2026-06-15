@@ -47,8 +47,8 @@ interface AuthenticatedRequest extends express.Request {
 }
 
 /** Cookie names used for httpOnly token storage */
-const COOKIE_ACCESS = 'vangly_access';
-const COOKIE_REFRESH = 'vangly_refresh';
+const COOKIE_ACCESS = 'harvite_access';
+const COOKIE_REFRESH = 'harvite_refresh';
 
 @Controller('api/auth')
 @UseInterceptors(ClassSerializerInterceptor)

@@ -567,7 +567,7 @@ export class MembersService {
         vars: {},
         organizationId,
         locationId: user.branch_id,
-        body: `Your Vangly PIN was reset by an admin. Use OTP ${otp} to set a new PIN.`,
+        body: `Your Harvite PIN was reset by an admin. Use OTP ${otp} to set a new PIN.`,
       });
     } catch (err) {
       this.logger.warn(`SMS for pin reset failed: ${(err as Error).message}`);

@@ -18,9 +18,9 @@ export class AuthMiddleware implements NestMiddleware {
     const isPublic = this.isPublicRoute(req.method, url);
 
     // --- Resolve token from Cookie or Authorization header ---
-    // Web browsers send the httpOnly vangly_access cookie automatically.
+    // Web browsers send the httpOnly harvite_access cookie automatically.
     // Mobile/Swagger clients send Authorization: Bearer <token>.
-    const cookieToken = (req.cookies as Record<string, string>)?.vangly_access;
+    const cookieToken = (req.cookies as Record<string, string>)?.harvite_access;
     const authHeader = req.headers['authorization'];
 
     let token: string | null = null;
@@ -117,6 +117,9 @@ export class AuthMiddleware implements NestMiddleware {
     }
     // Public form surface: GET, POST submit, POST track-scan all bypass auth
     if (path.startsWith('/f/')) {
+      return true;
+    }
+    if (method === 'GET' && path.startsWith('/api/invites/track/')) {
       return true;
     }
 

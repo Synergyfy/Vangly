@@ -3,8 +3,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
-    .setTitle('Vangly API')
-    .setDescription('Backend for Vangly (Invitely / Vemtap)')
+    .setTitle('Harvite API')
+    .setDescription('Backend for Harvite')
     .setVersion('1.0.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

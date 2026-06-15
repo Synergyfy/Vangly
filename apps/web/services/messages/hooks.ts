@@ -6,6 +6,7 @@ import { messageKeys } from "@/lib/api/queries/messages.keys";
 import { messageMutations } from "@/lib/api/mutations/messages.mutations";
 import { walletKeys } from "@/lib/api/queries/wallet.keys";
 import { authKeys } from "@/lib/api/queries/auth.keys";
+import { listMessageHistory } from "@/lib/api/endpoints/messages";
 
 export function useMessageTemplates() {
   return useQuery(messageQueries.templates.list());
@@ -57,6 +58,14 @@ export function useSendMessage() {
       qc.invalidateQueries({ queryKey: walletKeys.balance() });
       qc.invalidateQueries({ queryKey: authKeys.me() });
       qc.invalidateQueries({ queryKey: walletKeys.transactions.all() });
+      qc.invalidateQueries({ queryKey: ["messages-history"] });
     },
+  });
+}
+
+export function useMessageHistory(params: { page?: number; page_size?: number }) {
+  return useQuery({
+    queryKey: ["messages-history", params],
+    queryFn: () => listMessageHistory(params),
   });
 }

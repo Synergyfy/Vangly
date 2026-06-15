@@ -60,7 +60,7 @@ export class LocationsService {
   ) {}
 
   async list(
-    organizationId: string,
+    organizationId: string | null,
     userRole: string,
     userBranchId: string | null,
     query: FindLocationsQueryDto,
@@ -74,7 +74,7 @@ export class LocationsService {
     );
 
     const where: Prisma.LocationWhereInput = {
-      organization_id: organizationId,
+      ...(organizationId ? { organization_id: organizationId } : {}),
       ...(userRole === 'location_admin' && userBranchId
         ? { id: userBranchId }
         : {}),
@@ -108,7 +108,7 @@ export class LocationsService {
   }
 
   async create(
-    organizationId: string,
+    organizationId: string | null,
     dto: CreateLocationDto,
     actor: { id: string; ip: string; ua: string },
   ): Promise<unknown> {
@@ -117,12 +117,23 @@ export class LocationsService {
     }
 
     const existing = await this.db.location.count({
-      where: { organization_id: organizationId },
+      where: { ...(organizationId ? { organization_id: organizationId } : {}) },
     });
     const isHq = existing === 0;
 
     let created: { id: string };
     try {
+      if (!organizationId) {
+        throw new HttpException(
+          {
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'organization_id is required to create a location.',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       created = await this.db.location.create({
         data: {
           id: newId('loc'),
@@ -170,7 +181,7 @@ export class LocationsService {
   }
 
   async getById(
-    organizationId: string,
+    organizationId: string | null,
     locationId: string,
     userRole: string,
     userBranchId?: string | null,
@@ -188,7 +199,10 @@ export class LocationsService {
       });
     }
     const row = await this.db.location.findFirst({
-      where: { id: locationId, organization_id: organizationId },
+      where: {
+        id: locationId,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
       select: this.locationListSelect(),
     });
     if (!row) {
@@ -203,14 +217,17 @@ export class LocationsService {
   }
 
   async update(
-    organizationId: string,
+    organizationId: string | null,
     locationId: string,
     dto: UpdateLocationDto,
     actor: { id: string; ip: string; ua: string },
   ): Promise<unknown> {
     const existing = await this.db.location.findFirst({
-      where: { id: locationId, organization_id: organizationId },
-      select: { id: true, is_hq: true, name: true, city: true, status: true },
+      where: {
+        id: locationId,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
+      select: { id: true, is_hq: true, name: true, city: true, status: true, organization_id: true },
     });
     if (!existing) {
       throw new NotFoundException({
@@ -232,8 +249,8 @@ export class LocationsService {
       ...(dto.country !== undefined ? { country: dto.country } : {}),
       ...(dto.address !== undefined ? { address: dto.address } : {}),
       ...(dto.description !== undefined
-        ? { description: dto.description }
-        : {}),
+          ? { description: dto.description }
+          : {}),
       ...(dto.photo_url !== undefined ? { photo_url: dto.photo_url } : {}),
       ...(dto.status !== undefined ? { status: dto.status } : {}),
     };
@@ -242,8 +259,8 @@ export class LocationsService {
       await this.db.location.update({ where: { id: locationId }, data });
     } catch (err) {
       if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2002'
       ) {
         throw new ConflictException({
           error: {
@@ -257,7 +274,7 @@ export class LocationsService {
 
     await this.audit.log({
       actorId: actor.id,
-      organizationId,
+      organizationId: organizationId || existing.organization_id,
       locationId,
       entity: 'location',
       entityId: locationId,
@@ -271,13 +288,16 @@ export class LocationsService {
   }
 
   async softDelete(
-    organizationId: string,
+    organizationId: string | null,
     locationId: string,
     actor: { id: string; ip: string; ua: string },
   ): Promise<void> {
     const existing = await this.db.location.findFirst({
-      where: { id: locationId, organization_id: organizationId },
-      select: { id: true, is_hq: true },
+      where: {
+        id: locationId,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
+      select: { id: true, is_hq: true, organization_id: true },
     });
     if (!existing) {
       throw new NotFoundException({
@@ -301,7 +321,7 @@ export class LocationsService {
     });
     await this.audit.log({
       actorId: actor.id,
-      organizationId,
+      organizationId: organizationId || existing.organization_id,
       locationId,
       entity: 'location',
       entityId: locationId,
@@ -313,7 +333,7 @@ export class LocationsService {
   }
 
   async setPhoto(
-    organizationId: string,
+    organizationId: string | null,
     locationId: string,
     photoUrl: string,
     actor: { id: string; ip: string; ua: string },
@@ -331,8 +351,11 @@ export class LocationsService {
       );
     }
     const existing = await this.db.location.findFirst({
-      where: { id: locationId, organization_id: organizationId },
-      select: { id: true },
+      where: {
+        id: locationId,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
+      select: { id: true, organization_id: true },
     });
     if (!existing) {
       throw new NotFoundException({
@@ -348,7 +371,7 @@ export class LocationsService {
     });
     await this.audit.log({
       actorId: actor.id,
-      organizationId,
+      organizationId: organizationId || existing.organization_id,
       locationId,
       entity: 'location',
       entityId: locationId,
@@ -361,7 +384,7 @@ export class LocationsService {
   }
 
   async getDashboard(
-    organizationId: string,
+    organizationId: string | null,
     locationId: string,
     query: LocationDashboardQueryDto,
     userRole: string,
@@ -380,7 +403,10 @@ export class LocationsService {
       });
     }
     const loc = await this.db.location.findFirst({
-      where: { id: locationId, organization_id: organizationId },
+      where: {
+        id: locationId,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
       select: { id: true, status: true, createdAt: true },
     });
     if (!loc) {
@@ -760,9 +786,12 @@ export class LocationsService {
     };
   }
 
-  async getBrand(organizationId: string, id: string) {
+  async getBrand(organizationId: string | null, id: string) {
     const loc = await this.db.location.findFirst({
-      where: { id, organization_id: organizationId },
+      where: {
+        id,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
       select: { id: true, brand: true },
     });
     if (!loc) {
@@ -778,13 +807,17 @@ export class LocationsService {
   }
 
   async updateBrand(
-    organizationId: string,
+    organizationId: string | null,
     id: string,
     dto: UpdateLocationBrandDto,
     actor: { id: string; ip: string; ua: string },
   ) {
     const loc = await this.db.location.findFirst({
-      where: { id, organization_id: organizationId },
+      where: {
+        id,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
+      select: { id: true, organization_id: true }
     });
     if (!loc) {
       throw new HttpException(
@@ -799,7 +832,7 @@ export class LocationsService {
     });
     await this.audit.log({
       actorId: actor.id,
-      organizationId,
+      organizationId: organizationId || loc.organization_id,
       locationId: id,
       entity: 'Location',
       entityId: id,
@@ -814,9 +847,12 @@ export class LocationsService {
     };
   }
 
-  async getQrCode(organizationId: string, id: string) {
+  async getQrCode(organizationId: string | null, id: string) {
     const loc = await this.db.location.findFirst({
-      where: { id, organization_id: organizationId },
+      where: {
+        id,
+        ...(organizationId ? { organization_id: organizationId } : {}),
+      },
       select: { id: true, name: true },
     });
     if (!loc) {
@@ -825,7 +861,7 @@ export class LocationsService {
         HttpStatus.NOT_FOUND,
       );
     }
-    const payload = `https://vangly.app/loc/${id}`;
+    const payload = `https://harvite.app/loc/${id}`;
     return {
       location_id: id,
       name: loc.name,
@@ -836,7 +872,7 @@ export class LocationsService {
   }
 
   async listForms(
-    organizationId: string,
+    organizationId: string | null,
     id: string,
     role: string,
     branchId: string | null,
@@ -856,7 +892,7 @@ export class LocationsService {
       { maxPerPage: 100 },
     );
     const where: Prisma.FormWhereInput = {
-      organization_id: organizationId,
+      ...(organizationId ? { organization_id: organizationId } : {}),
       location_id: id,
       ...(query.status ? { status: query.status } : {}),
       ...(query.q
@@ -889,8 +925,8 @@ export class LocationsService {
         schema_version: r.schema_version,
         analytics_scans: r.analytics_scans,
         analytics_submissions: r.analytics_submissions,
-        public_url: `https://vangly.app/f/${r.public_id}`,
-        qr_payload: `https://vangly.app/f/${r.public_id}`,
+        public_url: `https://harvite.app/f/${r.public_id}`,
+        qr_payload: `https://harvite.app/f/${r.public_id}`,
         created_at: r.createdAt.toISOString(),
         published_at: r.published_at?.toISOString(),
         updated_at: r.updated_at.toISOString(),
@@ -902,7 +938,7 @@ export class LocationsService {
   }
 
   async listTeams(
-    organizationId: string,
+    organizationId: string | null,
     id: string,
     role: string,
     branchId: string | null,
@@ -922,7 +958,7 @@ export class LocationsService {
       { maxPerPage: 100 },
     );
     const where: Prisma.TeamWhereInput = {
-      organization_id: organizationId,
+      ...(organizationId ? { organization_id: organizationId } : {}),
       location_id: id,
       ...(query.q
         ? {

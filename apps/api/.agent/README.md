@@ -1,4 +1,4 @@
-# .agent — Engineering Rules for vangly-backend
+# .agent — Engineering Rules for harvite-backend
 
 This folder contains the engineering rules every contributor (human or AI agent)
 **must follow** when working on this NestJS + Prisma backend.

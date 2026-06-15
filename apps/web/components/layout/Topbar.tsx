@@ -39,7 +39,7 @@ export const Topbar: React.FC = () => {
       <div className="topbar-left">
           <div className="topbar-brand" onClick={() => router.push(user?.role === 'location_admin' ? '/branch' : '/main')}>
           <div className="brand-icon">V</div>
-          <span className="brand-name">Vangly</span>
+          <span className="brand-name">Harvite</span>
         </div>
 
         <div className="topbar-search">

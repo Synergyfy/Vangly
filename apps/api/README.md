@@ -1,6 +1,6 @@
-# Vangly Backend
+# Harvite Backend
 
-REST API for the Vangly church-management platform.
+REST API for the Harvite church-management platform.
 
 ## Stack
 

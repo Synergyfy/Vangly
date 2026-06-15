@@ -22,13 +22,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Vangly — Organization Evangelism Platform",
+  title: "Harvite — Organization Evangelism Platform",
   description: "Track, manage, and grow your organization's outreach with precision.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Vangly",
+    title: "Harvite",
   },
   formatDetection: {
     telephone: false,

@@ -90,7 +90,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed = true }: SidebarProps) {
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="brand-icon">V</div>
-            {!isCollapsed && <span className="brand-name">Vangly</span>}
+            {!isCollapsed && <span className="brand-name">Harvite</span>}
           </div>
           <button className="sidebar-close-btn" onClick={onClose}>
             ×

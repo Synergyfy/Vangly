@@ -50,7 +50,7 @@ export class CreateLocationDto {
   description?: string;
 
   @ApiPropertyOptional({
-    example: 'https://cdn.vangly.app/org_abc/locations/loc_xyz/photo.webp',
+    example: 'https://cdn.harvite.app/org_abc/locations/loc_xyz/photo.webp',
   })
   @IsOptional()
   @IsString()

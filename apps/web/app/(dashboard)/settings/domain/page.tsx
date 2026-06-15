@@ -105,7 +105,7 @@ export default function CustomDomainPage() {
         {step === 1 && (
           <Card className="onboarding-card glass">
             <h2>Use Your Own Domain</h2>
-            <p className="subtitle">Connect your organization domain so members see your brand instead of Vangly.</p>
+            <p className="subtitle">Connect your organization domain so members see your brand instead of Harvite.</p>
             <form onSubmit={handleContinue}>
               <Input
                 label="Custom Domain"
@@ -153,17 +153,17 @@ export default function CustomDomainPage() {
                 </div>
                 <div
                   className="monospace"
-                  onClick={() => copyToClipboard('app.vangly.com', 'Value')}
+                  onClick={() => copyToClipboard('app.harvite.com', 'Value')}
                   role="button"
                   tabIndex={0}
                 >
-                  app.vangly.com <Copy size={12} />
+                  app.harvite.com <Copy size={12} />
                 </div>
               </div>
               {verificationToken && (
                 <div className="dns-row">
                   <div className="badge">TXT</div>
-                  <div className="monospace">_vangly</div>
+                  <div className="monospace">_harvite</div>
                   <div
                     className="monospace"
                     onClick={() => copyToClipboard(verificationToken, 'Verification token')}

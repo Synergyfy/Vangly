@@ -917,7 +917,7 @@ export default function FormsPage() {
                 <div className="opt-text">
                   <strong>Registered Members Only</strong>
                   <span>
-                    Users must be logged into their Vangly account.
+                    Users must be logged into their Harvite account.
                   </span>
                 </div>
               </div>

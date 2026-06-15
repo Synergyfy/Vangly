@@ -9,6 +9,7 @@ import {
   Query,
   Req,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -111,5 +112,15 @@ export class InvitesController {
     @Req() req: Request,
   ) {
     return this.service.share(user, id, dto, getIpAndUa(req));
+  }
+
+  @Get('track/:code')
+  @ApiOperation({ summary: 'Track and decode invite link by code' })
+  async track(@Param('code') code: string) {
+    const res = await this.service.trackUse(code);
+    if (!res) {
+      throw new NotFoundException('Invite link not found or inactive');
+    }
+    return res;
   }
 }

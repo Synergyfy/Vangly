@@ -18,8 +18,8 @@ In `main.ts`:
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const config = new DocumentBuilder()
-  .setTitle('Vangly API')
-  .setDescription('Backend for Vangly')
+  .setTitle('Harvite API')
+  .setDescription('Backend for Harvite')
   .setVersion('1.0.0')
   .addBearerAuth(
     { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
@@ -214,7 +214,7 @@ import { AppModule } from '../src/app.module';
 
 (async () => {
   const app = await NestFactory.create(AppModule, { logger: false });
-  const config = new DocumentBuilder().setTitle('Vangly API').setVersion('1.0.0').build();
+  const config = new DocumentBuilder().setTitle('Harvite API').setVersion('1.0.0').build();
   const doc = SwaggerModule.createDocument(app, config);
   const paths = Object.keys(doc.paths);
   const unannotated = paths.filter((p) =>

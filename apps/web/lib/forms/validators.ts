@@ -15,7 +15,7 @@ export const RESERVED_SUBDOMAINS = new Set([
   "api",
   "app",
   "dashboard",
-  "vangly",
+  "harvite",
   "support",
   "help",
   "auth",

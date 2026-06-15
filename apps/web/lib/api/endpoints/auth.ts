@@ -21,7 +21,7 @@ export async function me(): Promise<User> {
 
 export async function logout(): Promise<void> {
   // The refresh cookie is sent automatically via withCredentials.
-  // The server reads req.cookies.vangly_refresh to revoke the family,
+  // The server reads req.cookies.harvite_refresh to revoke the family,
   // then clears both cookies via Set-Cookie headers.
   await api.post<void>("/api/auth/logout", {});
 }

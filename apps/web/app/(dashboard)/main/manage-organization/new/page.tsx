@@ -29,7 +29,7 @@ function isValidPhotoUrl(value: string): string | null {
     }
     return null;
   } catch {
-    return "Enter a valid URL (e.g. https://cdn.vangly.app/...).";
+    return "Enter a valid URL (e.g. https://cdn.harvite.app/...).";
   }
 }
 
@@ -342,7 +342,7 @@ export default function NewLocationPage() {
                   />
                   <div className="photo-url-input-group">
                     <Input
-                      placeholder="https://cdn.vangly.app/…/photo.webp"
+                      placeholder="https://cdn.harvite.app/…/photo.webp"
                       value={form.photo_url}
                       onChange={(e) => handlePhotoUrlChange(e.target.value)}
                       maxLength={2000}

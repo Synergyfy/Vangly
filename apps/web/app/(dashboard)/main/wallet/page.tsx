@@ -156,7 +156,7 @@ function WalletContent() {
       return;
     }
 
-    const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@vangly.app`;
+    const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@harvite.app`;
     paystack.initializePayment({
       email,
       amount: Number(customAmount) * 100,

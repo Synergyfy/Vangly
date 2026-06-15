@@ -56,3 +56,33 @@ export async function sendMessage(input: SendMessageInput): Promise<SendMessageR
   );
   return data;
 }
+
+export interface MessageHistoryItem {
+  id: string;
+  organization_id: string;
+  location_id: string | null;
+  to_phone: string;
+  template: string;
+  body_preview: string;
+  status: string;
+  credits_after: number;
+  at: string;
+}
+
+export interface MessageHistoryResult {
+  data: MessageHistoryItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export async function listMessageHistory(params: {
+  page?: number;
+  page_size?: number;
+}): Promise<MessageHistoryResult> {
+  const { data } = await api.get<MessageHistoryResult>("/api/messages/history", {
+    params,
+  });
+  return data;
+}

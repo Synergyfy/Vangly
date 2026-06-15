@@ -27,6 +27,10 @@ export interface PublicSubmitInput {
   answers: Record<string, unknown>;
   scan_token?: string;
   user_id?: string;
+  worker_id?: string;
+  worker_name?: string;
+  location_id?: string;
+  location_name?: string;
 }
 
 export interface PublicSubmitResultEntity {

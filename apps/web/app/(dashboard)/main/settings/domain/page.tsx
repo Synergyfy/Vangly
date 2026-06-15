@@ -113,7 +113,7 @@ export default function CustomDomainPage() {
         </Button>
         <div style={{ marginTop: '16px' }}>
           <h1>White-label Custom Domain</h1>
-          <p>Remove Vangly branding and use your organization own domain.</p>
+          <p>Remove Harvite branding and use your organization own domain.</p>
         </div>
       </div>
 
@@ -195,11 +195,11 @@ export default function CustomDomainPage() {
                   <label>Value / Points To</label>
                   <div
                     className="copy-field"
-                    onClick={() => copyToClipboard('proxy.vangly.com', 'Value')}
+                    onClick={() => copyToClipboard('proxy.harvite.com', 'Value')}
                     role="button"
                     tabIndex={0}
                   >
-                    <code>proxy.vangly.com</code>
+                    <code>proxy.harvite.com</code>
                     <Copy size={14} />
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export default function CustomDomainPage() {
                   <div className="dns-col">
                     <label>Host / Name</label>
                     <div className="copy-field">
-                      <code>_vangly</code>
+                      <code>_harvite</code>
                     </div>
                   </div>
                   <div className="dns-col">

@@ -285,14 +285,59 @@ export class MessagesService {
   ): string {
     let out = body;
     for (const [k, v] of Object.entries(vars ?? {})) {
-      const token = new RegExp(`\\[${this.escape(k)}\\]`, 'gi');
-      out = out.replace(token, v ?? '');
+      const tokenSquare = new RegExp(`\\[${this.escape(k)}\\]`, 'gi');
+      out = out.replace(tokenSquare, v ?? '');
+      const tokenCurly = new RegExp(`\\{${this.escape(k)}\\}`, 'gi');
+      out = out.replace(tokenCurly, v ?? '');
     }
     return out;
   }
 
   private escape(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  async listHistory(authUser: AuthUser, page: number, pageSize: number) {
+    const where: Prisma.SmsAuditLogWhereInput = {
+      organization_id: authUser.organization_id!,
+    };
+
+    if (authUser.role === 'worker') {
+      const contacts = await this.prisma.contact.findMany({
+        where: {
+          organization_id: authUser.organization_id!,
+          owner_user_id: authUser.sub,
+        },
+        select: { phone: true },
+      });
+      const phones = contacts.map((c) => c.phone);
+      where.to_phone = { in: phones };
+    } else if (
+      authUser.role === 'location_admin' ||
+      authUser.role === 'branch_admin'
+    ) {
+      if (authUser.branch_id) {
+        where.location_id = authUser.branch_id;
+      }
+    }
+
+    const [total, data] = await this.prisma.$transaction([
+      this.prisma.smsAuditLog.count({ where }),
+      this.prisma.smsAuditLog.findMany({
+        where,
+        orderBy: { at: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      page_size: pageSize,
+      total_pages: Math.max(1, Math.ceil(total / pageSize)),
+    };
   }
 
   private assertCanManageTemplates(role: string | null) {

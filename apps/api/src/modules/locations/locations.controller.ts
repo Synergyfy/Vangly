@@ -60,7 +60,7 @@ export class LocationsController {
     @Query() query: FindLocationsQueryDto,
   ) {
     return this.service.list(
-      user.organization_id!,
+      user.organization_id ?? null,
       user.role ?? 'worker',
       user.branch_id,
       query,
@@ -88,7 +88,7 @@ export class LocationsController {
     @Req() req: Request,
   ) {
     const { ip, ua } = getIpAndUa(req);
-    return this.service.create(user.organization_id!, dto, {
+    return this.service.create(user.organization_id ?? null, dto, {
       id: user.sub,
       ip,
       ua,
@@ -104,7 +104,7 @@ export class LocationsController {
   @Roles('organization_admin', 'super_admin', 'location_admin')
   async getOne(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.service.getById(
-      user.organization_id!,
+      user.organization_id ?? null,
       id,
       user.role ?? 'worker',
       user.branch_id,
@@ -126,7 +126,7 @@ export class LocationsController {
     @Req() req: Request,
   ) {
     const { ip, ua } = getIpAndUa(req);
-    return this.service.update(user.organization_id!, id, dto, {
+    return this.service.update(user.organization_id ?? null, id, dto, {
       id: user.sub,
       ip,
       ua,
@@ -147,7 +147,7 @@ export class LocationsController {
     @Req() req: Request,
   ) {
     const { ip, ua } = getIpAndUa(req);
-    await this.service.softDelete(user.organization_id!, id, {
+    await this.service.softDelete(user.organization_id ?? null, id, {
       id: user.sub,
       ip,
       ua,
@@ -161,7 +161,7 @@ export class LocationsController {
   })
   @ApiParam({ name: 'id' })
   @ApiOkResponse({
-    schema: { example: { photo_url: 'https://cdn.vangly.app/...' } },
+    schema: { example: { photo_url: 'https://cdn.harvite.app/...' } },
   })
   @ApiBadRequestResponse()
   @ApiNotFoundResponse()
@@ -173,7 +173,7 @@ export class LocationsController {
     @Req() req: Request,
   ) {
     const { ip, ua } = getIpAndUa(req);
-    return this.service.setPhoto(user.organization_id!, id, dto.photo_url, {
+    return this.service.setPhoto(user.organization_id ?? null, id, dto.photo_url, {
       id: user.sub,
       ip,
       ua,
@@ -193,7 +193,7 @@ export class LocationsController {
     @Query() query: LocationDashboardQueryDto,
   ) {
     return this.service.getDashboard(
-      user.organization_id!,
+      user.organization_id ?? null,
       id,
       query,
       user.role ?? 'worker',
@@ -206,7 +206,7 @@ export class LocationsController {
   @ApiParam({ name: 'id' })
   @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
   async getBrand(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.service.getBrand(user.organization_id!, id);
+    return this.service.getBrand(user.organization_id ?? null, id);
   }
 
   @Patch(':id/brand')
@@ -220,7 +220,7 @@ export class LocationsController {
     @Req() req: Request,
   ) {
     const { ip, ua } = getIpAndUa(req);
-    return this.service.updateBrand(user.organization_id!, id, dto, {
+    return this.service.updateBrand(user.organization_id ?? null, id, dto, {
       id: user.sub,
       ip,
       ua,
@@ -234,7 +234,7 @@ export class LocationsController {
   @ApiParam({ name: 'id' })
   @Roles('organization_admin', 'super_admin', 'location_admin', 'worker')
   async getQrCode(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.service.getQrCode(user.organization_id!, id);
+    return this.service.getQrCode(user.organization_id ?? null, id);
   }
 
   @Get(':id/forms')
@@ -248,7 +248,7 @@ export class LocationsController {
     query: { page?: number; per_page?: number; status?: string; q?: string },
   ) {
     return this.service.listForms(
-      user.organization_id!,
+      user.organization_id ?? null,
       id,
       user.role ?? 'worker',
       user.branch_id,
@@ -266,7 +266,7 @@ export class LocationsController {
     @Query() query: { page?: number; per_page?: number; q?: string },
   ) {
     return this.service.listTeams(
-      user.organization_id!,
+      user.organization_id ?? null,
       id,
       user.role ?? 'worker',
       user.branch_id,

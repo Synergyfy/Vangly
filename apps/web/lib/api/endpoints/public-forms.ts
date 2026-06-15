@@ -41,3 +41,19 @@ export async function submitPublicForm(
   );
   return data;
 }
+
+export async function trackInviteLink(code: string): Promise<{
+  id: string;
+  organization_id: string;
+  location_id: string | null;
+  team_id: string | null;
+  owner_user_id: string;
+  form_id: string | null;
+  code: string;
+  url: string;
+  form_public_id: string | null;
+  owner_name: string | null;
+}> {
+  const { data } = await publicClient.get(`/api/invites/track/${code}`);
+  return data;
+}

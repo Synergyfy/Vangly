@@ -80,7 +80,7 @@ export default function InstallPrompt() {
         <div className="pwa-icon-container">
           <img 
             src="/icons/icon-192x192.png" 
-            alt="Vangly Icon" 
+            alt="Harvite Icon" 
             className="w-full h-full object-cover rounded-[14px]"
             onError={(e) => {
               // Fallback to a styled V if image fails
@@ -94,8 +94,8 @@ export default function InstallPrompt() {
         </div>
 
         <div className="pwa-content">
-          <h3 className="pwa-title">Install Vangly App</h3>
-          <p className="pwa-description">Add Vangly to your home screen for a faster, better experience.</p>
+          <h3 className="pwa-title">Install Harvite App</h3>
+          <p className="pwa-description">Add Harvite to your home screen for a faster, better experience.</p>
         </div>
 
         <div className="pwa-actions">

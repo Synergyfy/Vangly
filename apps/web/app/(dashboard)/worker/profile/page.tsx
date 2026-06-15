@@ -11,7 +11,7 @@ import './profile.css';
 import '../worker.css';
 
 const ROLE_LABELS: Record<UserRole, string> = {
-  super_admin: 'Vangly Super Admin',
+  super_admin: 'Harvite Super Admin',
   organization_admin: 'Organization Admin',
   location_admin: 'Location Admin',
   worker: 'Evangelism Worker',

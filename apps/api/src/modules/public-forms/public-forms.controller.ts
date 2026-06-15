@@ -93,6 +93,10 @@ export class PublicFormsController {
       ua,
       scanToken: dto.scan_token,
       userId: user?.sub ?? dto.user_id,
+      workerId: dto.worker_id,
+      workerName: dto.worker_name,
+      locationId: dto.location_id,
+      locationName: dto.location_name,
     });
   }
 }

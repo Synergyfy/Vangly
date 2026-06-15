@@ -67,10 +67,10 @@ Rules:
 
 Examples:
 
-- `vangly:v1:user:session:{userId}` (hash)
-- `vangly:v1:post:hot:zset` (sorted set, no id)
-- `vangly:v1:ratelimit:auth:ip:{ip}` (string with TTL)
-- `vangly:v1:lock:invoice:create:{invoiceId}` (string with TTL)
+- `harvite:v1:user:session:{userId}` (hash)
+- `harvite:v1:post:hot:zset` (sorted set, no id)
+- `harvite:v1:ratelimit:auth:ip:{ip}` (string with TTL)
+- `harvite:v1:lock:invoice:create:{invoiceId}` (string with TTL)
 
 Rules:
 
@@ -99,7 +99,7 @@ Rules:
 
 ```ts
 async function getUserProfile(userId: string) {
-  const key = `vangly:v1:user:profile:${userId}`;
+  const key = `harvite:v1:user:profile:${userId}`;
   const cached = await redis.get(key);
   if (cached) return JSON.parse(cached);
 
@@ -131,7 +131,7 @@ async function getUserProfile(userId: string) {
 - Prefer `DEL` of a known list of keys over glob-delete (`KEYS`, `SCAN`
   in a loop) in hot paths. `SCAN` is fine for cron/maintenance.
 - Use **versioning** for the cheap nuclear option: bump
-  `vangly:v1:user:profile:version` and embed the version in the key.
+  `harvite:v1:user:profile:version` and embed the version in the key.
   Old entries become unreachable and TTL-evict themselves.
 
 ---
@@ -143,7 +143,7 @@ For "only one worker does X" use `SET key val NX EX <ttl>`.
 ```ts
 async function withLock<T>(key: string, ttlSec: number, fn: () => Promise<T>): Promise<T> {
   const token = crypto.randomUUID();
-  const ok = await redis.set(`vangly:v1:lock:${key}`, token, 'EX', ttlSec, 'NX');
+  const ok = await redis.set(`harvite:v1:lock:${key}`, token, 'EX', ttlSec, 'NX');
   if (!ok) throw new ConflictException('resource busy');
   try {
     return await fn();
@@ -154,7 +154,7 @@ async function withLock<T>(key: string, ttlSec: number, fn: () => Promise<T>): P
         return redis.call("del", KEYS[1])
       end
       return 0`;
-    await redis.eval(lua, 1, `vangly:v1:lock:${key}`, token);
+    await redis.eval(lua, 1, `harvite:v1:lock:${key}`, token);
   }
 }
 ```
@@ -182,7 +182,7 @@ For non-idempotent operations (payments, webhooks, "create charge"):
 - On replay, return the stored response, do not re-execute.
 
 ```ts
-const cacheKey = `vangly:v1:idem:${route}:${key}`;
+const cacheKey = `harvite:v1:idem:${route}:${key}`;
 const hit = await redis.get(cacheKey);
 if (hit) return JSON.parse(hit);
 const result = await handler(req);
@@ -203,7 +203,7 @@ if cur == 1 then redis.call("EXPIRE", KEYS[1], ARGV[1]) end
 return cur
 ```
 
-Key: `vangly:v1:ratelimit:<scope>:<id>`. Scope = route family. ID = user
+Key: `harvite:v1:ratelimit:<scope>:<id>`. Scope = route family. ID = user
 id post-auth, IP pre-auth.
 
 Apply stricter limits on `/auth/*` (see `security.md` §7).

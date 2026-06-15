@@ -36,7 +36,7 @@ export class LocationEntity {
   description?: string;
   @Expose()
   @ApiProperty({
-    example: 'https://cdn.vangly.app/.../photo.webp',
+    example: 'https://cdn.harvite.app/.../photo.webp',
     required: false,
     nullable: true,
   })

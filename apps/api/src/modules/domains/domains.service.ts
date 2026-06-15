@@ -50,7 +50,7 @@ export class DomainsService {
         'This domain is already registered by another organization',
       );
     }
-    const token = `vangly-verify-${crypto.randomBytes(8).toString('hex')}`;
+    const token = `harvite-verify-${crypto.randomBytes(8).toString('hex')}`;
     const created = await this.prisma.customDomain.create({
       data: {
         id: newId('dom'),
@@ -61,7 +61,7 @@ export class DomainsService {
         ssl_status: 'none',
         dns_instructions: {
           type: 'TXT',
-          host: `_vangly-challenge.${dto.domain.toLowerCase()}`,
+          host: `_harvite-challenge.${dto.domain.toLowerCase()}`,
           value: token,
           note: 'Add the TXT record above to verify ownership. SSL is provisioned automatically after verification.',
         },

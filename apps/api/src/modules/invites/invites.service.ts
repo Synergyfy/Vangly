@@ -256,7 +256,12 @@ export class InvitesService {
   }
 
   async trackUse(code: string) {
-    const link = await this.prisma.inviteLink.findUnique({ where: { code } });
+    const link = await this.prisma.inviteLink.findUnique({
+      where: { code },
+      include: {
+        owner: { select: { name: true } },
+      },
+    });
     if (!link) return null;
     if (link.status !== 'active') return null;
     if (link.expires_at && link.expires_at.getTime() < Date.now()) return null;
@@ -265,11 +270,25 @@ export class InvitesService {
       where: { id: link.id },
       data: { uses: { increment: 1 } },
     });
-    return this.decorate({ ...link, uses: link.uses + 1 });
+    
+    let formPublicId: string | null = null;
+    if (link.form_id) {
+      const form = await this.prisma.form.findUnique({
+        where: { id: link.form_id },
+        select: { public_id: true },
+      });
+      formPublicId = form?.public_id ?? null;
+    }
+
+    return {
+      ...this.decorate({ ...link, uses: link.uses + 1 }),
+      form_public_id: formPublicId,
+      owner_name: link.owner?.name ?? null,
+    };
   }
 
   private decorate(row: InviteLinkRow) {
-    const url = `https://vangly.app/i/${row.code}`;
+    const url = `https://harvite.app/i/${row.code}`;
     return {
       id: row.id,
       organization_id: row.organization_id,

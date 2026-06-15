@@ -28,6 +28,7 @@ import {
   useCreateMessageTemplate,
   useDeleteMessageTemplate,
   useSendMessage,
+  useMessageHistory,
 } from "@/services/messages";
 import { useFieldErrors } from "@/lib/forms/use-field-errors";
 import { isValidMessageBody, isValidTemplateName } from "@/lib/forms/validators";
@@ -50,6 +51,7 @@ function MessagingContent() {
   const templatesQuery = useMessageTemplates();
   const createTemplate = useCreateMessageTemplate();
   const deleteTemplate = useDeleteMessageTemplate();
+  const historyQuery = useMessageHistory({ page: 1, page_size: 20 });
 
   const initialView = ((): 'dashboard' | 'history' | 'templates' => {
     if (typeof window === "undefined") return 'dashboard';
@@ -332,10 +334,30 @@ function MessagingContent() {
           </Button>
         </div>
 
-        <Card style={{ padding: "24px", textAlign: "center", color: "var(--text-tertiary)" }}>
-          <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
-          <p>Your sent broadcasts will appear here once the backend exposes a message history endpoint.</p>
-        </Card>
+        {historyQuery.isLoading ? (
+          <Card style={{ padding: "24px", textAlign: "center" }}>Loading activity…</Card>
+        ) : (historyQuery.data?.data ?? []).length === 0 ? (
+          <Card style={{ padding: "24px", textAlign: "center", color: "var(--text-tertiary)" }}>
+            <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
+            <p>Your sent broadcasts will appear here.</p>
+          </Card>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {(historyQuery.data?.data ?? []).slice(0, 3).map((h) => (
+              <Card key={h.id} style={{ padding: "16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <strong style={{ fontSize: "13px" }}>{h.to_phone}</strong>
+                  <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                    {new Date(h.at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                  {h.body_preview}
+                </p>
+              </Card>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
@@ -726,7 +748,7 @@ function MessagingContent() {
                   <div className="iphone-screen">
                     <div className="iphone-header">
                       <div className="iphone-avatar" />
-                      <div className="iphone-contact">Vangly Notifications</div>
+                      <div className="iphone-contact">Harvite Notifications</div>
                     </div>
                     <div className="chat-content">
                       <div className="chat-timestamp">Today 10:45 AM</div>
@@ -773,7 +795,7 @@ function MessagingContent() {
                     <div className="iphone-screen">
                       <div className="iphone-header">
                         <div className="iphone-avatar" />
-                        <div className="iphone-contact">Vangly Notifications</div>
+                        <div className="iphone-contact">Harvite Notifications</div>
                       </div>
                       <div className="chat-content">
                         <div className="chat-timestamp">Today 10:45 AM</div>
@@ -920,10 +942,43 @@ function MessagingContent() {
         </Button>
       </div>
 
-      <Card style={{ padding: "32px", textAlign: "center", color: "var(--text-tertiary)" }}>
-        <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
-        <p>Message history will appear here once the backend exposes a sent-broadcasts endpoint.</p>
-      </Card>
+      {historyQuery.isLoading ? (
+        <Card style={{ padding: "32px", textAlign: "center" }}>Loading history…</Card>
+      ) : historyQuery.isError ? (
+        <Card style={{ padding: "32px", textAlign: "center" }}>
+          <p>Could not load message history.</p>
+          <Button size="sm" onClick={() => historyQuery.refetch()}>Retry</Button>
+        </Card>
+      ) : (historyQuery.data?.data ?? []).length === 0 ? (
+        <Card style={{ padding: "32px", textAlign: "center", color: "var(--text-tertiary)" }}>
+          <History size={32} style={{ opacity: 0.4, marginBottom: "8px" }} />
+          <p>No messages sent yet.</p>
+        </Card>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {(historyQuery.data?.data ?? []).map((h) => (
+            <Card key={h.id} style={{ padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <strong style={{ fontSize: "14px", color: "var(--text-primary)" }}>{h.to_phone}</strong>
+                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+                  {new Date(h.at).toLocaleString()}
+                </span>
+              </div>
+              <p style={{ fontSize: "14px", color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>
+                {h.body_preview}
+              </p>
+              <div style={{ display: "flex", gap: "12px", marginTop: "12px", fontSize: "12px" }}>
+                <span className={`status-pill ${h.status}`}>
+                  Status: {h.status}
+                </span>
+                <span style={{ color: "var(--text-tertiary)" }}>
+                  Template: {h.template}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 

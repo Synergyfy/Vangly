@@ -132,7 +132,16 @@ export class PublicFormsService {
   async submit(
     publicId: string,
     answers: Record<string, unknown>,
-    meta: { ip: string; ua: string; scanToken?: string; userId?: string },
+    meta: {
+      ip: string;
+      ua: string;
+      scanToken?: string;
+      userId?: string;
+      workerId?: string;
+      workerName?: string;
+      locationId?: string;
+      locationName?: string;
+    },
   ): Promise<unknown> {
     const form = await this.db.form.findUnique({
       where: { public_id: publicId },
@@ -240,12 +249,37 @@ export class PublicFormsService {
           answers['Name'] ??
           answers['full_name']) as string | undefined;
         try {
+          let resolvedWorkerId = meta.workerId;
+          if (!resolvedWorkerId && meta.workerName) {
+            const user = await this.db.user.findFirst({
+              where: {
+                organization_id: form.organization_id,
+                name: { contains: meta.workerName, mode: 'insensitive' },
+                role: 'worker',
+              },
+              select: { id: true },
+            });
+            resolvedWorkerId = user?.id;
+          }
+
+          let resolvedLocationId = meta.locationId;
+          if (!resolvedLocationId && meta.locationName) {
+            const loc = await this.db.location.findFirst({
+              where: {
+                organization_id: form.organization_id,
+                name: { contains: meta.locationName, mode: 'insensitive' },
+              },
+              select: { id: true },
+            });
+            if (loc) resolvedLocationId = loc.id;
+          }
+
           await this.contactMatcher.matchOrCreate({
             organizationId: form.organization_id,
             phone,
             name: typeof name === 'string' ? name : undefined,
-            locationId: form.location_id,
-            ownerUserId: form.created_by,
+            locationId: resolvedLocationId ?? form.location_id,
+            ownerUserId: resolvedWorkerId ?? form.created_by,
             sourceUserId: meta.userId ?? form.created_by,
             sourceKind: 'public',
           });

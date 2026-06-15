@@ -3,7 +3,7 @@ import { IsString, MaxLength, IsUrl } from 'class-validator';
 
 export class LocationPhotoDto {
   @ApiProperty({
-    example: 'https://cdn.vangly.app/org_abc/locations/loc_xyz/photo.webp',
+    example: 'https://cdn.harvite.app/org_abc/locations/loc_xyz/photo.webp',
   })
   @IsString()
   @IsUrl({ require_tld: false })

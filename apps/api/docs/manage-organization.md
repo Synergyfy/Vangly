@@ -144,7 +144,7 @@ List locations visible to the caller.
       "state": "Lagos",
       "country": "NG",
       "description": "A small satellite for youth outreach.",
-      "photo_url": "https://cdn.vangly.app/.../photo.webp",
+      "photo_url": "https://cdn.harvite.app/.../photo.webp",
       "is_hq": true,
       "status": "active",
       "activity": "High",
@@ -340,7 +340,7 @@ interface LocationPhotoDto {
 #### Response — 200
 
 ```json
-{ "photo_url": "https://cdn.vangly.app/.../photo.webp" }
+{ "photo_url": "https://cdn.harvite.app/.../photo.webp" }
 ```
 
 #### Errors
@@ -1249,7 +1249,7 @@ interface FormEntity {
   created_at: string;
   published_at?: string;
   updated_at: string;
-  public_url: string;                 // e.g. "https://vangly.app/f/AbCdEfGhi"
+  public_url: string;                 // e.g. "https://harvite.app/f/AbCdEfGhi"
   qr_payload: string;                 // same as public_url
 }
 ```

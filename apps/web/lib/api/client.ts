@@ -35,7 +35,7 @@ if (!baseURL) {
   // We don't throw because the build can still produce a bundle for static
   // pages that never reach the client.
   console.warn(
-    "[vangly] NEXT_PUBLIC_API_BASE_URL is not defined. API calls will fail.",
+    "[harvite] NEXT_PUBLIC_API_BASE_URL is not defined. API calls will fail.",
   );
 }
 
@@ -47,8 +47,8 @@ async function refreshAccessToken(): Promise<boolean> {
   refreshInFlight = (async () => {
     try {
       // The refresh cookie is sent automatically by the browser (withCredentials).
-      // No body required — the server reads req.cookies.vangly_refresh and
-      // sets a fresh vangly_access + vangly_refresh cookie pair in the response.
+      // No body required — the server reads req.cookies.harvite_refresh and
+      // sets a fresh harvite_access + harvite_refresh cookie pair in the response.
       await axios.post<AuthResponse>(
         `${baseURL ?? ""}/api/auth/refresh`,
         {},
@@ -86,7 +86,7 @@ function createClient(): AxiosInstance {
     headers: { "Content-Type": "application/json" },
   });
 
-  // No Authorization header interceptor needed — the vangly_access cookie is
+  // No Authorization header interceptor needed — the harvite_access cookie is
   // forwarded automatically via withCredentials.
 
   instance.interceptors.response.use(

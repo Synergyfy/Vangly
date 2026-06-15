@@ -76,7 +76,7 @@ export function usePaystackPayment() {
 
       setIsLoading(true);
 
-      const ref = `VANGLY-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const ref = `HARVITE-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
       const handler = window.PaystackPop.setup({
         key,
@@ -84,7 +84,7 @@ export function usePaystackPayment() {
         amount: options.amount,
         ref,
         metadata: options.metadata || {},
-        label: 'Vangly Wallet Top-up',
+        label: 'Harvite Wallet Top-up',
         callback: (response: PaystackSuccessResponse) => {
           setIsLoading(false);
           options.onSuccess(response);

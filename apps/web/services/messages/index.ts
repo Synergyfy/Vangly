@@ -5,4 +5,5 @@ export {
   useUpdateMessageTemplate,
   useDeleteMessageTemplate,
   useSendMessage,
+  useMessageHistory,
 } from "./hooks";

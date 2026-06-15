@@ -1,6 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/services/auth';
+import { getMyOrganization } from '@/lib/api/endpoints/organizations';
 
 interface BrandSettings {
   primaryColor: string;
@@ -17,12 +20,31 @@ interface BrandContextType {
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
 export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [settings, setSettings] = useState<BrandSettings>({
     primaryColor: '#007AFF', // Default Apple Blue
     accentColor: '#AF52DE',  // Default Purple
     logoUrl: null,
-    organizationName: 'Vangly Organization',
+    organizationName: 'Harvite Organization',
   });
+
+  const orgQuery = useQuery({
+    queryKey: ['organizations', 'me'],
+    queryFn: () => getMyOrganization(),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (orgQuery.data) {
+      setSettings(prev => ({
+        ...prev,
+        primaryColor: orgQuery.data.primary_color || prev.primaryColor,
+        logoUrl: orgQuery.data.logo_url || prev.logoUrl,
+        organizationName: orgQuery.data.name || prev.organizationName,
+      }));
+    }
+  }, [orgQuery.data]);
 
   const updateSettings = (newSettings: Partial<BrandSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
@@ -35,7 +57,6 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.style.setProperty('--purple', settings.accentColor);
     
     // Generate hover and light versions (simplified for demo)
-    // In a real app, you'd use a color library to generate these
     root.style.setProperty('--blue-light', `${settings.primaryColor}15`);
     root.style.setProperty('--blue-subtle', `${settings.primaryColor}08`);
   }, [settings]);

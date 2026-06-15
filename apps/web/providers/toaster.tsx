@@ -12,7 +12,7 @@ export function Toaster(props: ToasterProps) {
       toastOptions={{
         classNames: {
           toast:
-            "vangly-toast group toast group-[.toaster]:bg-white group-[.toaster]:text-[var(--text-primary)] group-[.toaster]:border-[var(--border-light)] group-[.toaster]:shadow-lg group-[.toaster]:rounded-2xl",
+            "harvite-toast group toast group-[.toaster]:bg-white group-[.toaster]:text-[var(--text-primary)] group-[.toaster]:border-[var(--border-light)] group-[.toaster]:shadow-lg group-[.toaster]:rounded-2xl",
           description: "group-[.toast]:text-[var(--text-secondary)]",
           actionButton:
             "group-[.toast]:bg-[var(--brand-primary)] group-[.toast]:text-white",

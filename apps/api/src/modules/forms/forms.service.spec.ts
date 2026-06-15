@@ -78,7 +78,7 @@ describe('Manage Organization - Forms Flow (integration)', () => {
         name: 'Test Org',
         subdomain: `org-${orgId.slice(-8)}`,
         primary_color: '#000000',
-        logo_url: 'https://cdn.vangly.app/logo.png',
+        logo_url: 'https://cdn.harvite.app/logo.png',
         createdAt: new Date(),
       },
     });

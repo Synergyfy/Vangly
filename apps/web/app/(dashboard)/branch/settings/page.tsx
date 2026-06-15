@@ -186,8 +186,8 @@ export default function BranchSettingsPage() {
                   <div className="ro-box link">
                     <Globe size={14} />{' '}
                     {locationQuery.data
-                      ? `vangly.app/f/${locationQuery.data.id.slice(0, 8)}`
-                      : 'vangly.app/f/your-location'}
+                      ? `harvite.app/f/${locationQuery.data.id.slice(0, 8)}`
+                      : 'harvite.app/f/your-location'}
                   </div>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>

@@ -62,7 +62,7 @@ export class DatabaseService
       await this.user.create({
         data: {
           id: 'usr_superadmin',
-          name: 'Vangly Super Admin',
+          name: 'Harvite Super Admin',
           phone: superAdminPhone,
           pin_hash: pinHash,
           pin_history: [pinHash],

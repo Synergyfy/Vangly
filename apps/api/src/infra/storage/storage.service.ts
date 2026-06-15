@@ -11,7 +11,7 @@ export class StorageService {
   private readonly allowedHosts: string[];
 
   constructor(config: ConfigService) {
-    this.cdnHost = 'cdn.vangly.app';
+    this.cdnHost = 'cdn.harvite.app';
     const cors = (config.get<string>('CORS_ORIGINS') ?? '')
       .split(',')
       .map((s) => s.trim())

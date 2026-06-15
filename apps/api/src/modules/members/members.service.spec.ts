@@ -69,7 +69,7 @@ describe('MembersService Integration Tests', () => {
         name: 'Org',
         subdomain: `org-${orgId.slice(-8)}`,
         primary_color: '#000000',
-        logo_url: 'https://cdn.vangly.app/logo.png',
+        logo_url: 'https://cdn.harvite.app/logo.png',
         createdAt: new Date(),
       },
     });
@@ -138,7 +138,7 @@ describe('MembersService Integration Tests', () => {
         name: 'Other',
         subdomain: `other-${otherOrg.slice(-8)}`,
         primary_color: '#000000',
-        logo_url: 'https://cdn.vangly.app/logo.png',
+        logo_url: 'https://cdn.harvite.app/logo.png',
         createdAt: new Date(),
       },
     });
