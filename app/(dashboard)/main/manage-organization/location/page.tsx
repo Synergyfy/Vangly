@@ -182,7 +182,7 @@ function LocationDashboardContent() {
     });
 
     const group = selectedRoleForForm || 'General';
-    const finalUrl = editingFormId ? `https://vangly.app/f/${editingFormId}` : `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
+    const finalUrl = editingFormId ? `https://harvite.app/f/${editingFormId}` : `https://harvite.app/f/${Math.random().toString(36).substr(2, 6)}`;
     
     setTeamForms(prev => {
       const currentForms = [...(prev[group] || [])];
@@ -349,7 +349,7 @@ function LocationDashboardContent() {
     setFormSearchQuery('');
   };
 
-  const locationUrl = `https://vangly.com/f/${locationName.toLowerCase().replace(/\s+/g, '-')}`;
+  const locationUrl = `https://harvite.com/f/${locationName.toLowerCase().replace(/\s+/g, '-')}`;
 
 
   const handleUpdateUser = () => {
@@ -1009,7 +1009,7 @@ function LocationDashboardContent() {
                                <Edit2 size={14} style={{ marginRight: '6px' }} /> Edit
                              </Button>
                              <Button variant="outline" size="sm" style={{ minWidth: '40px', padding: '0' }} onClick={() => {
-                                setPublishedFormUrl(`https://vangly.app/f/${form.id}`);
+                                setPublishedFormUrl(`https://harvite.app/f/${form.id}`);
                                 setIsPublishSuccessOpen(true);
                              }}>
                                 <Link size={14} />
@@ -1978,7 +1978,7 @@ function LocationDashboardContent() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
                   { id: 'public', label: 'General Public (Open)', desc: 'Anyone with the link can fill this form.', icon: Share },
-                  { id: 'registered', label: 'Registered Members Only', desc: 'Users must be logged into their Vangly account.', icon: LogIn },
+                  { id: 'registered', label: 'Registered Members Only', desc: 'Users must be logged into their Harvite account.', icon: LogIn },
                 ].map(mode => (
                   <div 
                     key={mode.id}
@@ -2384,7 +2384,7 @@ function LocationDashboardContent() {
                 level="H"
                 includeMargin={false}
                 imageSettings={formDistribution.addLogoToQR ? {
-                  src: "https://vangly.app/logo-circle.png", // This would be Org Logo, defaults to system logo
+                  src: "https://harvite.app/logo-circle.png", // This would be Org Logo, defaults to system logo
                   height: 48,
                   width: 48,
                   excavate: true,

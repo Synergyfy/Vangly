@@ -114,7 +114,7 @@ export default function BranchSettingsPage() {
                <div className="read-only-field-premium">
                   <label>Public Outreach URL</label>
                   <div className="ro-box link">
-                     <Globe size={14} /> vangly.app/f/downtown-hq
+                     <Globe size={14} /> harvite.app/f/downtown-hq
                   </div>
                </div>
                <div style={{ gridColumn: '1 / -1' }}>

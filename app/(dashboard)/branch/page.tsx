@@ -162,7 +162,7 @@ function BranchDashboardContent() {
   ]);
 
   const [inviteLinks, setInviteLinks] = useState([
-    { id: "1", name: "Downtown Outreach", url: "vangly.com/invite/downtown", type: "Location", usage: "Local Outreach", location: "Downtown HQ", hits: 450 },
+    { id: "1", name: "Downtown Outreach", url: "harvite.com/invite/downtown", type: "Location", usage: "Local Outreach", location: "Downtown HQ", hits: 450 },
   ]);
 
   const teamsData = [
@@ -592,8 +592,8 @@ function BranchDashboardContent() {
 
       <div className="gateways-grid-premium" style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
         {[
-          { id: 'workers', title: 'Workers', icon: Users, color: '#3b82f6', url: 'vangly.app/join/downtown-workers' },
-          { id: 'members', title: 'Members', icon: UserPlus, color: '#8b5cf6', url: 'vangly.app/join/downtown-members' }
+          { id: 'workers', title: 'Workers', icon: Users, color: '#3b82f6', url: 'harvite.app/join/downtown-workers' },
+          { id: 'members', title: 'Members', icon: UserPlus, color: '#8b5cf6', url: 'harvite.app/join/downtown-members' }
         ].map(link => (
           <Card key={link.id} className="gateway-card-premium" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>

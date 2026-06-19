@@ -19,7 +19,7 @@ export default function OfflinePage() {
       </h1>
       
       <p className="text-[#6E6E73] text-lg max-w-xs mb-10 leading-relaxed">
-        Please check your internet connection to continue using Vangly.
+        Please check your internet connection to continue using Harvite.
       </p>
       
       <button 
@@ -31,7 +31,7 @@ export default function OfflinePage() {
       </button>
       
       <div className="mt-12 text-[#AEAEB2] text-sm font-medium">
-        Vangly Progressive Web App
+        Harvite Progressive Web App
       </div>
     </div>
   );

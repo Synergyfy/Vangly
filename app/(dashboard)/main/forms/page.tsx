@@ -175,7 +175,7 @@ export default function FormsPage() {
   };
 
   const handlePublishForm = (isDraft = false) => {
-    const finalUrl = `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
+    const finalUrl = `https://harvite.app/f/${Math.random().toString(36).substr(2, 6)}`;
     if (editingFormId) {
       setForms(forms.map(f => f.id === editingFormId ? { 
           ...f, 
@@ -783,7 +783,7 @@ export default function FormsPage() {
                     <LogIn size={20} />
                     <div className="opt-text">
                         <strong>Registered Members Only</strong>
-                        <span>Users must be logged into their Vangly account.</span>
+                        <span>Users must be logged into their Harvite account.</span>
                     </div>
                 </div>
             </div>

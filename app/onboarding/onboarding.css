@@ -17,9 +17,6 @@
 }
 
 .onboarding-back-btn {
-  position: absolute;
-  top: -48px;
-  left: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -30,6 +27,7 @@
   font-weight: 600;
   cursor: pointer;
   padding: 8px 0;
+  margin-bottom: 24px;
   transition: color 0.2s ease;
 }
 
@@ -165,25 +163,35 @@
 .subdomain-input-box {
   display: flex;
   align-items: center;
-  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  height: 48px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.subdomain-input-box:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-subtle);
 }
 
 .subdomain-input-box input {
   background: none;
   border: none;
-  border-bottom: 2px solid var(--blue);
-  font-family: var(--monospace);
   font-size: 16px;
-  font-weight: 700;
-  color: var(--blue);
+  font-weight: 600;
+  color: var(--text-primary);
   outline: none;
-  width: 100%;
+  flex: 1;
   text-align: right;
+  padding: 0 4px 0 16px;
 }
 
 .subdomain-input-box span {
   font-weight: 600;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
+  padding-right: 16px;
 }
 
 .onboarding-logo-upload {
