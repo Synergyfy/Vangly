@@ -39,7 +39,7 @@ export default function CustomDomainPage() {
         </Button>
         <div style={{ marginTop: '16px' }}>
           <h1>White-label Custom Domain</h1>
-          <p>Remove Vangly branding and use your organization's own domain.</p>
+          <p>Remove Harvite branding and use your organization's own domain.</p>
         </div>
       </div>
 
@@ -104,7 +104,7 @@ export default function CustomDomainPage() {
                 <div className="dns-col">
                   <label>Value / Points To</label>
                   <div className="copy-field">
-                    <code>proxy.vangly.com</code>
+                    <code>proxy.harvite.com</code>
                     <Copy size={14} />
                   </div>
                 </div>

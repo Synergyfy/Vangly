@@ -21,7 +21,8 @@ import {
   ChevronDown,
   ChevronUp,
   MessageSquare,
-  Smartphone
+  Smartphone,
+  AlertTriangle
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import './management.css';
@@ -36,8 +37,23 @@ export default function LocationManagementPage() {
     { id: 'l4', name: 'Southpark Office', address: 'Lagos, Nigeria', teams: 2, members: 28, submissions: 95, status: 'Low' },
   ];
 
+  const planLimit = 4; // Mock plan limit (e.g., Growth is 5, but let's mock hitting the limit for demonstration)
+  const currentLocations = locations.length;
+  const additionalPurchased = 0;
+  const totalAllowed = planLimit + additionalPurchased;
+  
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
   const handleLocationClick = (location: any) => {
     router.push(`/main/manage-organization/location?id=${location.id}&name=${encodeURIComponent(location.name)}`);
+  };
+
+  const handleCreateLocation = () => {
+    if (currentLocations >= totalAllowed) {
+      setShowUpgradeModal(true);
+    } else {
+      router.push('/main/manage-organization/new');
+    }
   };
 
   return (
@@ -54,13 +70,44 @@ export default function LocationManagementPage() {
           </div>
         </div>
         <div className="header-actions">
-          <Button onClick={() => router.push('/main/manage-organization/new')} style={{ gap: '8px' }} className="btn-premium">
+          <Button onClick={handleCreateLocation} style={{ gap: '8px' }} className="btn-premium">
             <Plus size={18} /> Create Location
           </Button>
         </div>
       </header>
 
       <main className="dashboard-main-content">
+        {/* Usage Stats Component */}
+        <section style={{ padding: '20px', backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '24px' }}>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Plan</div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>Growth</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Locations</div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>{currentLocations} <span style={{ color: 'var(--text-muted)' }}>of {totalAllowed} Used</span></div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Additional Purchased</div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>{additionalPurchased}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Remaining</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: (totalAllowed - currentLocations) === 0 ? 'var(--orange)' : 'var(--text-primary)' }}>{totalAllowed - currentLocations}</div>
+              </div>
+            </div>
+            <div style={{ flex: '1', minWidth: '200px', maxWidth: '300px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Array.from({ length: Math.max(totalAllowed, currentLocations) }).map((_, idx) => (
+                  <div key={idx} style={{ height: '8px', flex: 1, backgroundColor: idx < currentLocations ? (currentLocations >= totalAllowed ? 'var(--orange)' : 'var(--primary)') : 'var(--border-light)', borderRadius: '4px' }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="team-grid-premium">
           {locations.map((location) => (
             <Card 
@@ -120,6 +167,37 @@ export default function LocationManagementPage() {
           ))}
         </div>
       </main>
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', width: '100%', maxWidth: '400px', overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ padding: '24px', textAlign: 'center', backgroundColor: '#fff3ed' }}>
+              <div style={{ width: '48px', height: '48px', backgroundColor: 'var(--orange)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'white' }}>
+                <AlertTriangle size={24} />
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#9a3412', marginBottom: '8px' }}>You've Reached Your Location Limit</h2>
+              <p style={{ fontSize: '14px', color: '#c2410c' }}>Your current plan includes up to {planLimit} locations.</p>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '20px', textAlign: 'center' }}>
+                To create another location, you can either purchase an additional location or upgrade your plan.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Button className="btn-primary" style={{ width: '100%' }} onClick={() => router.push('/main/subscription/purchase')}>
+                  Purchase Additional Location
+                </Button>
+                <Button className="btn-secondary" style={{ width: '100%' }} onClick={() => router.push('/main/subscription')}>
+                  Upgrade Plan to Network
+                </Button>
+                <Button variant="ghost" style={{ width: '100%' }} onClick={() => setShowUpgradeModal(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

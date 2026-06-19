@@ -63,14 +63,15 @@
 }
 
 .btn-outline {
-  background: var(--white);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border);
 }
 
 .btn-outline:hover {
-  background: var(--bg);
-  border-color: #D1D1D6;
+  background: var(--bg-secondary);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-ghost {
@@ -79,8 +80,8 @@
 }
 
 .btn-ghost:hover {
-  background: var(--bg);
-  color: var(--text-primary);
+  background: var(--bg-secondary);
+  color: var(--primary);
 }
 
 .btn-danger {

@@ -45,7 +45,7 @@ export default function DisplayQRPage() {
     if (canvas) {
       const url = canvas.toDataURL("image/png");
       const link = document.createElement("a");
-      link.download = `vangly-qr-${selectedTemplate}.png`;
+      link.download = `harvite-qr-${selectedTemplate}.png`;
       link.href = url;
       link.click();
     }

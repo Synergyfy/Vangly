@@ -77,7 +77,10 @@ function WalletContent() {
         <div className="header-left">
           <div className="header-badge">Financial Ops</div>
           <h1>Wallet & Credits</h1>
-          <p>Manage your outreach resources and billing history.</p>
+          <p>Manage your SMS outreach resources and credit history.</p>
+          <div style={{ marginTop: '12px', padding: '8px 12px', backgroundColor: '#e0e7ff', borderRadius: '6px', display: 'inline-flex', fontSize: '13px', color: '#3730a3' }}>
+            <strong>Note:</strong> Subscription billing and plan add-ons are managed in the <a href="/main/subscription" style={{ color: 'var(--primary)', textDecoration: 'underline', marginLeft: '4px' }}>Subscription &amp; Billing</a> section.
+          </div>
         </div>
       </header>
 

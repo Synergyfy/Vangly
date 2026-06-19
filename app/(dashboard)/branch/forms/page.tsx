@@ -165,7 +165,7 @@ export default function BranchFormsPage() {
   };
 
   const handlePublishForm = (isDraft = false) => {
-    const finalUrl = `https://vangly.app/f/${Math.random().toString(36).substr(2, 6)}`;
+    const finalUrl = `https://harvite.app/f/${Math.random().toString(36).substr(2, 6)}`;
     if (editingFormId) {
       setForms(forms.map(f => f.id === editingFormId ? { 
           ...f, 
