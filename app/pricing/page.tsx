@@ -47,7 +47,7 @@ export default function PricingPage() {
       <section className="pricing-hero">
         <div className="container">
           <h1>Simple, transparent pricing</h1>
-          <p>The platform is free. Forever. You only pay for the SMS credits you use.</p>
+          <p>Choose the plan that works best for your organization.</p>
         </div>
       </section>
 
@@ -70,7 +70,7 @@ export default function PricingPage() {
                 <li><Check className="check-icon" size={20} /> Basic Analytics</li>
               </ul>
               <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => router.push('/onboarding')}>
-                Start Free
+                Get Started
               </button>
             </div>
 

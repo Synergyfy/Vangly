@@ -72,8 +72,8 @@ export function Sidebar({ isOpen, onClose, isCollapsed = true }: SidebarProps) {
       <aside className={`sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <div className="brand-icon">V</div>
-            {!isCollapsed && <span className="brand-name">Vangly</span>}
+            <div className="brand-icon">H</div>
+            {!isCollapsed && <span className="brand-name">Harvite</span>}
           </div>
           <button className="sidebar-close-btn" onClick={onClose}>
             ×
