@@ -79,23 +79,23 @@ export default function InstallPrompt() {
       <div className="pwa-modal">
         <div className="pwa-icon-container">
           <img 
-            src="/icons/icon-192x192.png" 
-            alt="Vangly Icon" 
+            src="/Harvite%20Logo.png" 
+            alt="Harvite Icon" 
             className="w-full h-full object-cover rounded-[14px]"
             onError={(e) => {
-              // Fallback to a styled V if image fails
+              // Fallback to a styled H if image fails
               e.currentTarget.style.display = 'none';
               const parent = e.currentTarget.parentElement;
               if (parent) {
-                parent.innerHTML = '<span style="color: white; font-weight: 900; font-size: 24px;">V</span>';
+                parent.innerHTML = '<span style="color: white; font-weight: 900; font-size: 24px;">H</span>';
               }
             }}
           />
         </div>
 
         <div className="pwa-content">
-          <h3 className="pwa-title">Install Vangly App</h3>
-          <p className="pwa-description">Add Vangly to your home screen for a faster, better experience.</p>
+          <h3 className="pwa-title">Install Harvite App</h3>
+          <p className="pwa-description">Add Harvite to your home screen for a faster, better experience.</p>
         </div>
 
         <div className="pwa-actions">

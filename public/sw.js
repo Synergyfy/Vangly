@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vangly-cache-v1';
+const CACHE_NAME = 'harvite-cache-v1';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [

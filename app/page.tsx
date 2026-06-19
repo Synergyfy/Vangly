@@ -58,7 +58,7 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <button className="btn btn-primary" onClick={() => router.push('/onboarding')}>
-                Start Free <ArrowRight size={20} />
+                Get Started <ArrowRight size={20} />
               </button>
               <button className="btn btn-outline-white">
                 Watch Demo
