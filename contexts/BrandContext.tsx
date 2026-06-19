@@ -21,7 +21,7 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     primaryColor: '#007AFF', // Default Apple Blue
     accentColor: '#AF52DE',  // Default Purple
     logoUrl: null,
-    organizationName: 'Vangly Organization',
+    organizationName: 'Harvite Organization',
   });
 
   const updateSettings = (newSettings: Partial<BrandSettings>) => {

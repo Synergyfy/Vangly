@@ -32,6 +32,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
+    icon: "/Harvite%20Logo.png",
     apple: "/icons/apple-touch-icon.png",
   },
 };

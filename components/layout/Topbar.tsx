@@ -26,8 +26,8 @@ export const Topbar: React.FC = () => {
     <header className="topbar">
       <div className="topbar-left">
         <div className="topbar-brand" onClick={() => router.push(user?.role?.includes('branch') || user?.role?.includes('location') ? '/branch' : '/main')}>
-          <div className="brand-icon">V</div>
-          <span className="brand-name">Vangly</span>
+          <div className="brand-icon">H</div>
+          <span className="brand-name">Harvite</span>
         </div>
 
         <div className="topbar-search">
