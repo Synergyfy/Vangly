@@ -390,7 +390,7 @@ function MessagingContent() {
                   <div className="iphone-screen">
                     <div className="iphone-header">
                        <div className="iphone-avatar" />
-                       <div className="iphone-contact">Vangly Notifications</div>
+                       <div className="iphone-contact">Harvite Notifications</div>
                     </div>
                     <div className="chat-content">
                       <div className="chat-timestamp">Today 10:45 AM</div>
@@ -433,7 +433,7 @@ function MessagingContent() {
                     <div className="iphone-screen">
                       <div className="iphone-header">
                         <div className="iphone-avatar" />
-                        <div className="iphone-contact">Vangly Notifications</div>
+                        <div className="iphone-contact">Harvite Notifications</div>
                       </div>
                       <div className="chat-content">
                         <div className="chat-timestamp">Today 10:45 AM</div>

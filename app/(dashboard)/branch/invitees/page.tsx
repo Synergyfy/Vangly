@@ -33,7 +33,7 @@ export default function BranchInviteesPage() {
       id: 'workers',
       title: 'Location Workers',
       description: 'Registration for official location evangelism staff.',
-      url: 'https://vangly.app/join/downtown-workers',
+      url: 'https://harvite.app/join/downtown-workers',
       type: 'workers',
       icon: Users,
       color: '#3b82f6'
@@ -42,7 +42,7 @@ export default function BranchInviteesPage() {
       id: 'volunteers',
       title: 'Location Volunteers',
       description: 'Registration for temporary or seasonal volunteers.',
-      url: 'https://vangly.app/join/downtown-volunteers',
+      url: 'https://harvite.app/join/downtown-volunteers',
       type: 'volunteers',
       icon: UserPlus,
       color: '#8b5cf6'
@@ -50,8 +50,8 @@ export default function BranchInviteesPage() {
   ];
 
   const [customLinks] = useState([
-    { id: '1', name: 'Saturday Outreach Event', team: 'Evangelism Team', visits: 45, url: 'https://vangly.app/join/sat-outreach' },
-    { id: '2', name: 'Youth Camp 2026', team: 'Youth Workers', visits: 128, url: 'https://vangly.app/join/youth-camp' }
+    { id: '1', name: 'Saturday Outreach Event', team: 'Evangelism Team', visits: 45, url: 'https://harvite.app/join/sat-outreach' },
+    { id: '2', name: 'Youth Camp 2026', team: 'Youth Workers', visits: 128, url: 'https://harvite.app/join/youth-camp' }
   ]);
 
   const handleCopy = (url: string) => {

@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#007AFF",
+  themeColor: "#066CF4",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -20,13 +20,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Vangly — Organization Evangelism Platform",
-  description: "Track, manage, and grow your organization's outreach with precision.",
+  title: "Harvite — HARvest your inVITE",
+  description: "Turn invitations into meaningful connections.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Vangly",
+    title: "Harvite",
   },
   formatDetection: {
     telephone: false,

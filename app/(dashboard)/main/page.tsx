@@ -138,6 +138,37 @@ export default function OrganizationOverview() {
           </div>
         </section>
 
+        {/* Subscription Overview Card */}
+        <section style={{ padding: '0 20px', marginBottom: '24px' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Current Plan</div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--primary)' }}>Growth</div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => router.push('/main/subscription')}>Manage Subscription</Button>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-light)' }}>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '4px' }}>Locations Used</div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>3 <span style={{ color: 'var(--text-muted)' }}>/ 5</span></div>
+                {/* Visual Progress Component */}
+                <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+                  {[1, 2, 3, 4, 5].map(idx => (
+                    <div key={idx} style={{ height: '6px', flex: 1, backgroundColor: idx <= 3 ? 'var(--primary)' : 'var(--border-light)', borderRadius: '3px' }} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '4px' }}>Additional Locations</div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>0</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Next Billing: Jul 20, 2026</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Hub Grid V2 */}
         <section className="hub-grid-v2">
           {[

@@ -6,7 +6,7 @@ import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Building2, Users, User, ArrowLeft, Lock, Phone, ChevronDown } from 'lucide-react';
+import { Building2, Users, User, ArrowLeft, Lock, Phone, ChevronDown, ShieldCheck } from 'lucide-react';
 import './login.css';
 
 export default function LoginPage() {
@@ -35,7 +35,9 @@ export default function LoginPage() {
       });
 
       // Route based on role
-      if (selectedRole === 'super_admin') {
+      if (selectedRole === 'platform_super_admin') {
+        router.push('/super_admin');
+      } else if (selectedRole === 'super_admin') {
         router.push('/main');
       } else if (selectedRole === 'branch_admin') {
         router.push('/branch');
@@ -46,7 +48,8 @@ export default function LoginPage() {
   };
 
   const demoRoles = [
-    { id: 'super_admin', label: 'HQ Admin', icon: Building2, color: 'var(--blue)', desc: 'Manage organization-wide operations' },
+    { id: 'platform_super_admin', label: 'Global Super Admin', icon: ShieldCheck, color: 'var(--red)', desc: 'Manage the entire SaaS platform' },
+    { id: 'super_admin', label: 'Org HQ Admin', icon: Building2, color: 'var(--blue)', desc: 'Manage organization-wide operations' },
     { id: 'branch_admin', label: 'Branch Admin', icon: Users, color: 'var(--green)', desc: 'Oversee specific branch activities' },
     { id: 'worker', label: 'Worker', icon: User, color: 'var(--purple)', desc: 'Track outreach and send invites' },
   ];
@@ -73,7 +76,7 @@ export default function LoginPage() {
               <path d="M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <h1>Vangly</h1>
+          <h1>Harvite</h1>
           <p>Organization management platform</p>
         </div>
 

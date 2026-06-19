@@ -13,7 +13,7 @@ export default function ShareInvitePage() {
   const { user } = useAuth();
   const { settings } = useBrand();
   const [copied, setCopied] = useState(false);
-  const [baseUrl, setBaseUrl] = useState('https://vangly.app');
+  const [baseUrl, setBaseUrl] = useState('https://harvite.app');
   
   React.useEffect(() => {
     if (typeof window !== 'undefined') {

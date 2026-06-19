@@ -26,7 +26,7 @@ export default function InviteesPage() {
     {
       id: "main",
       name: "Main Organization Invite",
-      url: "vangly.com/invite",
+      url: "harvite.com/invite",
       type: "Global",
       usage: "Social Media / Flyers",
       location: "All Locations",
@@ -35,7 +35,7 @@ export default function InviteesPage() {
     {
       id: "location-1",
       name: "Downtown Outreach",
-      url: "vangly.com/invite/downtown",
+      url: "harvite.com/invite/downtown",
       type: "Location",
       usage: "Local Outreach",
       location: "HQ Location",
@@ -65,7 +65,7 @@ export default function InviteesPage() {
   const handleCreateLink = () => {
     const slug = newLink.name.toLowerCase().replace(/\s+/g, "-");
     const branchSlug = newLink.location === "All Locations" ? "" : `/${newLink.location.toLowerCase().split(" ")[0]}`;
-    const generatedUrl = `vangly.com/invite${branchSlug}/${slug}`;
+    const generatedUrl = `harvite.com/invite${branchSlug}/${slug}`;
 
     const link = {
       id: Math.random().toString(),
@@ -210,7 +210,7 @@ export default function InviteesPage() {
             <h3>Outreach Tips</h3>
             <ul className="tips-list">
               <li>
-                <strong>Main Link:</strong> Use <code>vangly.com/invite</code> for your main website and social media bios.
+                <strong>Main Link:</strong> Use <code>harvite.com/invite</code> for your main website and social media bios.
               </li>
               <li>
                 <strong>Location Links:</strong> Create specific links for local neighborhood outreach to track location performance.
